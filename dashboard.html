@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sales Dashboard · Google Sheets</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/prop-types@15/prop-types.min.js"></script>
+  <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #f8fafc; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    .modal-backdrop { animation: fadeIn .15s ease; }
+    .modal-panel    { animation: scaleIn .15s ease; }
+    @keyframes fadeIn  { from { opacity: 0; }              to { opacity: 1; } }
+    @keyframes scaleIn { from { opacity: 0; transform: scale(.96) translateY(-8px); } to { opacity: 1; transform: none; } }
+  </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useMemo, useEffect, useRef } = React;
+    const {
+      BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+      ResponsiveContainer, PieChart, Pie, Cell,
+    } = Recharts;
+
+    // ─── Helpers ─────────────────────────────────────────────────────────────
+    const fmtKRW = (n) => '₩' + Number(n).toLocaleString('ko-KR');
+    const fmtM   = (n) => n >= 1_000_000
+      ? `₩${(n / 1_000_000).toFixed(1)}M`
+      : `₩${(n / 1_000).toFixed(0)}K`;
+    const today  = () => new Date().toISOString().slice(0, 10);
+
+    const STATUS_STYLE = {
+      '완료':  { wrap: 'bg-emerald-100 text-emerald-700', dot: 'bg-emerald-500' },
+      '진행중': { wrap: 'bg-blue-100 text-blue-700',      dot: 'bg-blue-500'    },
+      '대기':  { wrap: 'bg-amber-100 text-amber-700',     dot: 'bg-amber-500'   },
+      '취소':  { wrap: 'bg-red-100 text-red-600',         dot: 'bg-red-400'     },
+    };
+    const CATEGORIES = ['소프트웨어', '컨설팅', '하드웨어', '교육', '유지보수'];
+    const STATUSES   = ['완료', '진행중', '대기', '취소'];
+    const PIE_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
+
+    // ─── SVG Icons ───────────────────────────────────────────────────────────
+    const Ico = ({ size = 16, className = '', children }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" strokeWidth="2" strokeLinecap="round"
+        strokeLinejoin="round" className={className}>{children}</svg>
+    );
+    const SearchIcon    = (p) => <Ico {...p}><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></Ico>;
+    const RefreshIcon   = (p) => <Ico {...p}><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></Ico>;
+    const DownloadIcon  = (p) => <Ico {...p}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></Ico>;
+    const PlusIcon      = (p) => <Ico {...p}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></Ico>;
+    const PencilIcon    = (p) => <Ico {...p}><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></Ico>;
+    const TrashIcon     = (p) => <Ico {...p}><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></Ico>;
+    const ChevUpIcon    = (p) => <Ico {...p}><path d="m18 15-6-6-6 6"/></Ico>;
+    const ChevDownIcon  = (p) => <Ico {...p}><path d="m6 9 6 6 6-6"/></Ico>;
+    const ChevLeftIcon  = (p) => <Ico {...p}><path d="m15 18-6-6 6-6"/></Ico>;
+    const ChevRightIcon = (p) => <Ico {...p}><path d="m9 18 6-6-6-6"/></Ico>;
+    const UpDownIcon    = (p) => <Ico {...p}><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></Ico>;
+    const XIcon         = (p) => <Ico {...p}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></Ico>;
+    const FilterIcon    = (p) => <Ico {...p}><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></Ico>;
+    const UsersIcon     = (p) => <Ico {...p}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></Ico>;
+    const CheckIcon     = (p) => <Ico {...p}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></Ico>;
+    const WonIcon       = (p) => <Ico {...p}><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></Ico>;
+    const CalIcon       = (p) => <Ico {...p}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></Ico>;
+    const ArrowUpIcon   = (p) => <Ico {...p}><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></Ico>;
+    const ArrowDownIcon = (p) => <Ico {...p}><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></Ico>;
+    const AlertIcon     = (p) => <Ico {...p}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></Ico>;
+
+    const SheetsLogo = () => (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+        <rect x="2" y="2" width="20" height="20" rx="3" fill="#0F9D58" opacity=".15"/>
+        <rect x="2" y="2" width="20" height="20" rx="3" stroke="#0F9D58" strokeWidth="1.5"/>
+        <line x1="2"    y1="8.5"  x2="22"   y2="8.5"  stroke="#0F9D58" strokeWidth="1.2"/>
+        <line x1="2"    y1="14.5" x2="22"   y2="14.5" stroke="#0F9D58" strokeWidth="1.2"/>
+        <line x1="8.5"  y1="2"    x2="8.5"  y2="22"   stroke="#0F9D58" strokeWidth="1.2"/>
+        <line x1="15.5" y1="2"    x2="15.5" y2="22"   stroke="#0F9D58" strokeWidth="1.2"/>
+      </svg>
+    );
+
+    // ─── Initial Mock Data ────────────────────────────────────────────────────
+    const INITIAL_DATA = [
+      { id:'S-001', name:'김민준', company:'테크솔루션㈜',    product:'Enterprise Plan',   category:'소프트웨어', assignee:'이서연', amount:4800000,  status:'완료',   date:'2026-04-08' },
+      { id:'S-002', name:'박소희', company:'글로벌트레이드',   product:'컨설팅 서비스 A',   category:'컨설팅',    assignee:'박준혁', amount:2200000,  status:'진행중',  date:'2026-04-05' },
+      { id:'S-003', name:'이도현', company:'스마트팩토리㈜',   product:'서버 장비 세트',    category:'하드웨어',   assignee:'최지은', amount:9600000,  status:'대기',   date:'2026-04-03' },
+      { id:'S-004', name:'정유나', company:'에듀플러스',       product:'교육 패키지 B',     category:'교육',      assignee:'이서연', amount:1500000,  status:'완료',   date:'2026-04-01' },
+      { id:'S-005', name:'강현우', company:'디지털미디어㈜',   product:'유지보수 연간',     category:'유지보수',   assignee:'박준혁', amount:3600000,  status:'완료',   date:'2026-03-29' },
+      { id:'S-006', name:'윤지수', company:'바이오텍코리아',   product:'Standard Plan',     category:'소프트웨어', assignee:'최지은', amount:2400000,  status:'진행중',  date:'2026-03-27' },
+      { id:'S-007', name:'임태양', company:'건설이노베이션',   product:'컨설팅 서비스 B',   category:'컨설팅',    assignee:'이서연', amount:3800000,  status:'취소',   date:'2026-03-25' },
+      { id:'S-008', name:'조하린', company:'핀테크스타트업',   product:'노트북 20대',       category:'하드웨어',   assignee:'박준혁', amount:7200000,  status:'완료',   date:'2026-03-22' },
+      { id:'S-009', name:'신민재', company:'유통그룹㈜',       product:'교육 패키지 A',     category:'교육',      assignee:'최지은', amount:2800000,  status:'진행중',  date:'2026-03-20' },
+      { id:'S-010', name:'한예진', company:'클라우드서비스',   product:'유지보수 반기',     category:'유지보수',   assignee:'이서연', amount:1800000,  status:'완료',   date:'2026-03-18' },
+      { id:'S-011', name:'오승준', company:'모바일텍',         product:'Pro Plan',          category:'소프트웨어', assignee:'박준혁', amount:3200000,  status:'완료',   date:'2026-03-15' },
+      { id:'S-012', name:'배나래', company:'헬스케어솔루션',   product:'컨설팅 서비스 A',   category:'컨설팅',    assignee:'최지은', amount:4200000,  status:'진행중',  date:'2026-03-12' },
+      { id:'S-013', name:'류성민', company:'리테일플러스',     product:'POS 시스템 5대',    category:'하드웨어',   assignee:'이서연', amount:5500000,  status:'완료',   date:'2026-03-10' },
+      { id:'S-014', name:'차은비', company:'스타트업A',        product:'교육 패키지 C',     category:'교육',      assignee:'박준혁', amount:900000,   status:'취소',   date:'2026-03-08' },
+      { id:'S-015', name:'서준호', company:'제조업체㈜',       product:'유지보수 연간',     category:'유지보수',   assignee:'최지은', amount:4800000,  status:'완료',   date:'2026-03-05' },
+      { id:'S-016', name:'문지아', company:'이커머스플랫폼',   product:'Enterprise Plan',   category:'소프트웨어', assignee:'이서연', amount:6400000,  status:'진행중',  date:'2026-03-03' },
+      { id:'S-017', name:'권태현', company:'물류솔루션㈜',     product:'컨설팅 서비스 B',   category:'컨설팅',    assignee:'박준혁', amount:3100000,  status:'완료',   date:'2026-02-28' },
+      { id:'S-018', name:'남도영', company:'에너지기업',       product:'서버 장비 세트',    category:'하드웨어',   assignee:'최지은', amount:11200000, status:'완료',   date:'2026-02-25' },
+      { id:'S-019', name:'홍세리', company:'교육기관B',        product:'교육 패키지 B',     category:'교육',      assignee:'이서연', amount:2100000,  status:'진행중',  date:'2026-02-22' },
+      { id:'S-020', name:'백종원', company:'푸드테크㈜',       product:'유지보수 반기',     category:'유지보수',   assignee:'박준혁', amount:2400000,  status:'완료',   date:'2026-02-20' },
+      { id:'S-021', name:'안서진', company:'게임스튜디오',     product:'Standard Plan',     category:'소프트웨어', assignee:'최지은', amount:1900000,  status:'대기',   date:'2026-02-18' },
+      { id:'S-022', name:'송민호', company:'광고에이전시',     product:'컨설팅 서비스 A',   category:'컨설팅',    assignee:'이서연', amount:2700000,  status:'완료',   date:'2026-02-15' },
+      { id:'S-023', name:'전하은', company:'반도체기업',       product:'워크스테이션 10대', category:'하드웨어',   assignee:'박준혁', amount:15000000, status:'완료',   date:'2026-02-12' },
+      { id:'S-024', name:'고민성', company:'스포츠기업',       product:'교육 패키지 A',     category:'교육',      assignee:'최지은', amount:1600000,  status:'취소',   date:'2026-02-10' },
+      { id:'S-025', name:'노지현', company:'HR솔루션㈜',       product:'유지보수 연간',     category:'유지보수',   assignee:'이서연', amount:3600000,  status:'진행중',  date:'2026-02-08' },
+      { id:'S-026', name:'도세훈', company:'핀테크기업B',      product:'Pro Plan',          category:'소프트웨어', assignee:'박준혁', amount:2800000,  status:'완료',   date:'2026-02-05' },
+      { id:'S-027', name:'마예린', company:'부동산플랫폼',     product:'컨설팅 서비스 B',   category:'컨설팅',    assignee:'최지은', amount:4500000,  status:'완료',   date:'2026-02-03' },
+      { id:'S-028', name:'사준서', company:'헬스케어B',        product:'의료장비 세트',     category:'하드웨어',   assignee:'이서연', amount:8800000,  status:'진행중',  date:'2026-01-30' },
+      { id:'S-029', name:'아미현', company:'교육기관C',        product:'교육 패키지 C',     category:'교육',      assignee:'박준혁', amount:750000,   status:'완료',   date:'2026-01-28' },
+      { id:'S-030', name:'자윤택', company:'통신기업㈜',       product:'유지보수 연간',     category:'유지보수',   assignee:'최지은', amount:5400000,  status:'완료',   date:'2026-01-25' },
+    ];
+
+    // ─── Reusable UI Sub-components ──────────────────────────────────────────
+
+    function StatCard({ icon, iconBg, label, value, sub, trend }) {
+      const up = trend >= 0;
+      return (
+        <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5 flex items-start gap-4">
+          <div className={`p-2.5 rounded-lg shrink-0 ${iconBg}`}>{icon}</div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-medium text-slate-500 tracking-wide uppercase">{label}</p>
+            <p className="text-2xl font-bold text-slate-800 mt-0.5 leading-tight">{value}</p>
+            {sub && <p className="text-xs text-slate-400 mt-1">{sub}</p>}
+          </div>
+          {trend !== undefined && (
+            <div className={`flex items-center gap-0.5 text-xs font-semibold shrink-0 ${up ? 'text-emerald-600' : 'text-red-500'}`}>
+              {up ? <ArrowUpIcon size={12}/> : <ArrowDownIcon size={12}/>}
+              {Math.abs(trend)}%
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    function Badge({ status }) {
+      const s = STATUS_STYLE[status] || STATUS_STYLE['대기'];
+      return (
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${s.wrap}`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+          {status}
+        </span>
+      );
+    }
+
+    function SortTh({ label, field, sort, onSort }) {
+      const active = sort.key === field;
+      return (
+        <th onClick={() => onSort(field)}
+          className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wide cursor-pointer hover:bg-slate-100 select-none whitespace-nowrap transition-colors">
+          <span className="flex items-center gap-1">
+            {label}
+            {active
+              ? (sort.dir === 'asc' ? <ChevUpIcon size={13} className="text-indigo-500"/> : <ChevDownIcon size={13} className="text-indigo-500"/>)
+              : <UpDownIcon size={13} className="text-slate-300"/>}
+          </span>
+        </th>
+      );
+    }
+
+    function BarTooltip({ active, payload, label }) {
+      if (!active || !payload?.length) return null;
+      return (
+        <div className="bg-white border border-slate-200 rounded-lg shadow-lg p-3 text-sm">
+          <p className="font-semibold text-slate-700 mb-1">{label}</p>
+          <p className="text-indigo-600">매출: {fmtKRW(payload[0].value)}</p>
+        </div>
+      );
+    }
+
+    function PieTooltip({ active, payload }) {
+      if (!active || !payload?.length) return null;
+      const d = payload[0];
+      return (
+        <div className="bg-white border border-slate-200 rounded-lg shadow-lg p-3 text-sm">
+          <p className="font-semibold text-slate-700">{d.name}</p>
+          <p className="text-slate-500">{d.value}건 ({d.payload.pct}%)</p>
+        </div>
+      );
+    }
+
+    // ─── Field component (form 내 입력 공통 래퍼) ─────────────────────────────
+    function Field({ label, required, children }) {
+      return (
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold text-slate-600">
+            {label}{required && <span className="text-red-400 ml-0.5">*</span>}
+          </label>
+          {children}
+        </div>
+      );
+    }
+
+    const INPUT_CLS = `w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white
+      focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400
+      placeholder:text-slate-300 transition disabled:bg-slate-50 disabled:text-slate-400`;
+
+    // ─── DataModal (추가 / 수정 공용 모달) ───────────────────────────────────
+    const BLANK_FORM = { name:'', company:'', product:'', category:'소프트웨어', assignee:'', amount:'', status:'진행중', date:'' };
+
+    function DataModal({ open, mode, rowData, onSave, onClose }) {
+      const [form,   setForm]   = useState(BLANK_FORM);
+      const [errors, setErrors] = useState({});
+      const firstRef = useRef(null);
+
+      useEffect(() => {
+        if (!open) return;
+        setErrors({});
+        setForm(mode === 'edit' ? { ...rowData } : { ...BLANK_FORM, date: today() });
+        setTimeout(() => firstRef.current?.focus(), 50);
+      }, [open, mode, rowData]);
+
+      const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
+
+      const validate = () => {
+        const e = {};
+        if (!form.name.trim())    e.name    = '필수 입력';
+        if (!form.company.trim()) e.company = '필수 입력';
+        if (!form.product.trim()) e.product = '필수 입력';
+        if (!form.assignee.trim()) e.assignee = '필수 입력';
+        if (!form.amount || isNaN(Number(form.amount)) || Number(form.amount) <= 0) e.amount = '올바른 금액';
+        if (!form.date)           e.date    = '필수 입력';
+        setErrors(e);
+        return Object.keys(e).length === 0;
+      };
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!validate()) return;
+        onSave({ ...form, amount: Number(form.amount) });
+      };
+
+      if (!open) return null;
+
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop"
+          style={{ background: 'rgba(15,23,42,.45)' }}
+          onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg modal-panel">
+
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <div className={`p-1.5 rounded-lg ${mode === 'add' ? 'bg-indigo-50' : 'bg-amber-50'}`}>
+                  {mode === 'add'
+                    ? <PlusIcon size={16} className="text-indigo-600"/>
+                    : <PencilIcon size={16} className="text-amber-600"/>}
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold text-slate-800">
+                    {mode === 'add' ? '새 데이터 추가' : '데이터 수정'}
+                  </h2>
+                  {mode === 'edit' && rowData &&
+                    <p className="text-xs text-slate-400 mt-0.5 font-mono">ID: {rowData.id}</p>}
+                </div>
+              </div>
+              <button onClick={onClose}
+                className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600 transition-colors">
+                <XIcon size={16}/>
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} noValidate>
+              <div className="px-6 py-5 grid grid-cols-2 gap-4">
+
+                <Field label="고객명" required>
+                  <input ref={firstRef} className={INPUT_CLS + (errors.name ? ' border-red-300 ring-1 ring-red-200' : '')}
+                    value={form.name} onChange={set('name')} placeholder="홍길동"/>
+                  {errors.name && <p className="text-xs text-red-500">{errors.name}</p>}
+                </Field>
+
+                <Field label="회사명" required>
+                  <input className={INPUT_CLS + (errors.company ? ' border-red-300 ring-1 ring-red-200' : '')}
+                    value={form.company} onChange={set('company')} placeholder="㈜예시기업"/>
+                  {errors.company && <p className="text-xs text-red-500">{errors.company}</p>}
+                </Field>
+
+                <Field label="상품/서비스" required>
+                  <input className={INPUT_CLS + (errors.product ? ' border-red-300 ring-1 ring-red-200' : '')}
+                    value={form.product} onChange={set('product')} placeholder="Enterprise Plan"/>
+                  {errors.product && <p className="text-xs text-red-500">{errors.product}</p>}
+                </Field>
+
+                <Field label="카테고리">
+                  <select className={INPUT_CLS} value={form.category} onChange={set('category')}>
+                    {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                  </select>
+                </Field>
+
+                <Field label="담당자" required>
+                  <input className={INPUT_CLS + (errors.assignee ? ' border-red-300 ring-1 ring-red-200' : '')}
+                    value={form.assignee} onChange={set('assignee')} placeholder="이서연"/>
+                  {errors.assignee && <p className="text-xs text-red-500">{errors.assignee}</p>}
+                </Field>
+
+                <Field label="금액 (원)" required>
+                  <input type="number" min="0" step="10000"
+                    className={INPUT_CLS + (errors.amount ? ' border-red-300 ring-1 ring-red-200' : '')}
+                    value={form.amount} onChange={set('amount')} placeholder="1000000"/>
+                  {errors.amount && <p className="text-xs text-red-500">{errors.amount}</p>}
+                </Field>
+
+                <Field label="상태">
+                  <select className={INPUT_CLS} value={form.status} onChange={set('status')}>
+                    {STATUSES.map(s => <option key={s}>{s}</option>)}
+                  </select>
+                </Field>
+
+                <Field label="날짜" required>
+                  <input type="date" className={INPUT_CLS + (errors.date ? ' border-red-300 ring-1 ring-red-200' : '')}
+                    value={form.date} onChange={set('date')}/>
+                  {errors.date && <p className="text-xs text-red-500">{errors.date}</p>}
+                </Field>
+
+              </div>
+
+              {/* Modal Footer */}
+              <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-2.5">
+                <button type="button" onClick={onClose}
+                  className="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
+                  취소
+                </button>
+                <button type="submit"
+                  className={`px-5 py-2 text-sm font-semibold text-white rounded-lg transition-colors
+                    ${mode === 'add' ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-amber-500 hover:bg-amber-600'}`}>
+                  {mode === 'add' ? '추가하기' : '수정 저장'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      );
+    }
+
+    // ─── DeleteDialog (삭제 확인 모달) ────────────────────────────────────────
+    function DeleteDialog({ open, rowData, onConfirm, onClose }) {
+      if (!open || !rowData) return null;
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop"
+          style={{ background: 'rgba(15,23,42,.45)' }}
+          onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm modal-panel p-6">
+            <div className="flex flex-col items-center text-center gap-3">
+              <div className="p-3 bg-red-50 rounded-full">
+                <AlertIcon size={24} className="text-red-500"/>
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-slate-800">데이터를 삭제할까요?</h2>
+                <p className="text-sm text-slate-500 mt-1">
+                  <span className="font-semibold text-slate-700">{rowData.name}</span> ({rowData.company})
+                </p>
+                <p className="text-xs text-slate-400 mt-1">ID: {rowData.id} · {rowData.product}</p>
+              </div>
+              <p className="text-xs text-red-400 bg-red-50 px-3 py-2 rounded-lg w-full">
+                삭제된 데이터는 복구할 수 없습니다.
+              </p>
+            </div>
+            <div className="flex gap-2.5 mt-5">
+              <button onClick={onClose}
+                className="flex-1 py-2 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors">
+                취소
+              </button>
+              <button onClick={onConfirm}
+                className="flex-1 py-2 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors">
+                삭제하기
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ─── Toast (간단 피드백) ──────────────────────────────────────────────────
+    function Toast({ msg, type }) {
+      if (!msg) return null;
+      const c = type === 'delete' ? 'bg-red-500' : type === 'edit' ? 'bg-amber-500' : 'bg-emerald-500';
+      return (
+        <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 ${c} text-white text-sm font-medium rounded-xl shadow-lg modal-panel`}>
+          <CheckIcon size={15}/>
+          {msg}
+        </div>
+      );
+    }
+
+    // ─── Main App ─────────────────────────────────────────────────────────────
+    function App() {
+      // ── 핵심 데이터 state ──
+      const [data, setData] = useState(INITIAL_DATA);
+
+      // ── UI state ──
+      const [search,    setSearch]    = useState('');
+      const [statusF,   setStatusF]   = useState('전체');
+      const [catF,      setCatF]      = useState('전체');
+      const [assigneeF, setAssigneeF] = useState('전체');
+      const [sort,      setSort]      = useState({ key: 'date', dir: 'desc' });
+      const [page,      setPage]      = useState(1);
+      const PER_PAGE = 10;
+
+      // ── 모달 state ──
+      const [modal,   setModal]   = useState({ open: false, mode: 'add', row: null });
+      const [delDlg,  setDelDlg]  = useState({ open: false, row: null });
+      const [toast,   setToast]   = useState({ msg: '', type: '' });
+      const idCounterRef = useRef(data.length + 1);
+
+      // ── Toast 자동 숨김 ──
+      useEffect(() => {
+        if (!toast.msg) return;
+        const t = setTimeout(() => setToast({ msg: '', type: '' }), 2500);
+        return () => clearTimeout(t);
+      }, [toast]);
+
+      // ── 필터 옵션 ──
+      const categories = useMemo(() => ['전체', ...new Set(data.map(d => d.category))], [data]);
+      const assignees  = useMemo(() => ['전체', ...new Set(data.map(d => d.assignee))], [data]);
+      const statuses   = ['전체', '완료', '진행중', '대기', '취소'];
+
+      // ── 요약 통계 (data 기반, 실시간 반영) ──
+      const totalAmt      = useMemo(() => data.reduce((s, d) => s + d.amount, 0), [data]);
+      const completedCnt  = useMemo(() => data.filter(d => d.status === '완료').length, [data]);
+      const completedRate = data.length > 0 ? Math.round(completedCnt / data.length * 100) : 0;
+      const thisMonthCnt  = useMemo(() => data.filter(d => d.date.startsWith('2026-04')).length, [data]);
+
+      // ── 차트 데이터 ──
+      const monthlyData = useMemo(() => {
+        const map = {};
+        data.forEach(d => {
+          const m = d.date.slice(0, 7);
+          if (!map[m]) map[m] = { month: m, 매출: 0 };
+          map[m].매출 += d.amount;
+        });
+        return Object.values(map)
+          .sort((a, b) => a.month.localeCompare(b.month))
+          .slice(-4)
+          .map(d => ({ ...d, month: d.month.slice(5) + '월' }));
+      }, [data]);
+
+      const pieData = useMemo(() => {
+        const total = data.length;
+        if (total === 0) return [];
+        const map = {};
+        data.forEach(d => { map[d.status] = (map[d.status] || 0) + 1; });
+        return Object.entries(map).map(([name, value]) => ({
+          name, value, pct: Math.round(value / total * 100),
+        }));
+      }, [data]);
+
+      // ── 필터 + 정렬 ──
+      const filtered = useMemo(() => {
+        const q = search.toLowerCase();
+        return data
+          .filter(d => {
+            if (q && !d.name.includes(q) && !d.company.toLowerCase().includes(q) && !d.product.toLowerCase().includes(q)) return false;
+            if (statusF !== '전체' && d.status !== statusF) return false;
+            if (catF !== '전체' && d.category !== catF) return false;
+            if (assigneeF !== '전체' && d.assignee !== assigneeF) return false;
+            return true;
+          })
+          .sort((a, b) => {
+            let av = a[sort.key], bv = b[sort.key];
+            if (typeof av === 'string') { av = av.toLowerCase(); bv = bv.toLowerCase(); }
+            if (av < bv) return sort.dir === 'asc' ? -1 : 1;
+            if (av > bv) return sort.dir === 'asc' ?  1 : -1;
+            return 0;
+          });
+      }, [data, search, statusF, catF, assigneeF, sort]);
+
+      const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
+      const pageData   = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+      const hasFilter  = search || statusF !== '전체' || catF !== '전체' || assigneeF !== '전체';
+
+      // ── 정렬 핸들러 ──
+      const handleSort = (key) => {
+        setSort(s => ({ key, dir: s.key === key && s.dir === 'asc' ? 'desc' : 'asc' }));
+        setPage(1);
+      };
+
+      const clearFilters = () => {
+        setSearch(''); setStatusF('전체'); setCatF('전체'); setAssigneeF('전체'); setPage(1);
+      };
+
+      // ── 페이지네이션 ──
+      const pageNums = Array.from({ length: totalPages }, (_, i) => i + 1)
+        .filter(p => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+        .reduce((acc, p, i, arr) => {
+          if (i > 0 && p - arr[i - 1] > 1) acc.push('…');
+          acc.push(p);
+          return acc;
+        }, []);
+
+      // ════════════════════════════════════════════
+      // ── CRUD 핸들러 (Google Sheets API 교체 지점)
+      // ════════════════════════════════════════════
+
+      /**
+       * [CREATE] 새 행 추가
+       * → 실제 API 연동 시 이 함수 내에서 sheets.spreadsheets.values.append() 호출
+       */
+      const handleAddData = (formData) => {
+        const newId  = `S-${String(idCounterRef.current++).padStart(3, '0')}`;
+        const newRow = { ...formData, id: newId };
+        setData(prev => [newRow, ...prev]);
+        setModal({ open: false, mode: 'add', row: null });
+        setPage(1);
+        setToast({ msg: `"${newRow.name}" 데이터가 추가되었습니다.`, type: 'add' });
+      };
+
+      /**
+       * [UPDATE] 기존 행 수정
+       * → 실제 API 연동 시 sheets.spreadsheets.values.update() 호출
+       */
+      const handleEditData = (formData) => {
+        setData(prev => prev.map(d => d.id === formData.id ? { ...formData } : d));
+        setModal({ open: false, mode: 'edit', row: null });
+        setToast({ msg: `"${formData.name}" 데이터가 수정되었습니다.`, type: 'edit' });
+      };
+
+      /**
+       * [DELETE] 행 삭제
+       * → 실제 API 연동 시 해당 행 번호로 sheets.spreadsheets.batchUpdate() 호출
+       */
+      const handleDeleteData = () => {
+        const target = delDlg.row;
+        setData(prev => prev.filter(d => d.id !== target.id));
+        setDelDlg({ open: false, row: null });
+        if (pageData.length === 1 && page > 1) setPage(p => p - 1);
+        setToast({ msg: `"${target.name}" 데이터가 삭제되었습니다.`, type: 'delete' });
+      };
+
+      // ── 모달 열기 헬퍼 ──
+      const openAdd  = ()    => setModal({ open: true,  mode: 'add',  row: null });
+      const openEdit = (row) => setModal({ open: true,  mode: 'edit', row });
+      const closeModal = ()  => setModal(m  => ({ ...m,  open: false }));
+      const openDel  = (row) => setDelDlg({ open: true,  row });
+      const closeDel = ()    => setDelDlg({ open: false, row: null });
+
+      // ════════════════════════════════════════════
+      // Render
+      // ════════════════════════════════════════════
+      return (
+        <div className="min-h-screen bg-slate-50">
+
+          {/* ── Header ── */}
+          <header className="bg-white border-b border-slate-200 sticky top-0 z-20 shadow-sm">
+            <div className="max-w-screen-xl mx-auto px-6 py-3.5 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <SheetsLogo />
+                <div>
+                  <h1 className="text-base font-bold text-slate-800 leading-none">Sales Dashboard</h1>
+                  <p className="text-xs text-slate-400 mt-0.5">Google Sheets 연동 대시보드 · {data.length}건</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-400 hidden sm:inline">마지막 업데이트: 2026-04-10 09:00</span>
+                <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors font-medium">
+                  <RefreshIcon size={14}/> 새로고침
+                </button>
+                <button className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors font-medium">
+                  <DownloadIcon size={14}/> 내보내기
+                </button>
+                {/* ── 새 데이터 추가 버튼 ── */}
+                <button onClick={openAdd}
+                  className="flex items-center gap-1.5 px-4 py-1.5 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors font-semibold shadow-sm">
+                  <PlusIcon size={14}/> 새 데이터 추가
+                </button>
+              </div>
+            </div>
+          </header>
+
+          <main className="max-w-screen-xl mx-auto px-6 py-6 space-y-5">
+
+            {/* ── Summary Cards (data 기반 실시간 반영) ── */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatCard icon={<UsersIcon size={18} className="text-indigo-600"/>} iconBg="bg-indigo-50"
+                label="전체 데이터"   value={`${data.length}건`}
+                sub={`필터 결과 ${filtered.length}건 표시 중`} trend={12}/>
+              <StatCard icon={<CheckIcon size={18} className="text-emerald-600"/>} iconBg="bg-emerald-50"
+                label="완료 건수"    value={`${completedCnt}건`}
+                sub={`완료율 ${completedRate}%`} trend={5}/>
+              <StatCard icon={<WonIcon size={18} className="text-violet-600"/>} iconBg="bg-violet-50"
+                label="총 매출액"    value={data.length ? fmtM(totalAmt) : '₩0'}
+                sub={data.length ? `건당 평균 ${fmtM(Math.round(totalAmt / data.length))}` : '–'} trend={8}/>
+              <StatCard icon={<CalIcon size={18} className="text-orange-500"/>} iconBg="bg-orange-50"
+                label="이번 달 신규" value={`${thisMonthCnt}건`}
+                sub="2026년 4월 기준" trend={-3}/>
+            </div>
+
+            {/* ── Charts Row ── */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="lg:col-span-2 bg-white rounded-xl border border-slate-100 shadow-sm p-5">
+                <div className="mb-4">
+                  <h2 className="text-sm font-semibold text-slate-700">월별 매출 추이</h2>
+                  <p className="text-xs text-slate-400 mt-0.5">최근 4개월 누적 기준</p>
+                </div>
+                <ResponsiveContainer width="100%" height={210}>
+                  <BarChart data={monthlyData} margin={{ top: 4, right: 10, left: 0, bottom: 4 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false}/>
+                    <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false}/>
+                    <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false}
+                      tickFormatter={v => `₩${(v / 1_000_000).toFixed(0)}M`} width={52}/>
+                    <Tooltip content={<BarTooltip/>}/>
+                    <Bar dataKey="매출" fill="#6366f1" radius={[5, 5, 0, 0]} maxBarSize={52}/>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-5">
+                <div className="mb-3">
+                  <h2 className="text-sm font-semibold text-slate-700">상태별 분포</h2>
+                  <p className="text-xs text-slate-400 mt-0.5">전체 {data.length}건</p>
+                </div>
+                <ResponsiveContainer width="100%" height={155}>
+                  <PieChart>
+                    <Pie data={pieData} cx="50%" cy="50%" innerRadius={48} outerRadius={70}
+                      dataKey="value" paddingAngle={3}>
+                      {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]}/>)}
+                    </Pie>
+                    <Tooltip content={<PieTooltip/>}/>
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="mt-3 space-y-2">
+                  {pieData.map((d, i) => (
+                    <div key={i} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: PIE_COLORS[i % PIE_COLORS.length] }}/>
+                        <span className="text-xs text-slate-600">{d.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 bg-slate-100 rounded-full h-1.5">
+                          <div className="h-1.5 rounded-full" style={{ width: `${d.pct}%`, background: PIE_COLORS[i % PIE_COLORS.length] }}/>
+                        </div>
+                        <span className="text-xs text-slate-500 font-medium w-14 text-right">{d.value}건 ({d.pct}%)</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* ── Filter Bar ── */}
+            <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="relative flex-1 min-w-52">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                    <SearchIcon size={15}/>
+                  </span>
+                  <input type="text" value={search}
+                    placeholder="고객명, 회사명, 상품명으로 검색…"
+                    onChange={e => { setSearch(e.target.value); setPage(1); }}
+                    className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg
+                      focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400
+                      placeholder:text-slate-400 transition"/>
+                </div>
+                <span className="text-slate-300 hidden sm:block"><FilterIcon size={14}/></span>
+                <select value={statusF} onChange={e => { setStatusF(e.target.value); setPage(1); }}
+                  className="px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300 text-slate-600 bg-white cursor-pointer">
+                  {statuses.map(s => <option key={s}>{s === '전체' ? '전체 상태' : s}</option>)}
+                </select>
+                <select value={catF} onChange={e => { setCatF(e.target.value); setPage(1); }}
+                  className="px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300 text-slate-600 bg-white cursor-pointer">
+                  {categories.map(c => <option key={c}>{c === '전체' ? '전체 카테고리' : c}</option>)}
+                </select>
+                <select value={assigneeF} onChange={e => { setAssigneeF(e.target.value); setPage(1); }}
+                  className="px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-300 text-slate-600 bg-white cursor-pointer">
+                  {assignees.map(a => <option key={a}>{a === '전체' ? '전체 담당자' : a}</option>)}
+                </select>
+                {hasFilter && (
+                  <button onClick={clearFilters}
+                    className="flex items-center gap-1.5 px-3 py-2 text-sm text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors font-medium">
+                    <XIcon size={13}/> 초기화
+                  </button>
+                )}
+                <span className="ml-auto text-xs text-slate-400 font-medium whitespace-nowrap">{filtered.length}건 표시</span>
+              </div>
+            </div>
+
+            {/* ── Data Table ── */}
+            <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[900px]">
+                  <thead>
+                    <tr className="bg-slate-50/80 border-b border-slate-100">
+                      {[
+                        { key: 'id',       label: 'ID'      },
+                        { key: 'name',     label: '고객명'   },
+                        { key: 'company',  label: '회사'     },
+                        { key: 'product',  label: '상품'     },
+                        { key: 'category', label: '카테고리' },
+                        { key: 'assignee', label: '담당자'   },
+                        { key: 'amount',   label: '금액'     },
+                        { key: 'status',   label: '상태'     },
+                        { key: 'date',     label: '날짜'     },
+                      ].map(col => (
+                        <SortTh key={col.key} label={col.label} field={col.key} sort={sort} onSort={handleSort}/>
+                      ))}
+                      {/* 작업 컬럼 (정렬 없음) */}
+                      <th className="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide text-center">
+                        작업
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {pageData.length === 0 ? (
+                      <tr>
+                        <td colSpan="10" className="px-4 py-14 text-center text-slate-400 text-sm">
+                          조건에 맞는 데이터가 없습니다.
+                        </td>
+                      </tr>
+                    ) : pageData.map((row, i) => (
+                      <tr key={row.id}
+                        className={`hover:bg-indigo-50/40 transition-colors ${i % 2 === 1 ? 'bg-slate-50/40' : ''}`}>
+                        <td className="px-4 py-3 font-mono text-xs text-slate-400">{row.id}</td>
+                        <td className="px-4 py-3 font-semibold text-slate-700">{row.name}</td>
+                        <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{row.company}</td>
+                        <td className="px-4 py-3 text-slate-600 max-w-[150px] truncate" title={row.product}>{row.product}</td>
+                        <td className="px-4 py-3">
+                          <span className="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-xs font-medium">{row.category}</span>
+                        </td>
+                        <td className="px-4 py-3 text-slate-600">{row.assignee}</td>
+                        <td className="px-4 py-3 font-semibold text-slate-700 whitespace-nowrap tabular-nums">{fmtKRW(row.amount)}</td>
+                        <td className="px-4 py-3"><Badge status={row.status}/></td>
+                        <td className="px-4 py-3 text-slate-500 whitespace-nowrap tabular-nums">{row.date}</td>
+                        {/* ── 수정 / 삭제 버튼 ── */}
+                        <td className="px-4 py-3">
+                          <div className="flex items-center justify-center gap-1.5">
+                            <button onClick={() => openEdit(row)}
+                              title="수정"
+                              className="p-1.5 text-slate-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors">
+                              <PencilIcon size={14}/>
+                            </button>
+                            <button onClick={() => openDel(row)}
+                              title="삭제"
+                              className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+                              <TrashIcon size={14}/>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              <div className="px-5 py-3 border-t border-slate-100 flex items-center justify-between gap-4">
+                <p className="text-xs text-slate-400">
+                  총 <span className="font-semibold text-slate-600">{filtered.length}</span>건 중{' '}
+                  <span className="font-semibold text-slate-600">{Math.min((page-1)*PER_PAGE+1, filtered.length)}</span>
+                  –<span className="font-semibold text-slate-600">{Math.min(page*PER_PAGE, filtered.length)}</span>번째
+                </p>
+                <div className="flex items-center gap-1">
+                  <button onClick={() => setPage(p => Math.max(1, p-1))} disabled={page === 1}
+                    className="p-1.5 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed text-slate-500 transition-colors">
+                    <ChevLeftIcon size={16}/>
+                  </button>
+                  {pageNums.map((p, i) =>
+                    p === '…' ? (
+                      <span key={`e${i}`} className="w-8 text-center text-slate-400 text-sm">…</span>
+                    ) : (
+                      <button key={p} onClick={() => setPage(p)}
+                        className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors
+                          ${p === page ? 'bg-indigo-600 text-white shadow-sm' : 'hover:bg-slate-100 text-slate-600'}`}>
+                        {p}
+                      </button>
+                    )
+                  )}
+                  <button onClick={() => setPage(p => Math.min(totalPages, p+1))} disabled={page === totalPages}
+                    className="p-1.5 rounded-lg hover:bg-slate-100 disabled:opacity-30 disabled:cursor-not-allowed text-slate-500 transition-colors">
+                    <ChevRightIcon size={16}/>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </main>
+
+          <footer className="max-w-screen-xl mx-auto px-6 py-4 text-xs text-slate-400 text-center border-t border-slate-200 mt-2">
+            Google Sheets Dashboard · CRUD 모드 · 실제 API 연동 후 핸들러 함수를 교체하세요
+          </footer>
+
+          {/* ── 모달 / 다이얼로그 / 토스트 ── */}
+          <DataModal
+            open={modal.open} mode={modal.mode} rowData={modal.row}
+            onSave={modal.mode === 'add' ? handleAddData : handleEditData}
+            onClose={closeModal}
+          />
+          <DeleteDialog
+            open={delDlg.open} rowData={delDlg.row}
+            onConfirm={handleDeleteData} onClose={closeDel}
+          />
+          <Toast msg={toast.msg} type={toast.type}/>
+
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

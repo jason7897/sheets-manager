@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>샌드위치 레시피 - Sandwich House</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- 헤더 -->
+  <header>
+    <div class="header-inner">
+      <div class="logo">🥪 Sandwich House</div>
+      <nav>
+        <a href="#recipes">레시피</a>
+        <a href="#tips">꿀팁</a>
+        <a href="#about">소개</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- 히어로 섹션 -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>맛있는 샌드위치<br>레시피 모음</h1>
+      <p>집에서 쉽게 만드는 다양한 샌드위치 레시피를 소개합니다.</p>
+      <a href="#recipes" class="btn">레시피 보기</a>
+    </div>
+  </section>
+
+  <!-- 레시피 섹션 -->
+  <section id="recipes" class="recipes-section">
+    <h2 class="section-title">인기 레시피</h2>
+
+    <!-- 검색 + 필터 툴바 -->
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="재료나 이름으로 검색...">
+        <button class="search-clear" id="search-clear" aria-label="검색 초기화">✕</button>
+      </div>
+
+      <div class="filter-row">
+        <span class="filter-label">카테고리</span>
+        <div class="filter-wrap">
+          <button class="filter-btn active" data-filter="전체">전체</button>
+          <button class="filter-btn" data-filter="클래식">클래식</button>
+          <button class="filter-btn" data-filter="채식 가능">채식 가능</button>
+          <button class="filter-btn" data-filter="채식">채식</button>
+          <button class="filter-btn" data-filter="프리미엄">프리미엄</button>
+          <button class="filter-btn" data-filter="건강식">건강식</button>
+          <button class="filter-btn fav-filter" id="fav-filter-btn" data-filter="__fav__">♡ 즐겨찾기</button>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <span class="filter-label">빵 종류</span>
+        <div class="filter-wrap">
+          <button class="bread-btn active" data-bread="전체">전체</button>
+          <button class="bread-btn" data-bread="식빵">🍞 식빵</button>
+          <button class="bread-btn" data-bread="통밀 식빵">🌾 통밀 식빵</button>
+          <button class="bread-btn" data-bread="호밀빵">🟤 호밀빵</button>
+          <button class="bread-btn" data-bread="치아바타">🫓 치아바타</button>
+          <button class="bread-btn" data-bread="바게트">🥖 바게트</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 결과 없음 메시지 -->
+    <div class="empty-state" id="empty-state" hidden>
+      <div class="empty-icon">🥪</div>
+      <p>조건에 맞는 레시피가 없어요.</p>
+      <button class="btn-reset" id="reset-btn">필터 초기화</button>
+    </div>
+
+    <div class="recipes-grid" id="recipes-grid">
+
+      <!-- BLT 샌드위치 -->
+      <div class="card" data-id="blt" data-category="클래식" data-bread="식빵">
+        <div class="card-thumb">
+          <img class="card-img"
+               src="https://images.unsplash.com/photo-1554433607-66b5bbe2b0e3?auto=format&fit=crop&w=400&h=240&q=80"
+               alt="BLT 샌드위치"
+               onerror="this.style.display='none'">
+          <span class="card-emoji">🥓</span>
+          <button class="fav-btn" data-id="blt" aria-label="즐겨찾기">♡</button>
+          <div class="bread-tag">🍞 식빵</div>
+        </div>
+        <div class="card-body">
+          <span class="badge">클래식</span>
+          <h3>BLT 샌드위치</h3>
+          <p class="desc">바삭한 베이컨, 신선한 상추, 토마토의 완벽한 조화</p>
+          <div class="meta">
+            <span>⏱ 15분</span>
+            <span>👤 1인분</span>
+            <span>⭐ 4.8</span>
+          </div>
+          <div class="ingredients">
+            <h4>재료</h4>
+            <ul>
+              <li>식빵 2장</li>
+              <li>베이컨 3줄</li>
+              <li>로메인 상추 2장</li>
+              <li>토마토 2슬라이스</li>
+              <li>마요네즈 2큰술</li>
+            </ul>
+          </div>
+          <div class="steps">
+            <h4>만드는 법</h4>
+            <ol>
+              <li>베이컨을 팬에 바삭하게 굽는다.</li>
+              <li>식빵을 토스터에 굽는다.</li>
+              <li>식빵 한 면에 마요네즈를 바른다.</li>
+              <li>상추 → 토마토 → 베이컨 순으로 올린다.</li>
+              <li>나머지 식빵으로 덮고 반으로 자른다.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <!-- 에그 샐러드 샌드위치 -->
+      <div class="card" data-id="egg-salad" data-category="채식 가능" data-bread="호밀빵">
+        <div class="card-thumb">
+          <img class="card-img"
+               src="https://images.unsplash.com/photo-1571091718767-18b5b1457add?auto=format&fit=crop&w=400&h=240&q=80"
+               alt="에그 샐러드 샌드위치"
+               onerror="this.style.display='none'">
+          <span class="card-emoji">🥚</span>
+          <button class="fav-btn" data-id="egg-salad" aria-label="즐겨찾기">♡</button>
+          <div class="bread-tag">🟤 호밀빵</div>
+        </div>
+        <div class="card-body">
+          <span class="badge badge-green">채식 가능</span>
+          <h3>에그 샐러드 샌드위치</h3>
+          <p class="desc">부드럽고 크리미한 달걀 샐러드로 만든 든든한 샌드위치</p>
+          <div class="meta">
+            <span>⏱ 20분</span>
+            <span>👤 2인분</span>
+            <span>⭐ 4.6</span>
+          </div>
+          <div class="ingredients">
+            <h4>재료</h4>
+            <ul>
+              <li>달걀 4개 (삶은 것)</li>
+              <li>호밀빵 4장</li>
+              <li>마요네즈 3큰술</li>
+              <li>머스터드 1작은술</li>
+              <li>소금, 후추 약간</li>
+              <li>쪽파 (선택)</li>
+            </ul>
+          </div>
+          <div class="steps">
+            <h4>만드는 법</h4>
+            <ol>
+              <li>달걀을 완숙으로 삶아 껍질을 벗긴다.</li>
+              <li>달걀을 포크로 으깬다.</li>
+              <li>마요네즈, 머스터드, 소금, 후추를 섞는다.</li>
+              <li>호밀빵에 에그 샐러드를 넉넉히 얹는다.</li>
+              <li>쪽파를 올리고 빵으로 덮는다.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <!-- 클럽 샌드위치 -->
+      <div class="card" data-id="club" data-category="프리미엄" data-bread="식빵">
+        <div class="card-thumb">
+          <img class="card-img"
+               src="https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=400&h=240&q=80"
+               alt="클럽 샌드위치"
+               onerror="this.style.display='none'">
+          <span class="card-emoji">🍗</span>
+          <button class="fav-btn" data-id="club" aria-label="즐겨찾기">♡</button>
+          <div class="bread-tag">🍞 식빵</div>
+        </div>
+        <div class="card-body">
+          <span class="badge badge-orange">프리미엄</span>
+          <h3>클럽 샌드위치</h3>
+          <p class="desc">세 겹의 풍성한 재료로 만든 정통 클럽 샌드위치</p>
+          <div class="meta">
+            <span>⏱ 25분</span>
+            <span>👤 1인분</span>
+            <span>⭐ 4.9</span>
+          </div>
+          <div class="ingredients">
+            <h4>재료</h4>
+            <ul>
+              <li>식빵 3장</li>
+              <li>닭가슴살 슬라이스 80g</li>
+              <li>베이컨 2줄</li>
+              <li>토마토 2슬라이스</li>
+              <li>상추 2장</li>
+              <li>체다 치즈 1장</li>
+              <li>마요네즈, 머스터드</li>
+            </ul>
+          </div>
+          <div class="steps">
+            <h4>만드는 법</h4>
+            <ol>
+              <li>식빵 3장을 모두 토스트한다.</li>
+              <li>베이컨과 닭가슴살을 굽는다.</li>
+              <li>첫 번째 빵에 마요네즈 → 상추 → 토마토를 올린다.</li>
+              <li>두 번째 빵을 올리고 머스터드 → 치즈 → 닭가슴살 → 베이컨을 올린다.</li>
+              <li>세 번째 빵으로 덮고 이쑤시개로 고정 후 자른다.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <!-- 카프레제 샌드위치 -->
+      <div class="card" data-id="caprese" data-category="채식" data-bread="치아바타">
+        <div class="card-thumb">
+          <img class="card-img"
+               src="https://images.unsplash.com/photo-1565958011703-44f9829ba187?auto=format&fit=crop&w=400&h=240&q=80"
+               alt="카프레제 샌드위치"
+               onerror="this.style.display='none'">
+          <span class="card-emoji">🍅</span>
+          <button class="fav-btn" data-id="caprese" aria-label="즐겨찾기">♡</button>
+          <div class="bread-tag">🫓 치아바타</div>
+        </div>
+        <div class="card-body">
+          <span class="badge badge-green">채식</span>
+          <h3>카프레제 샌드위치</h3>
+          <p class="desc">이탈리안 스타일의 신선하고 향긋한 샌드위치</p>
+          <div class="meta">
+            <span>⏱ 10분</span>
+            <span>👤 1인분</span>
+            <span>⭐ 4.7</span>
+          </div>
+          <div class="ingredients">
+            <h4>재료</h4>
+            <ul>
+              <li>치아바타 빵 1개</li>
+              <li>생 모짜렐라 100g</li>
+              <li>방울토마토 8개</li>
+              <li>바질 잎 한 줌</li>
+              <li>올리브오일 2큰술</li>
+              <li>발사믹 글레이즈</li>
+              <li>소금, 후추</li>
+            </ul>
+          </div>
+          <div class="steps">
+            <h4>만드는 법</h4>
+            <ol>
+              <li>치아바타를 반으로 갈라 올리브오일을 바른다.</li>
+              <li>팬이나 오븐에 빵을 살짝 굽는다.</li>
+              <li>모짜렐라를 슬라이스하고 토마토를 반으로 자른다.</li>
+              <li>빵 위에 모짜렐라 → 토마토 → 바질 순으로 올린다.</li>
+              <li>소금, 후추, 발사믹 글레이즈를 뿌린다.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <!-- 참치 샌드위치 -->
+      <div class="card" data-id="tuna" data-category="클래식" data-bread="바게트">
+        <div class="card-thumb">
+          <img class="card-img"
+               src="https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=400&h=240&q=80"
+               alt="참치 샌드위치"
+               onerror="this.style.display='none'">
+          <span class="card-emoji">🐟</span>
+          <button class="fav-btn" data-id="tuna" aria-label="즐겨찾기">♡</button>
+          <div class="bread-tag">🥖 바게트</div>
+        </div>
+        <div class="card-body">
+          <span class="badge">클래식</span>
+          <h3>참치 샌드위치</h3>
+          <p class="desc">누구나 좋아하는 고소하고 담백한 참치 샌드위치</p>
+          <div class="meta">
+            <span>⏱ 10분</span>
+            <span>👤 2인분</span>
+            <span>⭐ 4.5</span>
+          </div>
+          <div class="ingredients">
+            <h4>재료</h4>
+            <ul>
+              <li>바게트 1/2개</li>
+              <li>참치캔 1개 (135g)</li>
+              <li>양파 1/4개</li>
+              <li>오이 피클 3조각</li>
+              <li>마요네즈 3큰술</li>
+              <li>레몬즙 1작은술</li>
+              <li>상추 2장</li>
+            </ul>
+          </div>
+          <div class="steps">
+            <h4>만드는 법</h4>
+            <ol>
+              <li>참치캔의 기름을 빼고 그릇에 담는다.</li>
+              <li>양파와 피클을 잘게 다진다.</li>
+              <li>마요네즈, 레몬즙과 함께 섞는다.</li>
+              <li>바게트를 반으로 갈라 상추를 깔고 참치 샐러드를 올린다.</li>
+              <li>뚜껑을 덮고 먹기 좋은 크기로 자른다.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <!-- 아보카도 샌드위치 -->
+      <div class="card" data-id="avocado" data-category="건강식" data-bread="통밀 식빵">
+        <div class="card-thumb">
+          <img class="card-img"
+               src="https://images.unsplash.com/photo-1541519227354-08fa5d50c820?auto=format&fit=crop&w=400&h=240&q=80"
+               alt="아보카도 샌드위치"
+               onerror="this.style.display='none'">
+          <span class="card-emoji">🥑</span>
+          <button class="fav-btn" data-id="avocado" aria-label="즐겨찾기">♡</button>
+          <div class="bread-tag">🌾 통밀 식빵</div>
+        </div>
+        <div class="card-body">
+          <span class="badge badge-green">건강식</span>
+          <h3>아보카도 샌드위치</h3>
+          <p class="desc">건강하고 크리미한 아보카도로 만드는 트렌디한 샌드위치</p>
+          <div class="meta">
+            <span>⏱ 10분</span>
+            <span>👤 1인분</span>
+            <span>⭐ 4.8</span>
+          </div>
+          <div class="ingredients">
+            <h4>재료</h4>
+            <ul>
+              <li>통밀 식빵 2장</li>
+              <li>아보카도 1개</li>
+              <li>달걀 1개 (반숙)</li>
+              <li>방울토마토 5개</li>
+              <li>레몬즙 1작은술</li>
+              <li>레드페퍼 플레이크</li>
+              <li>소금, 후추</li>
+            </ul>
+          </div>
+          <div class="steps">
+            <h4>만드는 법</h4>
+            <ol>
+              <li>아보카도를 으깨어 레몬즙, 소금, 후추를 섞는다.</li>
+              <li>달걀을 반숙으로 굽는다.</li>
+              <li>통밀 식빵을 토스트한다.</li>
+              <li>빵에 아보카도 크림을 바른다.</li>
+              <li>토마토와 반숙 달걀을 올리고 레드페퍼를 뿌린다.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 꿀팁 섹션 -->
+  <section id="tips" class="tips-section">
+    <h2 class="section-title">샌드위치 꿀팁</h2>
+    <div class="tips-grid">
+      <div class="tip-card">
+        <div class="tip-icon">🍞</div>
+        <h3>빵 선택</h3>
+        <p>재료에 따라 빵을 선택하세요. 묵직한 재료엔 치아바타·바게트, 부드러운 재료엔 식빵·호밀빵이 잘 어울려요.</p>
+      </div>
+      <div class="tip-card">
+        <div class="tip-icon">🧴</div>
+        <h3>소스는 안쪽에</h3>
+        <p>마요네즈나 버터를 빵 안쪽에 바르면 빵이 눅눅해지는 것을 방지할 수 있어요.</p>
+      </div>
+      <div class="tip-card">
+        <div class="tip-icon">🌿</div>
+        <h3>신선한 채소</h3>
+        <p>채소는 먹기 직전에 넣어야 아삭한 식감을 유지할 수 있어요.</p>
+      </div>
+      <div class="tip-card">
+        <div class="tip-icon">🔪</div>
+        <h3>대각선으로 자르기</h3>
+        <p>샌드위치를 대각선으로 자르면 단면이 예뻐 보이고 먹기도 편해요.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 소개 섹션 -->
+  <section id="about" class="about-section">
+    <div class="about-content">
+      <h2>Sandwich House 소개</h2>
+      <p>저희는 집에서 누구나 쉽게 만들 수 있는 맛있는 샌드위치 레시피를 공유합니다. 클래식부터 트렌디한 레시피까지, 매일 새로운 레시피를 만나보세요.</p>
+    </div>
+  </section>
+
+  <!-- 푸터 -->
+  <footer>
+    <p>© 2026 Sandwich House. 맛있는 샌드위치의 세계에 오신 것을 환영합니다.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

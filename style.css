@@ -1,0 +1,600 @@
+/* ===== 기본 설정 ===== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', 'Apple SD Gothic Neo', sans-serif;
+  background: #fafaf8;
+  color: #2d2d2d;
+  line-height: 1.6;
+}
+
+/* ===== 헤더 ===== */
+header {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.header-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #e07b39;
+}
+
+nav a {
+  margin-left: 28px;
+  text-decoration: none;
+  color: #555;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+nav a:hover {
+  color: #e07b39;
+}
+
+/* ===== 히어로 ===== */
+.hero {
+  background: linear-gradient(135deg, #e07b39 0%, #f5a623 50%, #f7c77a 100%);
+  padding: 100px 24px;
+  text-align: center;
+  color: white;
+}
+
+.hero-content {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.hero h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 16px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.hero p {
+  font-size: 1.15rem;
+  opacity: 0.92;
+  margin-bottom: 32px;
+}
+
+.btn {
+  display: inline-block;
+  background: white;
+  color: #e07b39;
+  padding: 14px 36px;
+  border-radius: 50px;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+}
+
+/* ===== 공통 섹션 제목 ===== */
+.section-title {
+  text-align: center;
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 48px;
+  color: #1a1a1a;
+}
+
+.section-title::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 4px;
+  background: #e07b39;
+  border-radius: 2px;
+  margin: 12px auto 0;
+}
+
+/* ===== 레시피 섹션 ===== */
+.recipes-section {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 80px 24px;
+}
+
+/* ===== 툴바 (검색 + 필터) ===== */
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  min-width: 52px;
+}
+
+.search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  font-size: 1rem;
+  pointer-events: none;
+}
+
+#search-input {
+  width: 100%;
+  padding: 14px 44px 14px 44px;
+  border: 2px solid #eee;
+  border-radius: 50px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background: white;
+}
+
+#search-input:focus {
+  border-color: #e07b39;
+  box-shadow: 0 0 0 3px rgba(224, 123, 57, 0.12);
+}
+
+.search-clear {
+  position: absolute;
+  right: 14px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #aaa;
+  padding: 4px 6px;
+  border-radius: 50%;
+  transition: background 0.15s, color 0.15s;
+  display: none;
+}
+
+.search-clear:hover {
+  background: #f0f0f0;
+  color: #555;
+}
+
+.search-clear.visible {
+  display: block;
+}
+
+.filter-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-btn {
+  padding: 8px 18px;
+  border-radius: 50px;
+  border: 2px solid #e8e8e8;
+  background: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  color: #555;
+  transition: all 0.18s;
+}
+
+.filter-btn:hover {
+  border-color: #e07b39;
+  color: #e07b39;
+}
+
+.filter-btn.active {
+  background: #e07b39;
+  border-color: #e07b39;
+  color: white;
+}
+
+.fav-filter {
+  margin-left: auto;
+}
+
+/* ===== 빵 종류 필터 버튼 ===== */
+.bread-btn {
+  padding: 7px 16px;
+  border-radius: 50px;
+  border: 2px solid #e8e8e8;
+  background: white;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  color: #666;
+  transition: all 0.18s;
+}
+
+.bread-btn:hover {
+  border-color: #c47a2e;
+  color: #c47a2e;
+}
+
+.bread-btn.active {
+  background: #6b4c2a;
+  border-color: #6b4c2a;
+  color: white;
+}
+
+.fav-filter.active {
+  background: #e05e6e;
+  border-color: #e05e6e;
+}
+
+/* ===== 결과 없음 ===== */
+.empty-state {
+  text-align: center;
+  padding: 60px 24px;
+  color: #aaa;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+  opacity: 0.4;
+}
+
+.empty-state p {
+  font-size: 1rem;
+  margin-bottom: 20px;
+}
+
+.btn-reset {
+  padding: 10px 24px;
+  background: #e07b39;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-reset:hover {
+  opacity: 0.85;
+}
+
+.recipes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 28px;
+}
+
+/* ===== 카드 ===== */
+.card {
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+  transition: transform 0.25s, box-shadow 0.25s, opacity 0.25s;
+  display: flex;
+  flex-direction: column;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 36px rgba(0,0,0,0.12);
+}
+
+.card.hidden {
+  display: none;
+}
+
+.card-thumb {
+  position: relative;
+  height: 210px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #fff8f0, #fdebd0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.35s ease;
+}
+
+.card:hover .card-img {
+  transform: scale(1.06);
+}
+
+.card-emoji {
+  font-size: 3.5rem;
+  position: relative;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.bread-tag {
+  position: absolute;
+  bottom: 10px;
+  left: 12px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #5a3a1a;
+  z-index: 3;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.12);
+}
+
+.card-body {
+  padding: 24px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.badge {
+  display: inline-block;
+  background: #fde8d0;
+  color: #c95e15;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 50px;
+  width: fit-content;
+}
+
+.badge-green {
+  background: #d6f5e3;
+  color: #1a7a40;
+}
+
+.badge-orange {
+  background: #fff0cc;
+  color: #a06000;
+}
+
+.card-body h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+.desc {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.meta {
+  display: flex;
+  gap: 14px;
+  font-size: 0.85rem;
+  color: #888;
+}
+
+.ingredients h4,
+.steps h4 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #e07b39;
+  margin-bottom: 8px;
+}
+
+.ingredients ul {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.ingredients ul li {
+  background: #f5f5f3;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.82rem;
+  color: #444;
+}
+
+.steps ol {
+  padding-left: 18px;
+  font-size: 0.88rem;
+  color: #555;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.steps ol li::marker {
+  color: #e07b39;
+  font-weight: 700;
+}
+
+/* ===== 꿀팁 섹션 ===== */
+.tips-section {
+  background: #fff8f0;
+  padding: 80px 24px;
+}
+
+.tips-grid {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 24px;
+}
+
+.tip-card {
+  background: white;
+  padding: 32px 24px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+  transition: transform 0.2s;
+}
+
+.tip-card:hover {
+  transform: translateY(-3px);
+}
+
+.tip-icon {
+  font-size: 2.5rem;
+  margin-bottom: 14px;
+}
+
+.tip-card h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #1a1a1a;
+}
+
+.tip-card p {
+  font-size: 0.88rem;
+  color: #666;
+  line-height: 1.6;
+}
+
+/* ===== 소개 섹션 ===== */
+.about-section {
+  background: linear-gradient(135deg, #1a1a1a, #333);
+  color: white;
+  padding: 80px 24px;
+  text-align: center;
+}
+
+.about-content {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.about-content h2 {
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 16px;
+}
+
+.about-content p {
+  font-size: 1rem;
+  opacity: 0.8;
+  line-height: 1.8;
+}
+
+/* ===== 푸터 ===== */
+footer {
+  background: #111;
+  color: #888;
+  text-align: center;
+  padding: 24px;
+  font-size: 0.88rem;
+}
+
+/* ===== 즐겨찾기 버튼 ===== */
+.fav-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  background: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 1.15rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  transition: transform 0.2s, background 0.2s, color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ccc;
+  line-height: 1;
+}
+
+.fav-btn:hover {
+  transform: scale(1.15);
+  color: #e05e6e;
+}
+
+.fav-btn.active {
+  color: #e05e6e;
+  background: #fff0f2;
+}
+
+/* ===== 반응형 ===== */
+@media (max-width: 600px) {
+  .hero h1 {
+    font-size: 2rem;
+  }
+
+  .recipes-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .tips-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .fav-filter {
+    margin-left: 0;
+  }
+
+  .filter-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .filter-label {
+    min-width: auto;
+  }
+}
