@@ -4,31 +4,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Three independent static web projects — no build step, no package manager. Each file opens directly in a browser.
+Two independent static web projects — no build step, no package manager.
 
 | File | Description |
 |------|-------------|
-| `index.html` + `style.css` + `script.js` | Sandwich recipe website ("Sandwich House") |
 | `dashboard.html` | Google Sheets data dashboard (React 18 CDN + Recharts) |
-| `sheets-manager.html` | Google Sheets file manager (Vanilla JS, Finder-style) |
+| `sheets-manager.html` | Google Sheets file manager (Vanilla JS, Toss-style UI) |
 
 **Local dev server**: `python -m http.server 8787` → `http://localhost:8787/`
 
----
-
-## Project A — Sandwich House (`index.html`)
-
-- **`index.html`** — Each recipe card has `data-id` and `data-category` attributes used by `script.js` for filtering. The toolbar (search + filter buttons + favorites toggle) lives inside `#recipes` above `#recipes-grid`.
-- **`style.css`** — Organized: reset → header → hero → toolbar → cards → tips → about → footer → responsive. Primary color `#e07b39` (orange); favorites accent `#e05e6e` (pink).
-- **`script.js`** — State: `currentFilter`, `currentSearch`, `showFavsOnly`. All state changes call `applyFilters()`, which toggles `.hidden` on cards. Favorites persisted to `localStorage` as `sandwich-favorites` (JSON array).
-
-**Adding a recipe card**: Add `<div class="card" data-id="<id>" data-category="<category>">` to `#recipes-grid`. The `data-category` must match a filter button's `data-filter` value (`클래식`, `채식 가능`, `채식`, `프리미엄`, `건강식`).
-
-**Adding a filter category**: Add `<button class="filter-btn" data-filter="<category>">` inside `.filter-wrap`. No JS changes needed — `script.js` binds all `.filter-btn:not(.fav-filter)` dynamically.
+**Production**: `https://spread-sheet-manager.vercel.app/` (GitHub 연동 자동배포)
+- `git push` → Vercel이 `my-sheet-manager/build.mjs` 실행 → `sheets-manager.html`을 `dist/index.html`로 복사 → 배포
+- 자동배포가 느리거나 안 될 때: `vercel --prod --yes`
 
 ---
 
-## Project B — Sales Dashboard (`dashboard.html`)
+## Project A — Sales Dashboard (`dashboard.html`)
 
 **Stack**: React 18 UMD + Babel Standalone + Tailwind Play CDN + Recharts UMD + prop-types
 
@@ -48,9 +39,11 @@ handleDeleteData()         // DELETE → remove row by id
 
 ---
 
-## Project C — Sheets File Manager (`sheets-manager.html`)
+## Project B — Sheets File Manager (`sheets-manager.html`)
 
-**Stack**: Vanilla JS + plain CSS. No frameworks, no CDN dependencies.
+**Stack**: Vanilla JS + Tailwind Play CDN + Pretendard font CDN. No frameworks.
+
+**Design system**: Toss-style — primary `#3182f6`, bg `#f9fafb`, card radius `20px`, modal radius `24px`, backdrop-filter blur.
 
 ### Data Model
 
@@ -78,7 +71,21 @@ let selectedId    = 'root'; // sidebar selection; 'root' = show all
 let cardEditingId = null;   // sheetsData.id currently being renamed in card
 let currentFilter = 'all';  // 'all' | 'favorite' | 'mine'
 let currentView   = 'grid'; // 'grid' | 'list'
+let currentSort   = 'pinned'; // 'pinned' | 'newest' | 'oldest' | 'name'
+
+// Drag & Drop
+let _dragSheetId  = null;   // sheet id being dragged; null when idle
+let _dragOverRow  = null;   // DOM element currently highlighted as drop target
 ```
+
+### localStorage Persistence
+
+```js
+const STORAGE_KEY = 'sm-data-v1';
+// Saves: sheetsData, treeData, nextId, currentFilter, currentView, currentSort
+```
+
+`saveStorage()` is called at the end of both `renderTree()` and `applyFilters()`. On load, `initStorage()` restores all six fields and applies UI state before first render.
 
 ### Tree Pure Functions
 
@@ -88,11 +95,12 @@ mapTree(nodes, fn)                // deep map, returns new tree (never mutate di
 deleteFromTree(id, nodes)         // removes node recursively
 addToTree(parentId, newNode, nodes) // appends child under parentId, sets expanded:true
 collectSheetIds(nodes)            // returns flat array of all sheetId values in subtree
+getFolderNameForSheet(sheetId)    // returns parent folder name for a sheet, or null
 ```
 
 ### Layout
 
-Two-column flex: `.sidebar` (232px sticky) + `.main` (flex:1). Sidebar contains `#tree-root`; main contains `.controls` and `#sheet-container`.
+Two-column flex: `.sidebar` (260px sticky) + `.main` (flex:1). Sidebar contains `#tree-root`; main contains breadcrumb `#breadcrumb`, title `#page-title`, `.controls`, and `#sheet-container`.
 
 ### Rendering Pattern
 
@@ -101,12 +109,14 @@ Both `renderTree()` and `renderSheets()` do full innerHTML replacement on every 
 Event listeners for inline inputs are set up imperatively after each render — not via delegation — because the inputs are ephemeral.
 
 All other events use delegation:
-- `#tree-root` click → handles `data-toggle-id`, `data-select-id`, `data-rename-id`, `data-delete-id`, `data-add-folder-id`, `data-add-sheet-id`
-- `#sheet-container` click → handles `.fav-btn` (data-id) and `[data-card-rename-id]`
+- `#tree-root` click → `data-toggle-id`, `data-select-id`, `data-rename-id`, `data-delete-id`, `data-add-folder-id`, `data-add-sheet-id`
+- `#tree-root` dragover/dragleave/drop → `[data-drop-folder-id]` on folder rows
+- `#sheet-container` click → `.fav-btn`, `[data-card-rename-id]`, `[data-card-edit-id]`, `[data-card-trash-id]`, `[data-tag-filter]`
+- `#sheet-container` dragstart/dragend → `.sheet-card[draggable]`
 
 ### Blur / Button-Click Conflict
 
-Confirm and cancel buttons inside rename inputs use `onmousedown="event.preventDefault()"` (inline, since listeners are set post-render) to prevent the input's blur from firing before the button click. A `setTimeout(120)` guard in the blur handler also prevents double-commit:
+Confirm and cancel buttons inside rename inputs use `onmousedown="event.preventDefault()"` to prevent the input's blur from firing before the button click. A `setTimeout(120)` guard in the blur handler also prevents double-commit:
 
 ```js
 inp.addEventListener('blur', () => {
@@ -120,8 +130,14 @@ inp.addEventListener('blur', () => {
 - **Card rename** → also update matching tree node via `mapTree` where `n.sheetId === id`
 - **Tree node delete** (sheet type) → splice from `sheetsData`
 - **Tree folder delete** → `collectSheetIds` then splice all from `sheetsData`
+- **Card trash button delete** → splice from `sheetsData` + `deleteFromTree` matching node
 - **Add sheet via tree** → also push to `sheetsData` with `nextId++`
-- **Add sheet via modal** → pushes to `sheetsData` only (no tree node created)
+- **Add sheet via modal** → push to `sheetsData`; if a folder is currently selected (`selectedId !== 'root'`), also create tree node via `addToTree`
+- **Drag sheet to folder** → `moveSheetToFolder(sheetId, folderId)`: removes existing tree node, adds new node under target, expands target folder
+
+### Drag & Drop (Card → Sidebar Folder)
+
+Cards have `draggable="true"`. `dragstart` stores `_dragSheetId` and sets `dataTransfer`. Folder `.tree-row` elements have `data-drop-folder-id`. On `dragover`, the matching row gets `.drag-over` class (blue dashed outline). On `drop`, `moveSheetToFolder` is called and the target folder auto-expands.
 
 ### Add Sheet Modal
 
@@ -131,6 +147,14 @@ const SHEETS_ID_RE = /\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/;
 ```
 
 URL input has 400ms debounce. Dropzone reads `text/uri-list` first (browser tab drag), falls back to `text/plain`. Google Drive button is a mock toast only.
+
+### Edit Sheet Modal
+
+Fields: title, Google Sheets URL (link), desc, tags, access, status, isPinned. Saving updates `sheetsData` in place and syncs the tree node name via `mapTree`.
+
+### Breadcrumb & Page Title
+
+`updateBreadcrumb()` is called after `selectNode()`, `selectAllRoot()`, and on init. It updates `#breadcrumb` (shows `전체 > 폴더명` path) and `#page-title` (shows folder name or `내 스프레드시트`).
 
 ### Icon System
 
@@ -149,4 +173,15 @@ Tree node IDs use prefixes: `f-` for folders, `t-` for sheet nodes. `sheetsData`
 1. If `selectedId !== 'root'`: collect `sheetId`s from the selected subtree via `collectSheetIds`, build a `Set`, and filter `sheetsData` to only those IDs.
 2. Apply text search (title, desc, owner, tags) with 300ms debounce.
 3. Apply quick filter (`currentFilter`): all / favorite / mine (owner === '나(PM)').
-4. Pass result to `renderSheets()`.
+4. Pass result to `renderSheets()`, then call `saveStorage()`.
+
+### Deployment
+
+```
+my-sheet-manager/
+  build.mjs       ← Node script: copies ../sheets-manager.html → dist/index.html
+  vercel.json     ← { buildCommand: "node build.mjs", outputDirectory: "dist" }
+vercel.json       ← { buildCommand: "node my-sheet-manager/build.mjs", outputDirectory: "my-sheet-manager/dist" }
+```
+
+Deploy command: `vercel --prod --yes` (or `git push` if GitHub auto-deploy is active).
