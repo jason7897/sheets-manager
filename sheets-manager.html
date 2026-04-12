@@ -907,6 +907,7 @@ function renderTree() {
     root.innerHTML = treeData.map(n => renderTreeNode(n, 0)).join('') + renderRootAddRow();
     if (treeEditingId) { const inp = document.getElementById('tree-rename-input'); if (inp) { inp.focus(); inp.select(); setupRenameInputListeners(inp, commitTreeRename, cancelTreeRename); } }
     if (addMode) { const inp = document.getElementById('tree-add-input'); if (inp) { inp.focus(); setupRenameInputListeners(inp, commitAdd, cancelAdd); } }
+    saveStorage();
 }
 function setupRenameInputListeners(inp, onCommit, onCancel) {
     inp.addEventListener('keydown', e => { if (e.key==='Enter') { e.preventDefault(); onCommit(); } if (e.key==='Escape') { onCancel(); } });
@@ -956,7 +957,7 @@ function _doDeleteNode(id, node) {
     showToast(`"${node.name}" 이(가) 삭제되었습니다`, '🗑️'); renderTree(); applyFilters();
 }
 function toggleExpand(id) { treeData = mapTree(treeData, n => n.id===id ? {...n, expanded:!n.expanded} : n); renderTree(); }
-function selectNode(id) { selectedId = id; treeEditingId = null; addMode = null; renderTree(); applyFilters(); }
+function selectNode(id) { selectedId = id; treeEditingId = null; addMode = null; renderTree(); applyFilters(); updateAllRowStyle(); if (window.innerWidth < 768) closeSidebar(); }
 
 // ══════════════════════════════════════
 // 트리 이벤트 위임
@@ -1055,6 +1056,7 @@ function applyFilters() {
         return textMatch && quickMatch;
     });
     renderSheets(filtered);
+    saveStorage();
 }
 
 // ══════════════════════════════════════
@@ -1258,9 +1260,6 @@ document.getElementById('tree-all-row').addEventListener('keydown', e => { if (e
 function openSidebar()  { document.body.classList.add('sidebar-open'); }
 function closeSidebar() { document.body.classList.remove('sidebar-open'); }
 function toggleSidebar() { document.body.classList.contains('sidebar-open') ? closeSidebar() : openSidebar(); }
-const _origSelectNode = selectNode;
-function selectNode(id) { _origSelectNode(id); updateAllRowStyle(); if (window.innerWidth < 768) closeSidebar(); }
-
 // ══════════════════════════════════════
 // 초기화 (localStorage 복원)
 // ══════════════════════════════════════
@@ -1268,10 +1267,6 @@ function selectNode(id) { _origSelectNode(id); updateAllRowStyle(); if (window.i
     const saved = loadStorage();
     if (saved) { sheetsData.length = 0; saved.sheetsData.forEach(s => sheetsData.push(s)); treeData = saved.treeData; nextId = saved.nextId ?? nextId; }
 })();
-const _origApplyFilters = applyFilters;
-function applyFilters() { _origApplyFilters(); saveStorage(); }
-const _origRenderTree = renderTree;
-function renderTree() { _origRenderTree(); saveStorage(); }
 
 setView('grid');
 document.querySelector('[data-filter="all"]').classList.add('active');
