@@ -1,5 +1,4 @@
 {
-  "rewrites": [
-    { "source": "/", "destination": "/sheets-manager.html" }
-  ]
+  "buildCommand": "node my-sheet-manager/build.mjs",
+  "outputDirectory": "my-sheet-manager/dist"
 }
