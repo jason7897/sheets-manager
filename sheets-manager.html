@@ -495,13 +495,36 @@
         .toast {
             position: fixed; bottom: 36px; left: 50%;
             transform: translateX(-50%) translateY(20px);
-            background: var(--text); color: white; padding: 14px 24px;
+            background: var(--text); color: white; padding: 14px 20px;
             border-radius: 16px; font-size: 14px; font-weight: 600;
             box-shadow: 0 10px 36px rgba(0,0,0,.28); opacity: 0; pointer-events: none;
-            transition: opacity .2s, transform .2s; white-space: nowrap; z-index: 2000;
+            transition: opacity .2s, transform .2s; z-index: 2000;
             display: flex; align-items: center; gap: 8px; letter-spacing: -.2px;
+            max-width: calc(100vw - 48px);
         }
-        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); pointer-events: all; }
+        .toast-undo-btn {
+            background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.32);
+            color: white; padding: 5px 12px; border-radius: 8px; cursor: pointer;
+            font-size: 12.5px; font-weight: 800; font-family: inherit; margin-left: 4px;
+            transition: background .15s; white-space: nowrap; flex-shrink: 0;
+        }
+        .toast-undo-btn:hover { background: rgba(255,255,255,.3); }
+        /* 검색 하이라이트 */
+        mark { background: #fef08a; color: var(--text); border-radius: 3px; padding: 0 2px; font-style: normal; }
+        /* 사이드바 푸터 */
+        .sidebar-footer {
+            flex-shrink: 0; border-top: 1px solid var(--border);
+            padding: 10px 12px; display: flex; gap: 6px; background: #fafbfc;
+        }
+        .sidebar-footer-btn {
+            flex: 1; padding: 8px 4px; border: 1.5px solid var(--border);
+            background: var(--card-bg); border-radius: 10px; cursor: pointer;
+            font-size: 11.5px; font-weight: 700; color: var(--muted);
+            display: flex; align-items: center; justify-content: center; gap: 5px;
+            font-family: inherit; transition: all .15s;
+        }
+        .sidebar-footer-btn:hover { background: var(--primary-light); color: var(--primary); border-color: #bfdbfe; }
 
         /* ══════════════════════════════════════
            모바일 반응형
@@ -603,6 +626,17 @@
                 </div>
             </div>
             <div id="tree-root"></div>
+            <div class="sidebar-footer">
+                <button class="sidebar-footer-btn" id="btn-export" title="JSON으로 내보내기">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    내보내기
+                </button>
+                <button class="sidebar-footer-btn" id="btn-import" title="JSON에서 가져오기">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    가져오기
+                </button>
+                <input type="file" id="import-file-input" accept=".json" style="display:none">
+            </div>
         </aside>
 
         <!-- 메인 -->
@@ -631,6 +665,10 @@
                 <button class="btn" data-filter="mine">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     내 문서
+                </button>
+                <button class="btn" data-filter="archived">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+                    보관됨
                 </button>
                 <div style="flex:1 0 0"></div>
                 <select class="sort-select" id="sort-select" aria-label="정렬 기준">
@@ -690,6 +728,15 @@
         <div>
             <div class="field-label">시트 제목</div>
             <input type="text" class="title-input" id="title-input" placeholder="예) 2026 Q3 마케팅 예산안" maxlength="60">
+        </div>
+        <div>
+            <div class="field-label">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                폴더 <span style="font-weight:500;text-transform:none;letter-spacing:0;font-size:11px">(선택)</span>
+            </div>
+            <select class="edit-select" id="add-folder-select">
+                <option value="">폴더 없음 (미분류)</option>
+            </select>
         </div>
         <div class="modal-footer">
             <button class="btn-cancel" id="modal-cancel-btn">취소</button>
@@ -822,6 +869,22 @@ function loadStorage() {
 }
 
 // ══════════════════════════════════════
+// Undo (1단계 스냅샷)
+// ══════════════════════════════════════
+let _undoSnapshot = null;
+function saveUndoSnapshot() {
+    _undoSnapshot = { sheetsData: JSON.parse(JSON.stringify(sheetsData)), treeData: JSON.parse(JSON.stringify(treeData)), nextId };
+}
+function restoreUndo() {
+    if (!_undoSnapshot) return;
+    sheetsData.length = 0; _undoSnapshot.sheetsData.forEach(s => sheetsData.push(s));
+    treeData = _undoSnapshot.treeData; nextId = _undoSnapshot.nextId;
+    _undoSnapshot = null;
+    renderTree(); applyFilters();
+    showToast('삭제가 취소되었습니다', '↩️');
+}
+
+// ══════════════════════════════════════
 // 데이터
 // ══════════════════════════════════════
 const sheetsData = [
@@ -855,6 +918,23 @@ function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').re
 function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t=setTimeout(()=>fn(...a),ms); }; }
 function today() { return new Date().toISOString().slice(0,10); }
 function uid(p='n') { return p + Date.now() + Math.random().toString(36).slice(2,5); }
+function relativeDate(dateStr) {
+    const d = new Date(dateStr), now = new Date();
+    const diff = Math.floor((now - d) / 86400000);
+    if (diff === 0) return '오늘';
+    if (diff === 1) return '어제';
+    if (diff < 7)  return `${diff}일 전`;
+    if (diff < 30) return `${Math.floor(diff/7)}주 전`;
+    if (diff < 365) return `${Math.floor(diff/30)}개월 전`;
+    return `${Math.floor(diff/365)}년 전`;
+}
+function highlight(text, query) {
+    if (!query) return esc(text);
+    const escapedText = esc(text);
+    const escapedQuery = esc(query).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    try { return escapedText.replace(new RegExp(escapedQuery, 'gi'), m => `<mark>${m}</mark>`); }
+    catch { return escapedText; }
+}
 
 // ══════════════════════════════════════
 // 트리 유틸 (순수 함수)
@@ -983,10 +1063,11 @@ function deleteNode(id) {
     showConfirm(desc, () => _doDeleteNode(id, node));
 }
 function _doDeleteNode(id, node) {
+    saveUndoSnapshot();
     if (node.type==='sheet' && node.sheetId) { const idx = sheetsData.findIndex(s=>s.id===node.sheetId); if (idx !== -1) sheetsData.splice(idx, 1); }
     if (node.type==='folder' && node.children?.length) { const ids = collectSheetIds(node.children); ids.forEach(sid => { const idx = sheetsData.findIndex(s=>s.id===sid); if (idx !== -1) sheetsData.splice(idx, 1); }); }
     treeData = deleteFromTree(id, treeData); if (selectedId === id) selectedId = 'root';
-    showToast(`"${node.name}" 이(가) 삭제되었습니다`, '🗑️'); renderTree(); applyFilters();
+    showToast(`"${node.name}" 이(가) 삭제되었습니다`, '🗑️', restoreUndo); renderTree(); applyFilters();
 }
 function toggleExpand(id) { treeData = mapTree(treeData, n => n.id===id ? {...n, expanded:!n.expanded} : n); renderTree(); }
 function selectNode(id) { selectedId = id; treeEditingId = null; addMode = null; renderTree(); applyFilters(); updateAllRowStyle(); updateBreadcrumb(); if (window.innerWidth < 768) closeSidebar(); }
@@ -1056,19 +1137,26 @@ function renderSheets(data) {
         return;
     }
     const sorted = sortData(data);
+    const _q = document.getElementById('searchInput').value.trim();
     container.innerHTML = sorted.map(sheet => {
         const accessLabel = sheet.access==='public' ? '팀 전체 공개' : '제한됨 🔒';
         const accessClass = sheet.access==='public' ? 'public' : 'restricted';
         const archivedBadge = sheet.status==='archived' ? '<span class="badge archived">보관됨</span>' : '';
-        const tagsHtml = sheet.tags.map(t=>`<span class="tag" data-tag-filter="${esc(t)}" style="cursor:pointer" title="${esc(t)} 태그로 필터">#${esc(t)}</span>`).join('');
+        const tagsHtml = sheet.tags.map(t=>`<span class="tag" data-tag-filter="${esc(t)}" style="cursor:pointer" title="${esc(t)} 태그로 필터">#${highlight(t, _q)}</span>`).join('');
         const folderName = selectedId === 'root' ? getFolderNameForSheet(sheet.id) : null;
         const folderBadge = folderName ? `<span style="display:inline-flex;align-items:center;gap:4px;background:#f2f4f6;color:var(--muted);padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;">${IC.folder}${esc(folderName)}</span>` : '';
         const favIcon  = sheet.isFavorite ? '⭐' : '☆';
         const pinIcon  = sheet.isPinned ? '<span class="pin-icon">📌</span>' : '';
+        const hasLink  = sheet.link && sheet.link !== '#';
+        const linkHref = hasLink ? esc(sheet.link) : 'javascript:void(0)';
+        const linkAttr = hasLink ? `target="_blank" rel="noopener"` : `data-card-edit-id="${sheet.id}" title="링크를 설정하려면 클릭하세요"`;
+        const linkStyle = hasLink ? '' : `style="color:var(--muted);text-decoration:underline dotted"`;
         const titleHtml = cardEditingId === sheet.id
             ? `<div class="card-title-row"><input class="card-rename-input" id="card-rename-input" value="${esc(sheet.title)}" maxlength="60" data-card-id="${sheet.id}"><div class="card-rename-actions"><button class="rename-confirm-btn ok" id="card-rename-ok" onmousedown="event.preventDefault()" title="확인">${IC.check}</button><button class="rename-confirm-btn no" id="card-rename-no" onmousedown="event.preventDefault()" title="취소">${IC.x}</button></div></div>`
-            : `<div class="card-title-row"><a href="${esc(sheet.link)}" class="card-title">${esc(sheet.title)}</a><button class="card-pencil-btn" data-card-rename-id="${sheet.id}" title="이름 수정">${IC.pencil}</button></div>`;
-        return `<div class="sheet-card" draggable="true" data-id="${sheet.id}"><div class="card-body"><div class="card-header"><div class="badges"><span class="badge ${accessClass}">${esc(accessLabel)}</span>${archivedBadge}</div><div style="display:flex;align-items:center;gap:4px">${pinIcon}<button class="fav-btn" data-id="${sheet.id}" title="즐겨찾기 토글" aria-label="${sheet.isFavorite?'즐겨찾기 해제':'즐겨찾기 추가'}" aria-pressed="${sheet.isFavorite}">${favIcon}</button><button class="card-trash-btn" data-card-trash-id="${sheet.id}" title="시트 삭제">${IC.trashMd}</button><button class="card-menu-btn" data-card-edit-id="${sheet.id}" title="시트 편집">···</button></div></div>${titleHtml}<p class="card-desc">${esc(sheet.desc)}</p><div class="tags">${folderBadge}${tagsHtml}</div></div><div class="meta-info"><span>작성자: <strong>${esc(sheet.owner)}</strong></span><span>업데이트: ${esc(sheet.updated)}</span></div></div>`;
+            : `<div class="card-title-row"><a href="${linkHref}" class="card-title" ${linkAttr} ${linkStyle}>${highlight(sheet.title, _q)}</a><button class="card-pencil-btn" data-card-rename-id="${sheet.id}" title="이름 수정">${IC.pencil}</button></div>`;
+        const relDate = relativeDate(sheet.updated);
+        const relDateTitle = sheet.updated;
+        return `<div class="sheet-card" draggable="true" data-id="${sheet.id}"><div class="card-body"><div class="card-header"><div class="badges"><span class="badge ${accessClass}">${esc(accessLabel)}</span>${archivedBadge}</div><div style="display:flex;align-items:center;gap:4px">${pinIcon}<button class="fav-btn" data-id="${sheet.id}" title="즐겨찾기 토글" aria-label="${sheet.isFavorite?'즐겨찾기 해제':'즐겨찾기 추가'}" aria-pressed="${sheet.isFavorite}">${favIcon}</button><button class="card-trash-btn" data-card-trash-id="${sheet.id}" title="시트 삭제">${IC.trashMd}</button><button class="card-menu-btn" data-card-edit-id="${sheet.id}" title="시트 편집">···</button></div></div>${titleHtml}<p class="card-desc">${highlight(sheet.desc, _q)}</p><div class="tags">${folderBadge}${tagsHtml}</div></div><div class="meta-info"><span>작성자: <strong>${highlight(sheet.owner, _q)}</strong></span><span title="${relDateTitle}">업데이트: ${esc(relDate)}</span></div></div>`;
     }).join('');
     if (cardEditingId) {
         const inp = document.getElementById('card-rename-input');
@@ -1096,15 +1184,14 @@ function cancelCardRename() { cardEditingId = null; applyFilters(); }
 function deleteSheetCard(sheetId) {
     const sheet = sheetsData.find(s => s.id === sheetId); if (!sheet) return;
     showConfirm(`"${sheet.title}"을(를) 삭제합니다. 이 작업은 되돌릴 수 없습니다.`, () => {
-        // sheetsData에서 제거
+        saveUndoSnapshot();
         const idx = sheetsData.findIndex(s => s.id === sheetId);
         if (idx !== -1) sheetsData.splice(idx, 1);
-        // treeData에서 연결된 노드 제거
         let nodeId = null;
         function findNodeId(nodes) { for (const n of nodes) { if (n.type==='sheet' && n.sheetId===sheetId) { nodeId=n.id; return; } if (n.children) findNodeId(n.children); } }
         findNodeId(treeData);
         if (nodeId) treeData = deleteFromTree(nodeId, treeData);
-        showToast(`"${sheet.title}" 이(가) 삭제되었습니다`, '🗑️');
+        showToast(`"${sheet.title}" 이(가) 삭제되었습니다`, '🗑️', restoreUndo);
         renderTree(); applyFilters();
     });
 }
@@ -1146,7 +1233,7 @@ function applyFilters() {
     const filtered = sheetsData.filter(sheet => {
         if (allowedIds && !allowedIds.has(sheet.id)) return false;
         const textMatch = !query || sheet.title.toLowerCase().includes(query) || sheet.desc.toLowerCase().includes(query) || sheet.owner.toLowerCase().includes(query) || sheet.tags.some(t=>t.toLowerCase().includes(query));
-        const quickMatch = currentFilter==='all' ? true : currentFilter==='favorite' ? sheet.isFavorite : sheet.owner === '나(PM)';
+        const quickMatch = currentFilter==='all' ? true : currentFilter==='favorite' ? sheet.isFavorite : currentFilter==='archived' ? sheet.status==='archived' : sheet.owner === '나(PM)';
         return textMatch && quickMatch;
     });
     renderSheets(filtered);
@@ -1366,12 +1453,18 @@ document.getElementById('edit-modal').addEventListener('click', e => { if (e.tar
 // 토스트
 // ══════════════════════════════════════
 let toastTimer;
-function showToast(msg, icon='✅') {
+function showToast(msg, icon='✅', undoFn=null) {
     const el = document.getElementById('toast');
-    el.innerHTML = icon + ' ' + esc(msg);
+    const undoHtml = undoFn ? `<button class="toast-undo-btn" id="toast-undo-btn">실행 취소</button>` : '';
+    el.innerHTML = `<span style="white-space:nowrap">${icon} ${esc(msg)}</span>${undoHtml}`;
+    if (undoFn) {
+        document.getElementById('toast-undo-btn').addEventListener('click', () => {
+            clearTimeout(toastTimer); el.classList.remove('show'); undoFn();
+        });
+    }
     el.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(()=>el.classList.remove('show'), 3000);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 5000);
 }
 
 // ══════════════════════════════════════
@@ -1382,7 +1475,24 @@ let parsedSheetId  = null;
 let parsedSheetUrl = '';
 let _addFocusTrapRelease = null;
 function openModal() {
-    resetModal(); const modal = document.getElementById('add-modal');
+    resetModal();
+    // 폴더 드롭다운 채우기
+    const folderSel = document.getElementById('add-folder-select');
+    folderSel.innerHTML = '<option value="">폴더 없음 (미분류)</option>';
+    function addFolderOpts(nodes, depth) {
+        for (const n of nodes) {
+            if (n.type === 'folder') {
+                const opt = document.createElement('option');
+                opt.value = n.id;
+                opt.textContent = '\u00a0\u00a0'.repeat(depth) + n.name;
+                folderSel.appendChild(opt);
+                if (n.children) addFolderOpts(n.children, depth + 1);
+            }
+        }
+    }
+    addFolderOpts(treeData, 0);
+    if (selectedId !== 'root') { const sn = findNode(selectedId); if (sn && sn.type === 'folder') folderSel.value = selectedId; }
+    const modal = document.getElementById('add-modal');
     modal.classList.add('open'); document.getElementById('url-input').focus();
     document.body.style.overflow = 'hidden';
     _addFocusTrapRelease = makeFocusTrap(modal);
@@ -1426,13 +1536,10 @@ document.getElementById('modal-add-btn').addEventListener('click',()=>{
     if (!parsedSheetId) return;
     const newSheetId=nextId++;
     sheetsData.unshift({id:newSheetId,title,desc:`시트 ID: ${parsedSheetId}`,owner:'나(PM)',updated:today(),tags:[],isPinned:false,isFavorite:false,access:'public',status:'active',link:parsedSheetUrl});
-    // 현재 선택된 폴더가 있으면 해당 폴더에 트리 노드도 자동 생성
-    if (selectedId !== 'root') {
-        const selNode = findNode(selectedId);
-        if (selNode && selNode.type === 'folder') {
-            const newTreeNode = { id: uid('t-'), type:'sheet', name: title, sheetId: newSheetId };
-            treeData = addToTree(selectedId, newTreeNode, treeData);
-        }
+    const targetFolderId = document.getElementById('add-folder-select').value;
+    if (targetFolderId) {
+        const newTreeNode = { id: uid('t-'), type:'sheet', name: title, sheetId: newSheetId };
+        treeData = addToTree(targetFolderId, newTreeNode, treeData);
     }
     closeModal(); renderTree(); applyFilters(); showToast(`"${title}" 시트가 추가되었습니다`);
 });
@@ -1450,7 +1557,15 @@ function closeConfirm() { document.getElementById('confirm-modal').classList.rem
 document.getElementById('confirm-ok-btn').addEventListener('click', () => { if (_confirmCallback) _confirmCallback(); closeConfirm(); });
 document.getElementById('confirm-cancel-btn').addEventListener('click', closeConfirm);
 document.getElementById('confirm-modal').addEventListener('click', e => { if (e.target===document.getElementById('confirm-modal')) closeConfirm(); });
-document.addEventListener('keydown', e => { if (e.key==='Escape') { closeConfirm(); closeModal(); closeEditModal(); } });
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeConfirm(); closeModal(); closeEditModal(); return; }
+    // Ctrl+K / Cmd+K → 검색창 포커스
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        const si = document.getElementById('searchInput');
+        si.focus(); si.select();
+    }
+});
 
 // ══════════════════════════════════════
 // 사이드바 전체 보기
@@ -1490,6 +1605,41 @@ function updateAllRowStyle() {
     else { row.style.background = ''; row.querySelector('.tree-name').style.color = ''; }
 }
 document.getElementById('tree-all-row').addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); selectAllRoot(); } });
+
+// ══════════════════════════════════════
+// JSON 백업 / 복원
+// ══════════════════════════════════════
+document.getElementById('btn-export').addEventListener('click', () => {
+    const data = { sheetsData, treeData, nextId, exportedAt: new Date().toISOString() };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `sheets-backup-${today()}.json`;
+    a.click(); URL.revokeObjectURL(a.href);
+    showToast('백업 파일이 다운로드되었습니다', '💾');
+});
+document.getElementById('btn-import').addEventListener('click', () => {
+    document.getElementById('import-file-input').click();
+});
+document.getElementById('import-file-input').addEventListener('change', e => {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+        try {
+            const data = JSON.parse(ev.target.result);
+            if (!Array.isArray(data.sheetsData) || !Array.isArray(data.treeData)) throw new Error('잘못된 형식');
+            saveUndoSnapshot();
+            sheetsData.length = 0; data.sheetsData.forEach(s => sheetsData.push(s));
+            treeData = data.treeData; nextId = data.nextId ?? nextId;
+            renderTree(); applyFilters();
+            showToast(`${data.sheetsData.length}개 시트를 가져왔습니다`, '📥');
+        } catch {
+            showToast('파일 형식이 올바르지 않습니다', '⚠️');
+        }
+        e.target.value = '';
+    };
+    reader.readAsText(file);
+});
 
 // ══════════════════════════════════════
 // 모바일 사이드바 토글
