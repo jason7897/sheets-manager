@@ -814,7 +814,8 @@ const IC = {
 // ══════════════════════════════════════
 const STORAGE_KEY = 'sm-data-v1';
 function saveStorage() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ sheetsData, treeData, nextId, currentFilter, currentView, currentSort })); } catch(e) {}
+    const searchQuery = document.getElementById('searchInput')?.value || '';
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ sheetsData, treeData, nextId, currentFilter, currentView, currentSort, searchQuery })); } catch(e) {}
 }
 function loadStorage() {
     try { const raw = localStorage.getItem(STORAGE_KEY); if (!raw) return null; return JSON.parse(raw); } catch(e) { return null; }
@@ -1247,6 +1248,59 @@ document.getElementById('tree-root').addEventListener('drop', e => {
 });
 
 // ══════════════════════════════════════
+// 터치 드래그 앤 드롭 (모바일)
+// ══════════════════════════════════════
+(function initTouchDnD() {
+    const container = document.getElementById('sheet-container');
+    const sidebar   = document.getElementById('tree-root');
+    let touchCard   = null;   // 드래그 중인 카드 DOM
+    let ghost       = null;   // 따라다니는 복사본
+    let touchSheetId = null;
+
+    function getRow(x, y) {
+        const el = document.elementFromPoint(x, y);
+        return el ? el.closest('[data-drop-folder-id]') : null;
+    }
+    function clearHighlight() {
+        sidebar.querySelectorAll('.drag-over').forEach(r => r.classList.remove('drag-over'));
+    }
+
+    container.addEventListener('touchstart', e => {
+        const card = e.target.closest('.sheet-card[draggable]');
+        if (!card) return;
+        touchCard = card;
+        touchSheetId = Number(card.dataset.id);
+        // 반투명 ghost 생성
+        ghost = card.cloneNode(true);
+        ghost.style.cssText = `position:fixed;pointer-events:none;z-index:9999;width:${card.offsetWidth}px;opacity:.75;transform:scale(1.04) rotate(1.5deg);transition:none;border-radius:20px;box-shadow:0 20px 50px rgba(49,130,246,.2)`;
+        document.body.appendChild(ghost);
+        card.classList.add('dragging');
+    }, { passive: true });
+
+    container.addEventListener('touchmove', e => {
+        if (!touchCard) return;
+        e.preventDefault();
+        const t = e.touches[0];
+        ghost.style.left = (t.clientX - ghost.offsetWidth / 2) + 'px';
+        ghost.style.top  = (t.clientY - 30) + 'px';
+        clearHighlight();
+        const row = getRow(t.clientX, t.clientY);
+        if (row) row.classList.add('drag-over');
+    }, { passive: false });
+
+    container.addEventListener('touchend', e => {
+        if (!touchCard) return;
+        const t = e.changedTouches[0];
+        clearHighlight();
+        ghost?.remove(); ghost = null;
+        touchCard.classList.remove('dragging');
+        const row = getRow(t.clientX, t.clientY);
+        if (row && touchSheetId) moveSheetToFolder(touchSheetId, row.dataset.dropFolderId);
+        touchCard = null; touchSheetId = null;
+    }, { passive: true });
+})();
+
+// ══════════════════════════════════════
 // 포커스 트랩
 // ══════════════════════════════════════
 function makeFocusTrap(modalEl) {
@@ -1454,6 +1508,10 @@ function toggleSidebar() { document.body.classList.contains('sidebar-open') ? cl
         if (saved.currentFilter) currentFilter = saved.currentFilter;
         if (saved.currentView)   currentView   = saved.currentView;
         if (saved.currentSort)   currentSort   = saved.currentSort;
+        if (saved.searchQuery) {
+            const si = document.getElementById('searchInput');
+            if (si) { si.value = saved.searchQuery; document.getElementById('btn-search-clear').style.display = saved.searchQuery ? 'block' : 'none'; }
+        }
     }
 })();
 
