@@ -271,6 +271,23 @@
         .sheet-card:hover .card-menu-btn { opacity: 1; }
         .card-menu-btn:hover { background: #f2f4f6; color: var(--text); }
 
+        /* ── 카드 삭제 버튼 ── */
+        .card-trash-btn {
+            background: none; border: none; cursor: pointer;
+            color: #d1d6db; padding: 3px 5px; border-radius: 6px;
+            display: flex; align-items: center;
+            opacity: 0; transition: opacity .15s, background .12s, color .12s;
+            flex-shrink: 0;
+        }
+        .sheet-card:hover .card-trash-btn { opacity: 1; }
+        .card-trash-btn:hover { background: var(--danger-light); color: var(--danger); }
+
+        /* ── 드래그 앤 드롭 ── */
+        .sheet-card[draggable="true"] { cursor: grab; }
+        .sheet-card[draggable="true"]:active { cursor: grabbing; }
+        .sheet-card.dragging { opacity: .45; transform: rotate(1.5deg) scale(1.03); box-shadow: 0 20px 50px rgba(49,130,246,.18); }
+        .tree-row.drag-over { background: var(--primary-light) !important; outline: 2px dashed var(--primary); outline-offset: -2px; border-radius: 10px; }
+
         .card-rename-input {
             flex: 1; border: 1.5px solid var(--primary); border-radius: 9px;
             padding: 4px 10px; font-size: 15px; font-weight: 700;
@@ -779,6 +796,7 @@ const IC = {
     x:         `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`,
     plus:      `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
     trash:     `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`,
+    trashMd:   `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`,
     addFolder: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>`,
     addSheet:  `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>`,
 };
@@ -887,7 +905,8 @@ function renderTreeNode(node, depth) {
         rowInner += `<span class="tree-actions">${actions}</span>`;
     }
     const selectedClass = isSelected ? ' selected' : '';
-    let html = `<div class="tree-node${selectedClass}" data-node-id="${node.id}"><div class="tree-row" style="padding-left:${indent}px">${rowInner}</div>`;
+    const dropAttr = node.type === 'folder' ? ` data-drop-folder-id="${node.id}"` : '';
+    let html = `<div class="tree-node${selectedClass}" data-node-id="${node.id}"><div class="tree-row"${dropAttr} style="padding-left:${indent}px">${rowInner}</div>`;
     if (node.type === 'folder') {
         if (isExpanded && node.children?.length) html += node.children.map(c => renderTreeNode(c, depth+1)).join('');
         if (addMode && addMode.parentId === node.id) {
@@ -1017,7 +1036,7 @@ function renderSheets(data) {
         const titleHtml = cardEditingId === sheet.id
             ? `<div class="card-title-row"><input class="card-rename-input" id="card-rename-input" value="${esc(sheet.title)}" maxlength="60" data-card-id="${sheet.id}"><div class="card-rename-actions"><button class="rename-confirm-btn ok" id="card-rename-ok" onmousedown="event.preventDefault()" title="확인">${IC.check}</button><button class="rename-confirm-btn no" id="card-rename-no" onmousedown="event.preventDefault()" title="취소">${IC.x}</button></div></div>`
             : `<div class="card-title-row"><a href="${esc(sheet.link)}" class="card-title">${esc(sheet.title)}</a><button class="card-pencil-btn" data-card-rename-id="${sheet.id}" title="이름 수정">${IC.pencil}</button></div>`;
-        return `<div class="sheet-card" data-id="${sheet.id}"><div class="card-body"><div class="card-header"><div class="badges"><span class="badge ${accessClass}">${esc(accessLabel)}</span>${archivedBadge}</div><div style="display:flex;align-items:center;gap:4px">${pinIcon}<button class="fav-btn" data-id="${sheet.id}" title="즐겨찾기 토글" aria-label="${sheet.isFavorite?'즐겨찾기 해제':'즐겨찾기 추가'}" aria-pressed="${sheet.isFavorite}">${favIcon}</button><button class="card-menu-btn" data-card-edit-id="${sheet.id}" title="시트 편집">···</button></div></div>${titleHtml}<p class="card-desc">${esc(sheet.desc)}</p><div class="tags">${tagsHtml}</div></div><div class="meta-info"><span>작성자: <strong>${esc(sheet.owner)}</strong></span><span>업데이트: ${esc(sheet.updated)}</span></div></div>`;
+        return `<div class="sheet-card" draggable="true" data-id="${sheet.id}"><div class="card-body"><div class="card-header"><div class="badges"><span class="badge ${accessClass}">${esc(accessLabel)}</span>${archivedBadge}</div><div style="display:flex;align-items:center;gap:4px">${pinIcon}<button class="fav-btn" data-id="${sheet.id}" title="즐겨찾기 토글" aria-label="${sheet.isFavorite?'즐겨찾기 해제':'즐겨찾기 추가'}" aria-pressed="${sheet.isFavorite}">${favIcon}</button><button class="card-trash-btn" data-card-trash-id="${sheet.id}" title="시트 삭제">${IC.trashMd}</button><button class="card-menu-btn" data-card-edit-id="${sheet.id}" title="시트 편집">···</button></div></div>${titleHtml}<p class="card-desc">${esc(sheet.desc)}</p><div class="tags">${tagsHtml}</div></div><div class="meta-info"><span>작성자: <strong>${esc(sheet.owner)}</strong></span><span>업데이트: ${esc(sheet.updated)}</span></div></div>`;
     }).join('');
     if (cardEditingId) {
         const inp = document.getElementById('card-rename-input');
@@ -1038,6 +1057,47 @@ function commitCardRename() {
     applyFilters();
 }
 function cancelCardRename() { cardEditingId = null; applyFilters(); }
+
+// ══════════════════════════════════════
+// 시트 카드 삭제
+// ══════════════════════════════════════
+function deleteSheetCard(sheetId) {
+    const sheet = sheetsData.find(s => s.id === sheetId); if (!sheet) return;
+    showConfirm(`"${sheet.title}"을(를) 삭제합니다. 이 작업은 되돌릴 수 없습니다.`, () => {
+        // sheetsData에서 제거
+        const idx = sheetsData.findIndex(s => s.id === sheetId);
+        if (idx !== -1) sheetsData.splice(idx, 1);
+        // treeData에서 연결된 노드 제거
+        let nodeId = null;
+        function findNodeId(nodes) { for (const n of nodes) { if (n.type==='sheet' && n.sheetId===sheetId) { nodeId=n.id; return; } if (n.children) findNodeId(n.children); } }
+        findNodeId(treeData);
+        if (nodeId) treeData = deleteFromTree(nodeId, treeData);
+        showToast(`"${sheet.title}" 이(가) 삭제되었습니다`, '🗑️');
+        renderTree(); applyFilters();
+    });
+}
+
+// ══════════════════════════════════════
+// 시트 드래그 → 폴더 이동
+// ══════════════════════════════════════
+let _dragSheetId = null;
+
+function moveSheetToFolder(sheetId, targetFolderId) {
+    const sheet = sheetsData.find(s => s.id === sheetId); if (!sheet) return;
+    const targetFolder = findNode(targetFolderId); if (!targetFolder) return;
+    // 이미 해당 폴더에 있으면 무시
+    const alreadyInFolder = (targetFolder.children||[]).some(n => n.type==='sheet' && n.sheetId===sheetId);
+    if (alreadyInFolder) return;
+    // 기존 트리 노드 찾아서 제거 후 이동
+    let existingNodeId = null;
+    function findExistingNode(nodes) { for (const n of nodes) { if (n.type==='sheet' && n.sheetId===sheetId) { existingNodeId=n.id; return; } if (n.children) findExistingNode(n.children); } }
+    findExistingNode(treeData);
+    if (existingNodeId) treeData = deleteFromTree(existingNodeId, treeData);
+    const newNode = { id: existingNodeId || uid('t-'), type:'sheet', name: sheet.title, sheetId };
+    treeData = addToTree(targetFolderId, newNode, treeData);
+    showToast(`"${sheet.title}"을 "${targetFolder.name}" 폴더로 이동했습니다`, '📂');
+    renderTree(); applyFilters();
+}
 
 // ══════════════════════════════════════
 // 필터링
@@ -1069,6 +1129,8 @@ document.getElementById('sheet-container').addEventListener('click', e => {
     if (pencilBtn) { startCardRename(Number(pencilBtn.dataset.cardRenameId)); return; }
     const menuBtn = e.target.closest('[data-card-edit-id]');
     if (menuBtn) { openEditModal(Number(menuBtn.dataset.cardEditId)); return; }
+    const trashBtn = e.target.closest('[data-card-trash-id]');
+    if (trashBtn) { deleteSheetCard(Number(trashBtn.dataset.cardTrashId)); return; }
 });
 
 // ══════════════════════════════════════
@@ -1097,6 +1159,50 @@ searchClearBtn.addEventListener('click', () => { searchInput.value = ''; searchC
 
 // 정렬
 document.getElementById('sort-select').addEventListener('change', function() { currentSort = this.value; applyFilters(); });
+
+// ══════════════════════════════════════
+// 드래그 앤 드롭 — 카드 → 사이드바 폴더
+// ══════════════════════════════════════
+// 카드 dragstart / dragend
+document.getElementById('sheet-container').addEventListener('dragstart', e => {
+    const card = e.target.closest('.sheet-card');
+    if (!card) return;
+    _dragSheetId = Number(card.dataset.id);
+    e.dataTransfer.setData('text/plain', String(_dragSheetId));
+    e.dataTransfer.effectAllowed = 'move';
+    setTimeout(() => card.classList.add('dragging'), 0);
+});
+document.getElementById('sheet-container').addEventListener('dragend', e => {
+    const card = e.target.closest('.sheet-card');
+    if (card) card.classList.remove('dragging');
+    _dragSheetId = null;
+});
+
+// 사이드바 폴더 dragover / dragleave / drop
+let _dragOverRow = null;
+document.getElementById('tree-root').addEventListener('dragover', e => {
+    if (_dragSheetId === null) return;
+    const row = e.target.closest('[data-drop-folder-id]');
+    if (!row) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (_dragOverRow && _dragOverRow !== row) _dragOverRow.classList.remove('drag-over');
+    row.classList.add('drag-over');
+    _dragOverRow = row;
+});
+document.getElementById('tree-root').addEventListener('dragleave', e => {
+    const row = e.target.closest('[data-drop-folder-id]');
+    if (row && !row.contains(e.relatedTarget)) { row.classList.remove('drag-over'); if (_dragOverRow === row) _dragOverRow = null; }
+});
+document.getElementById('tree-root').addEventListener('drop', e => {
+    e.preventDefault();
+    const row = e.target.closest('[data-drop-folder-id]');
+    if (!row) return;
+    row.classList.remove('drag-over'); _dragOverRow = null;
+    const sheetId = Number(e.dataTransfer.getData('text/plain'));
+    if (!sheetId) return;
+    moveSheetToFolder(sheetId, row.dataset.dropFolderId);
+});
 
 // ══════════════════════════════════════
 // 포커스 트랩
