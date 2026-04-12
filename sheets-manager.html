@@ -609,7 +609,8 @@
         <div class="flex-1 min-w-0">
             <!-- 페이지 타이틀 -->
             <div class="mb-6">
-                <h1 class="font-extrabold text-gray-900" style="font-size:26px;letter-spacing:-.6px;line-height:1.2">내 스프레드시트</h1>
+                <div id="breadcrumb" style="display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--muted);margin-bottom:6px"></div>
+                <h1 id="page-title" class="font-extrabold text-gray-900" style="font-size:26px;letter-spacing:-.6px;line-height:1.2">내 스프레드시트</h1>
                 <p class="mt-1 text-sm font-medium" style="color:var(--muted)">팀의 구글 시트를 한 곳에서 관리하세요</p>
             </div>
             <div class="controls">
@@ -720,6 +721,13 @@
             <input type="text" class="title-input" id="edit-title" maxlength="60" placeholder="시트 제목">
         </div>
         <div>
+            <div class="field-label">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                구글 시트 URL
+            </div>
+            <input type="url" class="url-input" id="edit-link" placeholder="https://docs.google.com/spreadsheets/d/...">
+        </div>
+        <div>
             <div class="field-label">설명</div>
             <textarea class="edit-textarea" id="edit-desc" placeholder="시트에 대한 간단한 설명을 입력하세요" maxlength="200"></textarea>
         </div>
@@ -806,7 +814,7 @@ const IC = {
 // ══════════════════════════════════════
 const STORAGE_KEY = 'sm-data-v1';
 function saveStorage() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ sheetsData, treeData, nextId })); } catch(e) {}
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ sheetsData, treeData, nextId, currentFilter, currentView, currentSort })); } catch(e) {}
 }
 function loadStorage() {
     try { const raw = localStorage.getItem(STORAGE_KEY); if (!raw) return null; return JSON.parse(raw); } catch(e) { return null; }
@@ -894,7 +902,11 @@ function renderTreeNode(node, depth) {
     if (isEditing) {
         rowInner += `<span class="tree-rename-wrap"><input class="tree-rename-input" id="tree-rename-input" value="${esc(node.name)}" maxlength="60" data-edit-id="${node.id}"><button class="rename-confirm-btn ok" id="tree-rename-ok" onmousedown="event.preventDefault()" title="확인">${IC.check}</button><button class="rename-confirm-btn no" id="tree-rename-no" onmousedown="event.preventDefault()" title="취소">${IC.x}</button></span>`;
     } else {
-        rowInner += `<span class="tree-name" data-select-id="${node.id}">${esc(node.name)}</span>`;
+        const sheetCount = node.type === 'folder' ? collectSheetIds([node]).length : 0;
+        const countBadge = (node.type === 'folder' && sheetCount > 0)
+            ? `<span style="font-size:10px;font-weight:700;color:var(--muted);background:#f2f4f6;border-radius:10px;padding:1px 7px;flex-shrink:0;margin-left:2px">${sheetCount}</span>`
+            : '';
+        rowInner += `<span class="tree-name" data-select-id="${node.id}">${esc(node.name)}</span>${countBadge}`;
         let actions = '';
         if (node.type === 'folder') {
             actions += `<button class="tree-icon-btn add" data-add-folder-id="${node.id}" title="새 폴더 추가">${IC.addFolder}</button>`;
@@ -976,7 +988,7 @@ function _doDeleteNode(id, node) {
     showToast(`"${node.name}" 이(가) 삭제되었습니다`, '🗑️'); renderTree(); applyFilters();
 }
 function toggleExpand(id) { treeData = mapTree(treeData, n => n.id===id ? {...n, expanded:!n.expanded} : n); renderTree(); }
-function selectNode(id) { selectedId = id; treeEditingId = null; addMode = null; renderTree(); applyFilters(); updateAllRowStyle(); if (window.innerWidth < 768) closeSidebar(); }
+function selectNode(id) { selectedId = id; treeEditingId = null; addMode = null; renderTree(); applyFilters(); updateAllRowStyle(); updateBreadcrumb(); if (window.innerWidth < 768) closeSidebar(); }
 
 // ══════════════════════════════════════
 // 트리 이벤트 위임
@@ -1004,6 +1016,18 @@ document.getElementById('sidebar-root-add-btns').addEventListener('click', e => 
 // ══════════════════════════════════════
 // 카드 렌더링
 // ══════════════════════════════════════
+// 시트 ID로 소속 폴더명 찾기
+function getFolderNameForSheet(sheetId, nodes=treeData) {
+    for (const n of nodes) {
+        if (n.type === 'folder') {
+            if ((n.children||[]).some(c => c.type==='sheet' && c.sheetId===sheetId)) return n.name;
+            const found = getFolderNameForSheet(sheetId, n.children||[]);
+            if (found) return found;
+        }
+    }
+    return null;
+}
+
 function sortData(data) {
     return [...data].sort((a, b) => {
         if (b.isPinned !== a.isPinned) return b.isPinned - a.isPinned;
@@ -1022,7 +1046,12 @@ function renderSheets(data) {
     if (data.length === 0) {
         const query = document.getElementById('searchInput').value.trim();
         const isFiltered = currentFilter !== 'all' || query || selectedId !== 'root';
-        container.innerHTML = `<div class="empty-state"><div class="empty-state-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#adb5bd" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${isFiltered?'<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>':'<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5z"/><polyline points="14 2 14 8 20 8"/>'}</svg></div><div class="empty-state-title">${isFiltered?'검색 결과가 없습니다':'아직 시트가 없어요'}</div><p class="empty-state-desc">${isFiltered?'다른 검색어나 필터를 사용해 보세요.':'시트 추가 버튼으로 첫 번째 스프레드시트를 연결해 보세요.'}</p>${!isFiltered?`<button class="empty-state-btn" onclick="openModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>시트 추가하기</button>`:''}</div>`;
+        const selNode = selectedId !== 'root' ? findNode(selectedId) : null;
+        const inFolder = selNode && selNode.type === 'folder';
+        const emptyBtn = inFolder
+            ? `<button class="empty-state-btn" onclick="openModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>"${esc(selNode.name)}" 폴더에 시트 추가</button>`
+            : (!isFiltered ? `<button class="empty-state-btn" onclick="openModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>시트 추가하기</button>` : '');
+        container.innerHTML = `<div class="empty-state"><div class="empty-state-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#adb5bd" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${isFiltered&&!inFolder?'<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>':'<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5z"/><polyline points="14 2 14 8 20 8"/>'}</svg></div><div class="empty-state-title">${isFiltered&&!inFolder?'검색 결과가 없습니다':inFolder?`"${esc(selNode.name)}" 폴더가 비어있어요`:'아직 시트가 없어요'}</div><p class="empty-state-desc">${isFiltered&&!inFolder?'다른 검색어나 필터를 사용해 보세요.':inFolder?'이 폴더에 시트를 추가하거나 드래그해서 옮겨보세요.':'시트 추가 버튼으로 첫 번째 스프레드시트를 연결해 보세요.'}</p>${emptyBtn}</div>`;
         return;
     }
     const sorted = sortData(data);
@@ -1030,13 +1059,15 @@ function renderSheets(data) {
         const accessLabel = sheet.access==='public' ? '팀 전체 공개' : '제한됨 🔒';
         const accessClass = sheet.access==='public' ? 'public' : 'restricted';
         const archivedBadge = sheet.status==='archived' ? '<span class="badge archived">보관됨</span>' : '';
-        const tagsHtml = sheet.tags.map(t=>`<span class="tag">#${esc(t)}</span>`).join('');
+        const tagsHtml = sheet.tags.map(t=>`<span class="tag" data-tag-filter="${esc(t)}" style="cursor:pointer" title="${esc(t)} 태그로 필터">#${esc(t)}</span>`).join('');
+        const folderName = selectedId === 'root' ? getFolderNameForSheet(sheet.id) : null;
+        const folderBadge = folderName ? `<span style="display:inline-flex;align-items:center;gap:4px;background:#f2f4f6;color:var(--muted);padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;">${IC.folder}${esc(folderName)}</span>` : '';
         const favIcon  = sheet.isFavorite ? '⭐' : '☆';
         const pinIcon  = sheet.isPinned ? '<span class="pin-icon">📌</span>' : '';
         const titleHtml = cardEditingId === sheet.id
             ? `<div class="card-title-row"><input class="card-rename-input" id="card-rename-input" value="${esc(sheet.title)}" maxlength="60" data-card-id="${sheet.id}"><div class="card-rename-actions"><button class="rename-confirm-btn ok" id="card-rename-ok" onmousedown="event.preventDefault()" title="확인">${IC.check}</button><button class="rename-confirm-btn no" id="card-rename-no" onmousedown="event.preventDefault()" title="취소">${IC.x}</button></div></div>`
             : `<div class="card-title-row"><a href="${esc(sheet.link)}" class="card-title">${esc(sheet.title)}</a><button class="card-pencil-btn" data-card-rename-id="${sheet.id}" title="이름 수정">${IC.pencil}</button></div>`;
-        return `<div class="sheet-card" draggable="true" data-id="${sheet.id}"><div class="card-body"><div class="card-header"><div class="badges"><span class="badge ${accessClass}">${esc(accessLabel)}</span>${archivedBadge}</div><div style="display:flex;align-items:center;gap:4px">${pinIcon}<button class="fav-btn" data-id="${sheet.id}" title="즐겨찾기 토글" aria-label="${sheet.isFavorite?'즐겨찾기 해제':'즐겨찾기 추가'}" aria-pressed="${sheet.isFavorite}">${favIcon}</button><button class="card-trash-btn" data-card-trash-id="${sheet.id}" title="시트 삭제">${IC.trashMd}</button><button class="card-menu-btn" data-card-edit-id="${sheet.id}" title="시트 편집">···</button></div></div>${titleHtml}<p class="card-desc">${esc(sheet.desc)}</p><div class="tags">${tagsHtml}</div></div><div class="meta-info"><span>작성자: <strong>${esc(sheet.owner)}</strong></span><span>업데이트: ${esc(sheet.updated)}</span></div></div>`;
+        return `<div class="sheet-card" draggable="true" data-id="${sheet.id}"><div class="card-body"><div class="card-header"><div class="badges"><span class="badge ${accessClass}">${esc(accessLabel)}</span>${archivedBadge}</div><div style="display:flex;align-items:center;gap:4px">${pinIcon}<button class="fav-btn" data-id="${sheet.id}" title="즐겨찾기 토글" aria-label="${sheet.isFavorite?'즐겨찾기 해제':'즐겨찾기 추가'}" aria-pressed="${sheet.isFavorite}">${favIcon}</button><button class="card-trash-btn" data-card-trash-id="${sheet.id}" title="시트 삭제">${IC.trashMd}</button><button class="card-menu-btn" data-card-edit-id="${sheet.id}" title="시트 편집">···</button></div></div>${titleHtml}<p class="card-desc">${esc(sheet.desc)}</p><div class="tags">${folderBadge}${tagsHtml}</div></div><div class="meta-info"><span>작성자: <strong>${esc(sheet.owner)}</strong></span><span>업데이트: ${esc(sheet.updated)}</span></div></div>`;
     }).join('');
     if (cardEditingId) {
         const inp = document.getElementById('card-rename-input');
@@ -1094,6 +1125,8 @@ function moveSheetToFolder(sheetId, targetFolderId) {
     findExistingNode(treeData);
     if (existingNodeId) treeData = deleteFromTree(existingNodeId, treeData);
     const newNode = { id: existingNodeId || uid('t-'), type:'sheet', name: sheet.title, sheetId };
+    // 대상 폴더가 접혀있으면 자동 펼침
+    treeData = mapTree(treeData, n => n.id === targetFolderId ? {...n, expanded: true} : n);
     treeData = addToTree(targetFolderId, newNode, treeData);
     showToast(`"${sheet.title}"을 "${targetFolder.name}" 폴더로 이동했습니다`, '📂');
     renderTree(); applyFilters();
@@ -1131,6 +1164,15 @@ document.getElementById('sheet-container').addEventListener('click', e => {
     if (menuBtn) { openEditModal(Number(menuBtn.dataset.cardEditId)); return; }
     const trashBtn = e.target.closest('[data-card-trash-id]');
     if (trashBtn) { deleteSheetCard(Number(trashBtn.dataset.cardTrashId)); return; }
+    const tagEl = e.target.closest('[data-tag-filter]');
+    if (tagEl) {
+        const tag = tagEl.dataset.tagFilter;
+        const si = document.getElementById('searchInput');
+        si.value = tag;
+        document.getElementById('btn-search-clear').style.display = 'block';
+        applyFilters();
+        return;
+    }
 });
 
 // ══════════════════════════════════════
@@ -1229,6 +1271,7 @@ function openEditModal(sheetId) {
     const sheet = sheetsData.find(s => s.id === sheetId); if (!sheet) return;
     document.getElementById('edit-sheet-id').value  = sheetId;
     document.getElementById('edit-title').value     = sheet.title;
+    document.getElementById('edit-link').value      = sheet.link === '#' ? '' : (sheet.link || '');
     document.getElementById('edit-desc').value      = sheet.desc;
     document.getElementById('edit-tags').value      = sheet.tags.join(', ');
     document.getElementById('edit-access').value    = sheet.access;
@@ -1248,6 +1291,8 @@ function saveEditModal() {
     const sheet = sheetsData.find(s => s.id === id); if (!sheet) return;
     const newTitle = document.getElementById('edit-title').value.trim() || sheet.title;
     sheet.title   = newTitle;
+    const newLink = document.getElementById('edit-link').value.trim();
+    if (newLink) sheet.link = newLink;
     sheet.desc    = document.getElementById('edit-desc').value.trim();
     sheet.tags    = document.getElementById('edit-tags').value.split(',').map(t => t.trim()).filter(Boolean);
     sheet.access  = document.getElementById('edit-access').value;
@@ -1327,7 +1372,15 @@ document.getElementById('modal-add-btn').addEventListener('click',()=>{
     if (!parsedSheetId) return;
     const newSheetId=nextId++;
     sheetsData.unshift({id:newSheetId,title,desc:`시트 ID: ${parsedSheetId}`,owner:'나(PM)',updated:today(),tags:[],isPinned:false,isFavorite:false,access:'public',status:'active',link:parsedSheetUrl});
-    closeModal(); applyFilters(); showToast(`"${title}" 시트가 추가되었습니다`);
+    // 현재 선택된 폴더가 있으면 해당 폴더에 트리 노드도 자동 생성
+    if (selectedId !== 'root') {
+        const selNode = findNode(selectedId);
+        if (selNode && selNode.type === 'folder') {
+            const newTreeNode = { id: uid('t-'), type:'sheet', name: title, sheetId: newSheetId };
+            treeData = addToTree(selectedId, newTreeNode, treeData);
+        }
+    }
+    closeModal(); renderTree(); applyFilters(); showToast(`"${title}" 시트가 추가되었습니다`);
 });
 document.getElementById('modal-close-btn').addEventListener('click',closeModal);
 document.getElementById('modal-cancel-btn').addEventListener('click',closeModal);
@@ -1348,9 +1401,33 @@ document.addEventListener('keydown', e => { if (e.key==='Escape') { closeConfirm
 // ══════════════════════════════════════
 // 사이드바 전체 보기
 // ══════════════════════════════════════
+function updateBreadcrumb() {
+    const bc = document.getElementById('breadcrumb');
+    const pt = document.getElementById('page-title');
+    if (!bc) return;
+    if (selectedId === 'root') {
+        bc.innerHTML = '';
+        if (pt) pt.textContent = '내 스프레드시트';
+        return;
+    }
+    const node = findNode(selectedId);
+    if (!node) return;
+    // 부모 폴더 경로 탐색
+    function getPath(nodes, targetId, path=[]) {
+        for (const n of nodes) {
+            if (n.id === targetId) return [...path, n];
+            if (n.children) { const found = getPath(n.children, targetId, [...path, n]); if (found) return found; }
+        }
+        return null;
+    }
+    const path = getPath(treeData, selectedId) || [node];
+    const sep = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>`;
+    bc.innerHTML = `<span style="cursor:pointer;hover:color:var(--text)" onclick="selectAllRoot()">전체</span>${path.map(n => `${sep}<span style="color:${n.id===selectedId?'var(--text)':'inherit'};font-weight:${n.id===selectedId?'800':'600'}">${esc(n.name)}</span>`).join('')}`;
+    if (pt) pt.textContent = node.name;
+}
 function selectAllRoot() {
     selectedId = 'root'; treeEditingId = null; addMode = null;
-    updateAllRowStyle(); renderTree(); applyFilters();
+    updateAllRowStyle(); updateBreadcrumb(); renderTree(); applyFilters();
     if (window.innerWidth < 768) closeSidebar();
 }
 function updateAllRowStyle() {
@@ -1371,14 +1448,22 @@ function toggleSidebar() { document.body.classList.contains('sidebar-open') ? cl
 // ══════════════════════════════════════
 (function initStorage() {
     const saved = loadStorage();
-    if (saved) { sheetsData.length = 0; saved.sheetsData.forEach(s => sheetsData.push(s)); treeData = saved.treeData; nextId = saved.nextId ?? nextId; }
+    if (saved) {
+        sheetsData.length = 0; saved.sheetsData.forEach(s => sheetsData.push(s));
+        treeData = saved.treeData; nextId = saved.nextId ?? nextId;
+        if (saved.currentFilter) currentFilter = saved.currentFilter;
+        if (saved.currentView)   currentView   = saved.currentView;
+        if (saved.currentSort)   currentSort   = saved.currentSort;
+    }
 })();
 
-setView('grid');
-document.querySelector('[data-filter="all"]').classList.add('active');
+setView(currentView);
+document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('active', b.dataset.filter === currentFilter));
+const sortEl = document.getElementById('sort-select'); if (sortEl) sortEl.value = currentSort;
 renderTree();
 applyFilters();
 updateAllRowStyle();
+updateBreadcrumb();
 </script>
 </body>
 </html>
