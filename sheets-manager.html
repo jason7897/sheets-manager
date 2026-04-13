@@ -555,6 +555,132 @@
             #btn-sidebar-toggle { display: none !important; }
             #btn-sidebar-close  { display: none !important; }
         }
+
+        /* ══ 다크 모드 ══ */
+        [data-theme="dark"] {
+            --primary:#4d9cf8; --primary-light:#1e3a5f; --primary-dark:#6baafa;
+            --bg:#111827; --card-bg:#1f2937; --text:#f9fafb;
+            --muted:#9ca3af; --border:#374151; --danger:#f87171; --danger-light:#3b1f22;
+        }
+        [data-theme="dark"] body { background:var(--bg); }
+        [data-theme="dark"] header { background:rgba(31,41,55,.97) !important; border-color:var(--border) !important; }
+        [data-theme="dark"] .search-bar,[data-theme="dark"] .url-input,
+        [data-theme="dark"] .title-input,[data-theme="dark"] .edit-textarea,
+        [data-theme="dark"] .edit-select,[data-theme="dark"] .sort-select { background-color:var(--card-bg);color:var(--text);border-color:var(--border); }
+        [data-theme="dark"] .modal-box,[data-theme="dark"] .confirm-box { background:var(--card-bg); }
+        [data-theme="dark"] .drive-btn { background:var(--card-bg);color:var(--text);border-color:var(--border); }
+        [data-theme="dark"] mark { background:#78680a;color:#fef9c3; }
+        [data-theme="dark"] .sidebar { border-color:var(--border); }
+        [data-theme="dark"] .sidebar-header,[data-theme="dark"] .sidebar-footer { background:#1a2532; }
+        [data-theme="dark"] .sidebar-footer-btn { background:var(--card-bg);border-color:var(--border); }
+        [data-theme="dark"] .tree-row:hover { background:#374151; }
+        [data-theme="dark"] .sheet-card { background:var(--card-bg);border-color:var(--border); }
+        [data-theme="dark"] .sheet-card:hover { border-color:var(--primary); }
+        [data-theme="dark"] .meta-info { border-top-color:var(--border); }
+        [data-theme="dark"] .btn { background:var(--card-bg);color:var(--muted);border-color:var(--border); }
+        [data-theme="dark"] .btn:hover { background:var(--primary-light);color:var(--primary); }
+        [data-theme="dark"] .empty-state-icon { background:#374151; }
+        [data-theme="dark"] .dropzone { background:#1a2532;border-color:var(--border); }
+        [data-theme="dark"] .tag { background:var(--primary-light); }
+        [data-theme="dark"] .badge.public { background:#1a3a1f;color:#4ade80; }
+        [data-theme="dark"] .badge.restricted { background:#3b1f22;color:#f87171; }
+        [data-theme="dark"] .badge.status-archived { background:#374151;color:var(--muted); }
+        [data-theme="dark"] .badge.status-active { background:#1a3a1f;color:#4ade80; }
+        [data-theme="dark"] .badge.status-review { background:#3a2a0a;color:#fbbf24; }
+        [data-theme="dark"] .badge.status-done { background:#1a2a4a;color:#60a5fa; }
+        [data-theme="dark"] .skel-line { background:#374151; }
+        [data-theme="dark"] .skeleton-card { background:var(--card-bg);border-color:var(--border); }
+        [data-theme="dark"] .list-table th { background:#1a2532; }
+        [data-theme="dark"] .list-table td { border-bottom-color:var(--border); }
+        [data-theme="dark"] .list-table tbody tr:hover td { background:#374151; }
+        [data-theme="dark"] .lt-folder-badge { background:#374151; }
+        [data-theme="dark"] .stat-num.green { color:#4ade80; }
+        [data-theme="dark"] .stat-num.star { color:#fbbf24; }
+        [data-theme="dark"] .recent-chip { background:var(--card-bg);border-color:var(--border); }
+        [data-theme="dark"] .color-picker-popup { background:var(--card-bg);border-color:var(--border); }
+
+        /* ══ 통계 바 ══ */
+        .stats-bar { display:flex;margin-bottom:18px;background:var(--card-bg);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.04); }
+        .stat-item { flex:1;padding:11px 12px;cursor:pointer;text-align:center;transition:background .15s;border-right:1px solid var(--border);display:flex;flex-direction:column;gap:2px;align-items:center; }
+        .stat-item:last-child { border-right:none; }
+        .stat-item:hover { background:var(--primary-light); }
+        .stat-num { font-size:18px;font-weight:800;color:var(--text);letter-spacing:-.5px;line-height:1.2; }
+        .stat-num.blue { color:var(--primary); }
+        .stat-num.star { color:#f59e0b; }
+        .stat-num.gray { color:var(--muted); }
+        .stat-num.green { color:#16a34a; }
+        .stat-label { font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px; }
+
+        /* ══ 다중 선택 ══ */
+        .sheet-card { position:relative; }
+        .card-checkbox-wrap { position:absolute;top:12px;left:12px;z-index:2;opacity:0;transition:opacity .12s;pointer-events:none; }
+        .sheet-card:hover .card-checkbox-wrap,.sheet-card.selected .card-checkbox-wrap { opacity:1;pointer-events:all; }
+        .card-checkbox { width:18px;height:18px;accent-color:var(--primary);cursor:pointer; }
+        .sheet-card.selected { border-color:var(--primary) !important;background:var(--primary-light) !important; }
+
+        /* ══ 일괄 작업 바 ══ */
+        .bulk-bar { position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:#1a2332;color:white;padding:12px 16px 12px 20px;border-radius:18px;display:flex;align-items:center;gap:10px;box-shadow:0 12px 40px rgba(0,0,0,.35);z-index:1500;opacity:0;pointer-events:none;transition:transform .28s cubic-bezier(.34,1.3,.64,1),opacity .2s;font-size:13.5px;font-weight:700;white-space:nowrap; }
+        .bulk-bar.show { transform:translateX(-50%) translateY(0);opacity:1;pointer-events:all; }
+        .bulk-bar-btn { background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:white;padding:6px 14px;border-radius:10px;cursor:pointer;font-size:12.5px;font-weight:700;font-family:inherit;transition:background .12s;display:flex;align-items:center;gap:5px; }
+        .bulk-bar-btn:hover { background:rgba(255,255,255,.24); }
+        .bulk-bar-btn.danger:hover { background:rgba(240,68,82,.55); }
+        .bulk-sep { width:1px;height:18px;background:rgba(255,255,255,.2);flex-shrink:0; }
+        .bulk-close-btn { background:none;border:none;color:rgba(255,255,255,.5);cursor:pointer;padding:4px;line-height:1;display:flex;align-items:center;margin-left:2px;transition:color .12s; }
+        .bulk-close-btn:hover { color:white; }
+
+        /* ══ 최근 열람 ══ */
+        .recent-section { margin-bottom:22px; }
+        .recent-header { font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;display:flex;align-items:center;gap:6px; }
+        .recent-scroll { display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none; }
+        .recent-scroll::-webkit-scrollbar { display:none; }
+        .recent-chip { flex-shrink:0;background:var(--card-bg);border:1.5px solid var(--border);border-radius:12px;padding:10px 14px;cursor:pointer;min-width:150px;max-width:200px;transition:all .18s;display:flex;flex-direction:column;gap:3px;text-decoration:none; }
+        .recent-chip:hover { border-color:var(--primary);transform:translateY(-2px);box-shadow:0 4px 16px rgba(49,130,246,.12); }
+        .recent-chip-title { font-size:12.5px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+        .recent-chip-meta { font-size:11px;color:var(--muted);font-weight:500; }
+
+        /* ══ 폴더 컬러 픽커 ══ */
+        .color-picker-popup { position:fixed;z-index:400;background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:8px;display:flex;gap:4px;flex-wrap:wrap;width:120px;box-shadow:0 8px 28px rgba(0,0,0,.18); }
+        .color-dot { width:22px;height:22px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;transition:transform .12s,border-color .12s; }
+        .color-dot:hover { transform:scale(1.25); }
+        .color-dot.active { border-color:var(--text); }
+
+        /* ══ 스켈레톤 ══ */
+        @keyframes skel-pulse { 0%,100%{opacity:1}50%{opacity:.42} }
+        .skeleton-card { background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:24px 26px;display:flex;flex-direction:column;gap:14px;animation:skel-pulse 1.4s ease-in-out infinite; }
+        .skel-line { background:#e5e8eb;border-radius:6px; }
+
+        /* ══ 상태 뱃지 4단계 ══ */
+        .badge.status-active   { background:#e8f5e9;color:#2e7d32; }
+        .badge.status-review   { background:#fff8e1;color:#e65100; }
+        .badge.status-done     { background:#e3f2fd;color:#1565c0; }
+        .badge.status-archived { background:#f2f4f6;color:var(--muted); }
+
+        /* ══ 테이블 리스트 뷰 ══ */
+        #sheet-container.list-view { display:block; }
+        .list-table { width:100%;border-collapse:collapse;background:var(--card-bg);border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.04);border:1px solid var(--border); }
+        .list-table th { padding:10px 14px;text-align:left;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;background:#fafbfc;border-bottom:1px solid var(--border);white-space:nowrap;user-select:none; }
+        .list-table th.sortable { cursor:pointer; }
+        .list-table th.sortable:hover { color:var(--primary); }
+        .list-table th.sort-active { color:var(--primary); }
+        .list-table td { padding:10px 14px;border-bottom:1px solid #f2f4f6;font-size:13.5px;vertical-align:middle;color:var(--text); }
+        .list-table tbody tr:last-child td { border-bottom:none; }
+        .list-table tbody tr:hover td { background:#f9fafb; }
+        .list-table tbody tr.lt-selected td { background:var(--primary-light) !important; }
+        .lt-title-link { font-weight:700;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:6px;max-width:300px; }
+        .lt-title-link:hover { color:var(--primary); }
+        .lt-title-text { overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block; }
+        .lt-folder-badge { display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;color:var(--muted);background:#f2f4f6;padding:2px 8px;border-radius:6px;white-space:nowrap; }
+        .lt-fav-btn { background:none;border:none;cursor:pointer;font-size:16px;padding:0 2px;transition:transform .2s; }
+        .lt-fav-btn:hover { transform:scale(1.3); }
+
+        /* ══ 카드 컬러 액센트 ══ */
+        .sheet-card.has-accent { border-left-width:4px !important; }
+
+        /* ══ 트리 드래그 핸들 ══ */
+        .tree-drag-handle { cursor:grab;color:var(--muted);padding:1px 2px;display:none;align-items:center;flex-shrink:0;border-radius:3px;opacity:.5; }
+        .tree-row:hover .tree-drag-handle { display:flex; }
+        .tree-drag-handle:hover { opacity:1; }
+        .tree-node.drag-over-tree > .tree-row { outline:2px dashed var(--primary);outline-offset:-2px;border-radius:10px; }
     </style>
 </head>
 <body>
@@ -586,6 +712,10 @@
                 <span class="btn-view-label">리스트 뷰</span>
             </button>
             <div class="w-px h-5 mx-1" style="background:var(--border)"></div>
+            <button id="btn-dark-toggle" onclick="toggleTheme()" title="다크 모드 토글" style="background:none;border:1.5px solid var(--border);border-radius:12px;cursor:pointer;padding:9px 11px;display:flex;align-items:center;color:var(--muted);transition:all .2s" onmouseover="this.style.background='var(--primary-light)';this.style.color='var(--primary)'" onmouseout="this.style.background='none';this.style.color='var(--muted)'">
+                <svg id="dark-icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                <svg id="dark-icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+            </button>
             <button class="btn btn-primary" id="btn-add-sheet">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 시트 추가
@@ -647,6 +777,21 @@
                 <h1 id="page-title" class="font-extrabold text-gray-900" style="font-size:26px;letter-spacing:-.6px;line-height:1.2">내 스프레드시트</h1>
                 <p class="mt-1 text-sm font-medium" style="color:var(--muted)">팀의 구글 시트를 한 곳에서 관리하세요</p>
             </div>
+            <!-- 통계 바 -->
+            <div class="stats-bar" id="stats-bar">
+                <div class="stat-item" onclick="setStatFilter('all')" title="전체 보기">
+                    <span class="stat-num blue" id="stat-total">0</span><span class="stat-label">전체</span>
+                </div>
+                <div class="stat-item" onclick="setStatFilter('favorite')" title="즐겨찾기">
+                    <span class="stat-num star" id="stat-fav">0</span><span class="stat-label">즐겨찾기</span>
+                </div>
+                <div class="stat-item" onclick="setStatFilter('archived')" title="보관됨">
+                    <span class="stat-num gray" id="stat-arch">0</span><span class="stat-label">보관됨</span>
+                </div>
+                <div class="stat-item" title="이번 주 업데이트">
+                    <span class="stat-num green" id="stat-week">0</span><span class="stat-label">이번 주</span>
+                </div>
+            </div>
             <div class="controls">
                 <div class="search-wrap">
                     <span class="search-icon">
@@ -679,7 +824,15 @@
                 </select>
                 <div class="result-count" id="result-count"></div>
             </div>
-            <div id="sheet-container" class="grid-view"></div>
+            <div id="recent-wrap"></div>
+            <div id="sheet-container" class="grid-view">
+                <div class="skeleton-card"><div class="skel-line" style="width:40%;height:10px"></div><div class="skel-line" style="width:75%;height:16px;margin-top:4px"></div><div class="skel-line" style="width:90%;height:12px;margin-top:8px"></div><div class="skel-line" style="width:60%;height:12px"></div></div>
+                <div class="skeleton-card"><div class="skel-line" style="width:35%;height:10px"></div><div class="skel-line" style="width:80%;height:16px;margin-top:4px"></div><div class="skel-line" style="width:85%;height:12px;margin-top:8px"></div><div class="skel-line" style="width:50%;height:12px"></div></div>
+                <div class="skeleton-card"><div class="skel-line" style="width:45%;height:10px"></div><div class="skel-line" style="width:70%;height:16px;margin-top:4px"></div><div class="skel-line" style="width:88%;height:12px;margin-top:8px"></div><div class="skel-line" style="width:55%;height:12px"></div></div>
+                <div class="skeleton-card"><div class="skel-line" style="width:38%;height:10px"></div><div class="skel-line" style="width:82%;height:16px;margin-top:4px"></div><div class="skel-line" style="width:92%;height:12px;margin-top:8px"></div><div class="skel-line" style="width:65%;height:12px"></div></div>
+                <div class="skeleton-card"><div class="skel-line" style="width:42%;height:10px"></div><div class="skel-line" style="width:68%;height:16px;margin-top:4px"></div><div class="skel-line" style="width:80%;height:12px;margin-top:8px"></div><div class="skel-line" style="width:70%;height:12px"></div></div>
+                <div class="skeleton-card"><div class="skel-line" style="width:30%;height:10px"></div><div class="skel-line" style="width:76%;height:16px;margin-top:4px"></div><div class="skel-line" style="width:87%;height:12px;margin-top:8px"></div><div class="skel-line" style="width:48%;height:12px"></div></div>
+            </div>
         </div>
     </div>
 </div>
@@ -793,7 +946,9 @@
             <div>
                 <div class="field-label">상태</div>
                 <select class="edit-select" id="edit-status">
-                    <option value="active">활성</option>
+                    <option value="active">진행중</option>
+                    <option value="review">검토중</option>
+                    <option value="done">완료</option>
                     <option value="archived">보관됨</option>
                 </select>
             </div>
@@ -836,6 +991,28 @@
 <!-- 토스트 -->
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
+<!-- 일괄 작업 바 -->
+<div class="bulk-bar" id="bulk-bar">
+    <span id="bulk-count-label">0개 선택됨</span>
+    <div class="bulk-sep"></div>
+    <button class="bulk-bar-btn" id="bulk-fav-btn">⭐ 즐겨찾기</button>
+    <button class="bulk-bar-btn" id="bulk-folder-btn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        폴더 이동
+    </button>
+    <button class="bulk-bar-btn danger" id="bulk-delete-btn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+        삭제
+    </button>
+    <button class="bulk-close-btn" id="bulk-close-btn" title="선택 해제">✕</button>
+</div>
+
+<!-- 폴더 컬러 픽커 -->
+<div class="color-picker-popup" id="color-picker-popup" style="display:none"></div>
+
+<!-- 일괄 폴더 이동 선택 팝업 -->
+<div id="bulk-folder-popup" style="display:none;position:fixed;z-index:400;background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:10px;box-shadow:0 8px 28px rgba(0,0,0,.18);min-width:180px;max-height:260px;overflow-y:auto"></div>
+
 
 <script>
 // ══════════════════════════════════════
@@ -844,7 +1021,7 @@
 const IC = {
     chevRight: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>`,
     chevDown:  `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>`,
-    folder:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="#fde68a" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`,
+    folder:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="#fde68a" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`, // fallback only
     sheet:     `<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect width="14" height="14" rx="2.5" fill="#3182f6" opacity=".1"/><rect width="14" height="14" rx="2.5" stroke="#3182f6" stroke-width=".8"/><line x1="2" y1="5.5" x2="12" y2="5.5" stroke="#3182f6" stroke-width=".7" stroke-opacity=".6"/><line x1="2" y1="8.5" x2="12" y2="8.5" stroke="#3182f6" stroke-width=".7" stroke-opacity=".6"/><line x1="5.5" y1="2" x2="5.5" y2="12" stroke="#3182f6" stroke-width=".7" stroke-opacity=".6"/></svg>`,
     pencil:    `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`,
     check:     `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
@@ -854,6 +1031,44 @@ const IC = {
     trashMd:   `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`,
     addFolder: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>`,
     addSheet:  `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>`,
+    palette:   `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>`,
+    grip:      `<svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor"><circle cx="2" cy="2" r="1.1"/><circle cx="6" cy="2" r="1.1"/><circle cx="2" cy="6" r="1.1"/><circle cx="6" cy="6" r="1.1"/><circle cx="2" cy="10" r="1.1"/><circle cx="6" cy="10" r="1.1"/></svg>`,
+    recent:    `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+};
+
+// ── 폴더 컬러 팔레트 ──
+const FOLDER_COLORS = [
+    { id:'yellow', fill:'#fde68a', stroke:'#f59e0b', hex:'#f59e0b' },
+    { id:'blue',   fill:'#bfdbfe', stroke:'#3182f6', hex:'#3182f6' },
+    { id:'green',  fill:'#bbf7d0', stroke:'#16a34a', hex:'#16a34a' },
+    { id:'red',    fill:'#fecaca', stroke:'#dc2626', hex:'#dc2626' },
+    { id:'purple', fill:'#e9d5ff', stroke:'#7c3aed', hex:'#7c3aed' },
+    { id:'pink',   fill:'#fbcfe8', stroke:'#db2777', hex:'#db2777' },
+    { id:'teal',   fill:'#99f6e4', stroke:'#0d9488', hex:'#0d9488' },
+    { id:'gray',   fill:'#e5e7eb', stroke:'#6b7280', hex:'#6b7280' },
+];
+function folderIcon(colorId) {
+    const c = FOLDER_COLORS.find(f => f.id === colorId) || FOLDER_COLORS[0];
+    return `<svg width="14" height="14" viewBox="0 0 24 24" fill="${c.fill}" stroke="${c.stroke}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
+}
+function getFolderColorHex(sheetId, nodes) {
+    nodes = nodes || treeData;
+    for (const n of nodes) {
+        if (n.type === 'folder') {
+            if ((n.children||[]).some(c => c.type==='sheet' && c.sheetId===sheetId)) return FOLDER_COLORS.find(f=>f.id===(n.color||'yellow'))?.hex || null;
+            const found = getFolderColorHex(sheetId, n.children||[]);
+            if (found) return found;
+        }
+    }
+    return null;
+}
+
+// ── 상태 설정 ──
+const STATUS_CONFIG = {
+    active:   { label:'진행중', cls:'status-active' },
+    review:   { label:'검토중', cls:'status-review' },
+    done:     { label:'완료',   cls:'status-done'   },
+    archived: { label:'보관됨', cls:'status-archived' },
 };
 
 // ══════════════════════════════════════
@@ -862,7 +1077,7 @@ const IC = {
 const STORAGE_KEY = 'sm-data-v1';
 function saveStorage() {
     const searchQuery = document.getElementById('searchInput')?.value || '';
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ sheetsData, treeData, nextId, currentFilter, currentView, currentSort, searchQuery })); } catch(e) {}
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ sheetsData, treeData, nextId, currentFilter, currentView, currentSort, searchQuery, recentIds })); } catch(e) {}
 }
 function loadStorage() {
     try { const raw = localStorage.getItem(STORAGE_KEY); if (!raw) return null; return JSON.parse(raw); } catch(e) { return null; }
@@ -910,6 +1125,13 @@ let cardEditingId = null;
 let currentFilter = 'all';
 let currentView   = 'grid';
 let currentSort   = 'pinned';
+
+// 새 기능 상태
+let recentIds      = [];         // 최근 열람 (max 5)
+const selectedCards = new Set(); // 다중 선택
+let _colorPickerFolderId = null; // 폴더 컬러 픽커
+let _treeDragNodeId      = null; // 트리 순서 드래그
+let _treeDragOverNodeId  = null;
 
 // ══════════════════════════════════════
 // 유틸
@@ -974,12 +1196,15 @@ function renderTreeNode(node, depth) {
     const isExpanded = node.type === 'folder' && node.expanded;
     const indent     = depth * 14 + 8;
     let rowInner = '';
+    // 드래그 핸들
+    rowInner += `<span class="tree-drag-handle" draggable="true" data-drag-id="${node.id}" title="드래그하여 순서 변경">${IC.grip}</span>`;
     if (node.type === 'folder') {
         rowInner += `<button class="tree-toggle" data-toggle-id="${node.id}" title="${isExpanded?'접기':'펼치기'}">${isExpanded ? IC.chevDown : IC.chevRight}</button>`;
     } else {
         rowInner += `<span class="tree-toggle invis">${IC.chevRight}</span>`;
     }
-    rowInner += `<span style="flex-shrink:0;display:flex;align-items:center">${node.type==='folder' ? IC.folder : IC.sheet}</span>`;
+    const fIcon = node.type === 'folder' ? folderIcon(node.color || 'yellow') : IC.sheet;
+    rowInner += `<span style="flex-shrink:0;display:flex;align-items:center">${fIcon}</span>`;
     if (isEditing) {
         rowInner += `<span class="tree-rename-wrap"><input class="tree-rename-input" id="tree-rename-input" value="${esc(node.name)}" maxlength="60" data-edit-id="${node.id}"><button class="rename-confirm-btn ok" id="tree-rename-ok" onmousedown="event.preventDefault()" title="확인">${IC.check}</button><button class="rename-confirm-btn no" id="tree-rename-no" onmousedown="event.preventDefault()" title="취소">${IC.x}</button></span>`;
     } else {
@@ -992,6 +1217,7 @@ function renderTreeNode(node, depth) {
         if (node.type === 'folder') {
             actions += `<button class="tree-icon-btn add" data-add-folder-id="${node.id}" title="새 폴더 추가">${IC.addFolder}</button>`;
             actions += `<button class="tree-icon-btn add" data-add-sheet-id="${node.id}" title="새 시트 추가">${IC.addSheet}</button>`;
+            actions += `<button class="tree-icon-btn" data-color-folder-id="${node.id}" title="폴더 색상 변경">${IC.palette}</button>`;
         }
         actions += `<button class="tree-icon-btn" data-rename-id="${node.id}" title="이름 수정">${IC.pencil}</button>`;
         actions += `<button class="tree-icon-btn danger" data-delete-id="${node.id}" title="삭제">${IC.trash}</button>`;
@@ -1004,7 +1230,7 @@ function renderTreeNode(node, depth) {
         if (isExpanded && node.children?.length) html += node.children.map(c => renderTreeNode(c, depth+1)).join('');
         if (addMode && addMode.parentId === node.id) {
             const addIndent = (depth+1)*14+8;
-            html += `<div class="tree-add-row" style="padding-left:${addIndent}px"><span style="display:flex;align-items:center;flex-shrink:0">${addMode.type==='folder'?IC.folder:IC.sheet}</span><input class="tree-add-input" id="tree-add-input" placeholder="${addMode.type==='folder'?'폴더 이름...':'시트 이름...'}" maxlength="60" autocomplete="off"><button class="rename-confirm-btn ok" id="tree-add-ok" onmousedown="event.preventDefault()" title="추가">${IC.check}</button><button class="rename-confirm-btn no" id="tree-add-no" onmousedown="event.preventDefault()" title="취소">${IC.x}</button></div>`;
+            html += `<div class="tree-add-row" style="padding-left:${addIndent}px"><span style="display:flex;align-items:center;flex-shrink:0">${addMode.type==='folder'?folderIcon('yellow'):IC.sheet}</span><input class="tree-add-input" id="tree-add-input" placeholder="${addMode.type==='folder'?'폴더 이름...':'시트 이름...'}" maxlength="60" autocomplete="off"><button class="rename-confirm-btn ok" id="tree-add-ok" onmousedown="event.preventDefault()" title="추가">${IC.check}</button><button class="rename-confirm-btn no" id="tree-add-no" onmousedown="event.preventDefault()" title="취소">${IC.x}</button></div>`;
         }
     }
     html += `</div>`;
@@ -1081,14 +1307,15 @@ document.getElementById('tree-root').addEventListener('click', e => {
     if (t.closest('#tree-rename-no')) { cancelTreeRename(); return; }
     if (t.closest('#tree-add-ok'))    { commitAdd(); return; }
     if (t.closest('#tree-add-no'))    { cancelAdd(); return; }
-    const btn = t.closest('[data-toggle-id],[data-select-id],[data-rename-id],[data-delete-id],[data-add-folder-id],[data-add-sheet-id]');
+    const btn = t.closest('[data-toggle-id],[data-select-id],[data-rename-id],[data-delete-id],[data-add-folder-id],[data-add-sheet-id],[data-color-folder-id]');
     if (!btn) return;
-    if (btn.dataset.toggleId)    { toggleExpand(btn.dataset.toggleId); return; }
-    if (btn.dataset.selectId)    { selectNode(btn.dataset.selectId); return; }
-    if (btn.dataset.renameId)    { startRename(btn.dataset.renameId); return; }
-    if (btn.dataset.deleteId)    { deleteNode(btn.dataset.deleteId); return; }
-    if (btn.dataset.addFolderId) { startAdd(btn.dataset.addFolderId, 'folder'); return; }
-    if (btn.dataset.addSheetId)  { startAdd(btn.dataset.addSheetId, 'sheet'); return; }
+    if (btn.dataset.toggleId)      { toggleExpand(btn.dataset.toggleId); return; }
+    if (btn.dataset.selectId)      { selectNode(btn.dataset.selectId); return; }
+    if (btn.dataset.renameId)      { startRename(btn.dataset.renameId); return; }
+    if (btn.dataset.deleteId)      { deleteNode(btn.dataset.deleteId); return; }
+    if (btn.dataset.addFolderId)   { startAdd(btn.dataset.addFolderId, 'folder'); return; }
+    if (btn.dataset.addSheetId)    { startAdd(btn.dataset.addSheetId, 'sheet'); return; }
+    if (btn.dataset.colorFolderId) { openColorPicker(btn.dataset.colorFolderId, btn); return; }
 });
 document.getElementById('sidebar-root-add-btns').addEventListener('click', e => {
     const btn = e.target.closest('[data-root-add]');
@@ -1112,12 +1339,21 @@ function getFolderNameForSheet(sheetId, nodes=treeData) {
 
 function sortData(data) {
     return [...data].sort((a, b) => {
-        if (b.isPinned !== a.isPinned) return b.isPinned - a.isPinned;
+        if (currentSort === 'pinned' && b.isPinned !== a.isPinned) return b.isPinned - a.isPinned;
         switch (currentSort) {
-            case 'newest': return b.updated.localeCompare(a.updated);
-            case 'oldest': return a.updated.localeCompare(b.updated);
-            case 'name':   return a.title.localeCompare(b.title, 'ko');
-            default:       return b.updated.localeCompare(a.updated);
+            case 'pinned':
+            case 'newest':
+            case 'updated-desc': return b.updated.localeCompare(a.updated);
+            case 'oldest':
+            case 'updated-asc':  return a.updated.localeCompare(b.updated);
+            case 'name':
+            case 'title-asc':    return a.title.localeCompare(b.title, 'ko');
+            case 'title-desc':   return b.title.localeCompare(a.title, 'ko');
+            case 'owner-asc':    return a.owner.localeCompare(b.owner, 'ko');
+            case 'owner-desc':   return b.owner.localeCompare(a.owner, 'ko');
+            case 'status-asc':   return (STATUS_CONFIG[a.status]?.label||'').localeCompare(STATUS_CONFIG[b.status]?.label||'','ko');
+            case 'status-desc':  return (STATUS_CONFIG[b.status]?.label||'').localeCompare(STATUS_CONFIG[a.status]?.label||'','ko');
+            default:             return b.updated.localeCompare(a.updated);
         }
     });
 }
@@ -1125,6 +1361,8 @@ function renderSheets(data) {
     const container = document.getElementById('sheet-container');
     const countEl   = document.getElementById('result-count');
     if (countEl) countEl.innerHTML = data.length > 0 ? `총 <strong>${data.length}</strong>개` : '';
+    // 최근 열람 섹션
+    updateRecentSection();
     if (data.length === 0) {
         const query = document.getElementById('searchInput').value.trim();
         const isFiltered = currentFilter !== 'all' || query || selectedId !== 'root';
@@ -1138,26 +1376,90 @@ function renderSheets(data) {
     }
     const sorted = sortData(data);
     const _q = document.getElementById('searchInput').value.trim();
-    container.innerHTML = sorted.map(sheet => {
-        const accessLabel = sheet.access==='public' ? '팀 전체 공개' : '제한됨 🔒';
-        const accessClass = sheet.access==='public' ? 'public' : 'restricted';
-        const archivedBadge = sheet.status==='archived' ? '<span class="badge archived">보관됨</span>' : '';
-        const tagsHtml = sheet.tags.map(t=>`<span class="tag" data-tag-filter="${esc(t)}" style="cursor:pointer" title="${esc(t)} 태그로 필터">#${highlight(t, _q)}</span>`).join('');
-        const folderName = selectedId === 'root' ? getFolderNameForSheet(sheet.id) : null;
-        const folderBadge = folderName ? `<span style="display:inline-flex;align-items:center;gap:4px;background:#f2f4f6;color:var(--muted);padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;">${IC.folder}${esc(folderName)}</span>` : '';
-        const favIcon  = sheet.isFavorite ? '⭐' : '☆';
-        const pinIcon  = sheet.isPinned ? '<span class="pin-icon">📌</span>' : '';
-        const hasLink  = sheet.link && sheet.link !== '#';
-        const linkHref = hasLink ? esc(sheet.link) : 'javascript:void(0)';
-        const linkAttr = hasLink ? `target="_blank" rel="noopener"` : `data-card-edit-id="${sheet.id}" title="링크를 설정하려면 클릭하세요"`;
-        const linkStyle = hasLink ? '' : `style="color:var(--muted);text-decoration:underline dotted"`;
-        const titleHtml = cardEditingId === sheet.id
-            ? `<div class="card-title-row"><input class="card-rename-input" id="card-rename-input" value="${esc(sheet.title)}" maxlength="60" data-card-id="${sheet.id}"><div class="card-rename-actions"><button class="rename-confirm-btn ok" id="card-rename-ok" onmousedown="event.preventDefault()" title="확인">${IC.check}</button><button class="rename-confirm-btn no" id="card-rename-no" onmousedown="event.preventDefault()" title="취소">${IC.x}</button></div></div>`
-            : `<div class="card-title-row"><a href="${linkHref}" class="card-title" ${linkAttr} ${linkStyle}>${highlight(sheet.title, _q)}</a><button class="card-pencil-btn" data-card-rename-id="${sheet.id}" title="이름 수정">${IC.pencil}</button></div>`;
-        const relDate = relativeDate(sheet.updated);
-        const relDateTitle = sheet.updated;
-        return `<div class="sheet-card" draggable="true" data-id="${sheet.id}"><div class="card-body"><div class="card-header"><div class="badges"><span class="badge ${accessClass}">${esc(accessLabel)}</span>${archivedBadge}</div><div style="display:flex;align-items:center;gap:4px">${pinIcon}<button class="fav-btn" data-id="${sheet.id}" title="즐겨찾기 토글" aria-label="${sheet.isFavorite?'즐겨찾기 해제':'즐겨찾기 추가'}" aria-pressed="${sheet.isFavorite}">${favIcon}</button><button class="card-trash-btn" data-card-trash-id="${sheet.id}" title="시트 삭제">${IC.trashMd}</button><button class="card-menu-btn" data-card-edit-id="${sheet.id}" title="시트 편집">···</button></div></div>${titleHtml}<p class="card-desc">${highlight(sheet.desc, _q)}</p><div class="tags">${folderBadge}${tagsHtml}</div></div><div class="meta-info"><span>작성자: <strong>${highlight(sheet.owner, _q)}</strong></span><span title="${relDateTitle}">업데이트: ${esc(relDate)}</span></div></div>`;
-    }).join('');
+
+    if (currentView === 'list') {
+        // ── 테이블 리스트 뷰 ──
+        const sortIndicator = col => {
+            if (currentSort === col+'-asc')  return ' ↑';
+            if (currentSort === col+'-desc') return ' ↓';
+            if (col === 'updated' && currentSort === 'newest') return ' ↓';
+            if (col === 'updated' && currentSort === 'oldest') return ' ↑';
+            if (col === 'title'   && currentSort === 'name')   return ' ↑';
+            return '';
+        };
+        const isActiveCol = col => {
+            const map = { title:['name','title-asc','title-desc'], updated:['newest','oldest','updated-asc','updated-desc'], owner:['owner-asc','owner-desc'], status:['status-asc','status-desc'] };
+            return (map[col]||[]).includes(currentSort) ? ' sort-active' : '';
+        };
+        const allChecked = sorted.length > 0 && sorted.every(s => selectedCards.has(s.id));
+        let rows = sorted.map(sheet => {
+            const st = STATUS_CONFIG[sheet.status] || STATUS_CONFIG.active;
+            const hasLink = sheet.link && sheet.link !== '#';
+            const href = hasLink ? esc(sheet.link) : 'javascript:void(0)';
+            const linkExtra = hasLink ? 'target="_blank" rel="noopener"' : `data-card-edit-id="${sheet.id}"`;
+            const folderName = getFolderNameForSheet(sheet.id);
+            const folderColor = getFolderColorHex(sheet.id);
+            const folderBadge = folderName ? `<span class="lt-folder-badge" style="${folderColor?`border-left:3px solid ${folderColor};padding-left:6px`:''}">${esc(folderName)}</span>` : '—';
+            const isSelected = selectedCards.has(sheet.id);
+            return `<tr data-id="${sheet.id}" class="${isSelected?'lt-selected':''}">
+                <td style="width:40px;text-align:center"><input type="checkbox" class="card-checkbox" data-card-select-id="${sheet.id}" ${isSelected?'checked':''} style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer"></td>
+                <td><a href="${href}" class="lt-title-link" ${linkExtra} onclick="addRecentId(${sheet.id})"><span class="lt-title-text">${highlight(sheet.title, _q)}</span></a></td>
+                <td>${folderBadge}</td>
+                <td>${highlight(sheet.owner, _q)}</td>
+                <td style="white-space:nowrap;color:var(--muted)" title="${sheet.updated}">${esc(relativeDate(sheet.updated))}</td>
+                <td><span class="badge ${st.cls}">${st.label}</span></td>
+                <td><button class="lt-fav-btn fav-btn" data-id="${sheet.id}" title="즐겨찾기">${sheet.isFavorite?'⭐':'☆'}</button></td>
+                <td><button class="card-menu-btn" data-card-edit-id="${sheet.id}" style="opacity:1">···</button></td>
+            </tr>`;
+        }).join('');
+        container.innerHTML = `<table class="list-table">
+            <thead><tr>
+                <th><input type="checkbox" id="lt-check-all" ${allChecked?'checked':''} style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer" title="전체 선택"></th>
+                <th class="sortable${isActiveCol('title')}" data-sort-col="title">제목${sortIndicator('title')}</th>
+                <th>폴더</th>
+                <th class="sortable${isActiveCol('owner')}" data-sort-col="owner">작성자${sortIndicator('owner')}</th>
+                <th class="sortable${isActiveCol('updated')}" data-sort-col="updated">날짜${sortIndicator('updated')}</th>
+                <th class="sortable${isActiveCol('status')}" data-sort-col="status">상태${sortIndicator('status')}</th>
+                <th>즐겨찾기</th>
+                <th></th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+        </table>`;
+        document.getElementById('lt-check-all')?.addEventListener('change', e => {
+            if (e.target.checked) sorted.forEach(s => selectedCards.add(s.id));
+            else sorted.forEach(s => selectedCards.delete(s.id));
+            updateBulkBar(); applyFilters();
+        });
+    } else {
+        // ── 그리드 카드 뷰 ──
+        container.innerHTML = sorted.map(sheet => {
+            const st = STATUS_CONFIG[sheet.status] || STATUS_CONFIG.active;
+            const accessLabel = sheet.access==='public' ? '팀 전체 공개' : '제한됨 🔒';
+            const accessClass = sheet.access==='public' ? 'public' : 'restricted';
+            const statusBadge = `<span class="badge ${st.cls}">${st.label}</span>`;
+            const tagsHtml = sheet.tags.map(t=>`<span class="tag" data-tag-filter="${esc(t)}" style="cursor:pointer" title="${esc(t)} 태그로 필터">#${highlight(t, _q)}</span>`).join('');
+            const folderName = selectedId === 'root' ? getFolderNameForSheet(sheet.id) : null;
+            const folderColor = selectedId === 'root' ? getFolderColorHex(sheet.id) : null;
+            const folderBadge = folderName ? `<span style="display:inline-flex;align-items:center;gap:4px;background:#f2f4f6;color:var(--muted);padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;${folderColor?`border-left:3px solid ${folderColor}`:''}">${folderIcon((treeData.find(n=>n.name===folderName)||{}).color||'yellow')}${esc(folderName)}</span>` : '';
+            const favIcon  = sheet.isFavorite ? '⭐' : '☆';
+            const pinIcon  = sheet.isPinned ? '<span class="pin-icon">📌</span>' : '';
+            const hasLink  = sheet.link && sheet.link !== '#';
+            const linkHref = hasLink ? esc(sheet.link) : 'javascript:void(0)';
+            const linkAttr = hasLink ? `target="_blank" rel="noopener" onclick="addRecentId(${sheet.id})"` : `data-card-edit-id="${sheet.id}" title="링크를 설정하려면 클릭하세요"`;
+            const linkStyle = hasLink ? '' : `style="color:var(--muted);text-decoration:underline dotted"`;
+            const titleHtml = cardEditingId === sheet.id
+                ? `<div class="card-title-row"><input class="card-rename-input" id="card-rename-input" value="${esc(sheet.title)}" maxlength="60" data-card-id="${sheet.id}"><div class="card-rename-actions"><button class="rename-confirm-btn ok" id="card-rename-ok" onmousedown="event.preventDefault()" title="확인">${IC.check}</button><button class="rename-confirm-btn no" id="card-rename-no" onmousedown="event.preventDefault()" title="취소">${IC.x}</button></div></div>`
+                : `<div class="card-title-row"><a href="${linkHref}" class="card-title" ${linkAttr} ${linkStyle}>${highlight(sheet.title, _q)}</a><button class="card-pencil-btn" data-card-rename-id="${sheet.id}" title="이름 수정">${IC.pencil}</button></div>`;
+            const relDate = relativeDate(sheet.updated);
+            const isSelected = selectedCards.has(sheet.id);
+            const accentStyle = folderColor ? `border-left:4px solid ${folderColor};padding-left:22px;` : '';
+            return `<div class="sheet-card${isSelected?' selected':''}" draggable="true" data-id="${sheet.id}" style="${accentStyle}">
+                <div class="card-checkbox-wrap"><input type="checkbox" class="card-checkbox" data-card-select-id="${sheet.id}" ${isSelected?'checked':''}></div>
+                <div class="card-body"><div class="card-header"><div class="badges"><span class="badge ${accessClass}">${esc(accessLabel)}</span>${statusBadge}</div><div style="display:flex;align-items:center;gap:4px">${pinIcon}<button class="fav-btn" data-id="${sheet.id}" title="즐겨찾기 토글" aria-label="${sheet.isFavorite?'즐겨찾기 해제':'즐겨찾기 추가'}" aria-pressed="${sheet.isFavorite}">${favIcon}</button><button class="card-trash-btn" data-card-trash-id="${sheet.id}" title="시트 삭제">${IC.trashMd}</button><button class="card-menu-btn" data-card-edit-id="${sheet.id}" title="시트 편집">···</button></div></div>${titleHtml}<p class="card-desc">${highlight(sheet.desc, _q)}</p><div class="tags">${folderBadge}${tagsHtml}</div></div><div class="meta-info"><span>작성자: <strong>${highlight(sheet.owner, _q)}</strong></span><span title="${sheet.updated}">업데이트: ${esc(relDate)}</span></div>
+            </div>`;
+        }).join('');
+    }
+
     if (cardEditingId) {
         const inp = document.getElementById('card-rename-input');
         if (inp) {
@@ -1237,6 +1539,7 @@ function applyFilters() {
         return textMatch && quickMatch;
     });
     renderSheets(filtered);
+    updateStatsBar();
     saveStorage();
 }
 
@@ -1244,6 +1547,26 @@ function applyFilters() {
 // 카드 이벤트 위임
 // ══════════════════════════════════════
 document.getElementById('sheet-container').addEventListener('click', e => {
+    // 테이블 컬럼 헤더 정렬
+    const th = e.target.closest('th[data-sort-col]');
+    if (th) {
+        const col = th.dataset.sortCol;
+        const colSortMap = { title: ['title-asc','title-desc'], updated: ['updated-desc','updated-asc'], owner: ['owner-asc','owner-desc'], status: ['status-asc','status-desc'] };
+        const opts = colSortMap[col] || [];
+        currentSort = (currentSort === opts[0]) ? opts[1] : opts[0];
+        applyFilters(); return;
+    }
+    // 체크박스
+    const cbx = e.target.closest('[data-card-select-id]');
+    if (cbx && cbx.tagName === 'INPUT') {
+        const id = Number(cbx.dataset.cardSelectId);
+        if (cbx.checked) selectedCards.add(id); else selectedCards.delete(id);
+        updateBulkBar();
+        // 선택된 카드 시각 반영
+        const card = cbx.closest('.sheet-card, tr[data-id]');
+        if (card) { card.classList.toggle('selected', cbx.checked); card.classList.toggle('lt-selected', cbx.checked); }
+        return;
+    }
     const favBtn = e.target.closest('.fav-btn');
     if (favBtn && favBtn.dataset.id) { const id = Number(favBtn.dataset.id); const s = sheetsData.find(s=>s.id===id); if (s) { s.isFavorite = !s.isFavorite; applyFilters(); } return; }
     const pencilBtn = e.target.closest('[data-card-rename-id]');
@@ -1270,6 +1593,8 @@ function setView(type) {
     currentView = type;
     document.getElementById('sheet-container').className = type + '-view';
     document.querySelectorAll('[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view===type));
+    const ss = document.getElementById('sort-select');
+    if (ss) ss.style.display = type === 'list' ? 'none' : '';
 }
 document.querySelector('header').addEventListener('click', e => { const btn = e.target.closest('[data-view]'); if (btn) setView(btn.dataset.view); });
 document.querySelector('.controls').addEventListener('click', e => {
@@ -1333,6 +1658,65 @@ document.getElementById('tree-root').addEventListener('drop', e => {
     if (!sheetId) return;
     moveSheetToFolder(sheetId, row.dataset.dropFolderId);
 });
+
+// ══════════════════════════════════════
+// 트리 노드 순서 드래그 앤 드롭
+// ══════════════════════════════════════
+document.getElementById('tree-root').addEventListener('dragstart', e => {
+    const handle = e.target.closest('[data-drag-id]');
+    if (!handle) return;
+    _treeDragNodeId = handle.dataset.dragId;
+    e.dataTransfer.setData('application/tree-node', _treeDragNodeId);
+    e.dataTransfer.effectAllowed = 'move';
+});
+document.getElementById('tree-root').addEventListener('dragover', e => {
+    if (!_treeDragNodeId || _dragSheetId !== null) return;
+    const node = e.target.closest('.tree-node[data-node-id]');
+    if (!node) return;
+    const nid = node.dataset.nodeId;
+    if (nid === _treeDragNodeId) return;
+    e.preventDefault();
+    if (_treeDragOverNodeId && _treeDragOverNodeId !== nid) {
+        document.querySelector(`.tree-node[data-node-id="${_treeDragOverNodeId}"]`)?.classList.remove('drag-over-tree');
+    }
+    _treeDragOverNodeId = nid;
+    node.classList.add('drag-over-tree');
+});
+document.getElementById('tree-root').addEventListener('dragleave', e => {
+    const node = e.target.closest('.tree-node[data-node-id]');
+    if (node && !node.contains(e.relatedTarget)) node.classList.remove('drag-over-tree');
+});
+document.getElementById('tree-root').addEventListener('drop', e => {
+    if (!_treeDragNodeId) return;
+    const appData = e.dataTransfer.getData('application/tree-node');
+    if (!appData) return; // card-to-folder drop, let existing handler run
+    e.preventDefault();
+    const node = e.target.closest('.tree-node[data-node-id]');
+    node?.classList.remove('drag-over-tree');
+    const targetId = node?.dataset.nodeId;
+    if (targetId && targetId !== _treeDragNodeId) reorderTreeNode(_treeDragNodeId, targetId);
+    _treeDragNodeId = null; _treeDragOverNodeId = null;
+});
+document.getElementById('tree-root').addEventListener('dragend', () => {
+    _treeDragNodeId = null;
+    document.querySelectorAll('.tree-node.drag-over-tree').forEach(n => n.classList.remove('drag-over-tree'));
+});
+function reorderTreeNode(dragId, targetId) {
+    function findInArr(id, arr) {
+        for (let i=0;i<arr.length;i++) {
+            if (arr[i].id===id) return {arr,idx:i};
+            if (arr[i].children) { const f=findInArr(id,arr[i].children); if(f) return f; }
+        }
+        return null;
+    }
+    const src = findInArr(dragId, treeData);
+    const tgt = findInArr(targetId, treeData);
+    if (!src || !tgt || src.arr !== tgt.arr) return;
+    const [removed] = src.arr.splice(src.idx, 1);
+    const newIdx = src.arr.findIndex(n => n.id === targetId);
+    src.arr.splice(newIdx + 1, 0, removed);
+    renderTree(); saveStorage();
+}
 
 // ══════════════════════════════════════
 // 터치 드래그 앤 드롭 (모바일)
@@ -1642,6 +2026,166 @@ document.getElementById('import-file-input').addEventListener('change', e => {
 });
 
 // ══════════════════════════════════════
+// 다크 모드
+// ══════════════════════════════════════
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    const moon = document.getElementById('dark-icon-moon');
+    const sun  = document.getElementById('dark-icon-sun');
+    if (moon) moon.style.display = theme === 'dark' ? 'none' : '';
+    if (sun)  sun.style.display  = theme === 'dark' ? '' : 'none';
+    try { localStorage.setItem('sm-theme', theme); } catch(e) {}
+}
+function toggleTheme() {
+    const cur = document.documentElement.getAttribute('data-theme') || 'light';
+    applyTheme(cur === 'dark' ? 'light' : 'dark');
+}
+
+// ══════════════════════════════════════
+// 통계 바
+// ══════════════════════════════════════
+function updateStatsBar() {
+    const now = new Date();
+    const weekAgo = new Date(now - 7*86400000);
+    const fav   = sheetsData.filter(s => s.isFavorite).length;
+    const arch  = sheetsData.filter(s => s.status === 'archived').length;
+    const week  = sheetsData.filter(s => new Date(s.updated) >= weekAgo).length;
+    const total = sheetsData.length;
+    const el = id => document.getElementById(id);
+    if (el('stat-total')) el('stat-total').textContent = total;
+    if (el('stat-fav'))   el('stat-fav').textContent   = fav;
+    if (el('stat-arch'))  el('stat-arch').textContent  = arch;
+    if (el('stat-week'))  el('stat-week').textContent  = week;
+}
+function setStatFilter(filter) {
+    currentFilter = filter;
+    document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('active', b.dataset.filter === filter));
+    applyFilters();
+}
+
+// ══════════════════════════════════════
+// 최근 열람
+// ══════════════════════════════════════
+function addRecentId(id) {
+    recentIds = [id, ...recentIds.filter(r => r !== id)].slice(0, 5);
+    saveStorage();
+}
+function updateRecentSection() {
+    const wrap = document.getElementById('recent-wrap');
+    if (!wrap) return;
+    if (selectedId !== 'root' || recentIds.length === 0) { wrap.innerHTML = ''; return; }
+    const chips = recentIds.map(id => {
+        const s = sheetsData.find(s => s.id === id);
+        if (!s) return '';
+        const href = (s.link && s.link !== '#') ? esc(s.link) : 'javascript:void(0)';
+        const extra = (s.link && s.link !== '#') ? 'target="_blank" rel="noopener"' : '';
+        return `<a class="recent-chip" href="${href}" ${extra} onclick="addRecentId(${s.id})">
+            <span class="recent-chip-title">${esc(s.title)}</span>
+            <span class="recent-chip-meta">${esc(relativeDate(s.updated))}</span>
+        </a>`;
+    }).filter(Boolean).join('');
+    if (!chips) { wrap.innerHTML = ''; return; }
+    wrap.innerHTML = `<div class="recent-section"><div class="recent-header">${IC.recent} 최근 열람</div><div class="recent-scroll">${chips}</div></div>`;
+}
+
+// ══════════════════════════════════════
+// 다중 선택 + 일괄 작업 바
+// ══════════════════════════════════════
+function updateBulkBar() {
+    const bar = document.getElementById('bulk-bar');
+    const lbl = document.getElementById('bulk-count-label');
+    if (!bar) return;
+    if (selectedCards.size > 0) {
+        if (lbl) lbl.textContent = `${selectedCards.size}개 선택됨`;
+        bar.classList.add('show');
+    } else {
+        bar.classList.remove('show');
+    }
+}
+document.getElementById('bulk-close-btn').addEventListener('click', () => {
+    selectedCards.clear(); updateBulkBar(); applyFilters();
+});
+document.getElementById('bulk-fav-btn').addEventListener('click', () => {
+    const allFav = [...selectedCards].every(id => sheetsData.find(s=>s.id===id)?.isFavorite);
+    selectedCards.forEach(id => { const s = sheetsData.find(s=>s.id===id); if(s) s.isFavorite = !allFav; });
+    showToast(`${selectedCards.size}개 항목 즐겨찾기 ${allFav?'해제':'추가'}됨`);
+    applyFilters();
+});
+document.getElementById('bulk-delete-btn').addEventListener('click', () => {
+    const cnt = selectedCards.size;
+    showConfirm(`선택된 ${cnt}개 시트를 삭제합니다. 되돌릴 수 없습니다.`, () => {
+        saveUndoSnapshot();
+        selectedCards.forEach(id => {
+            const idx = sheetsData.findIndex(s=>s.id===id); if (idx!==-1) sheetsData.splice(idx,1);
+            let nid=null; function fn(nodes){for(const n of nodes){if(n.type==='sheet'&&n.sheetId===id){nid=n.id;return;}if(n.children)fn(n.children);}} fn(treeData);
+            if(nid) treeData = deleteFromTree(nid, treeData);
+        });
+        selectedCards.clear(); updateBulkBar();
+        showToast(`${cnt}개 시트가 삭제되었습니다`, '🗑️', restoreUndo);
+        renderTree(); applyFilters();
+    });
+});
+document.getElementById('bulk-folder-btn').addEventListener('click', e => {
+    const popup = document.getElementById('bulk-folder-popup');
+    if (popup.style.display !== 'none') { popup.style.display = 'none'; return; }
+    let opts = '<div style="padding:4px 0 6px;font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;padding:8px 12px 6px">폴더 선택</div>';
+    function addOpts(nodes, depth) {
+        for (const n of nodes) {
+            if (n.type === 'folder') {
+                opts += `<div data-bulk-folder-id="${n.id}" style="padding:8px 14px 8px ${14+depth*14}px;cursor:pointer;font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:6px;transition:background .1s" onmouseover="this.style.background='var(--primary-light)'" onmouseout="this.style.background=''">${folderIcon(n.color||'yellow')}${esc(n.name)}</div>`;
+                if (n.children) addOpts(n.children, depth+1);
+            }
+        }
+    }
+    addOpts(treeData, 0);
+    popup.innerHTML = opts;
+    const rect = e.currentTarget.getBoundingClientRect();
+    popup.style.left = rect.left + 'px';
+    popup.style.bottom = (window.innerHeight - rect.top + 8) + 'px';
+    popup.style.display = 'block';
+    popup.onclick = ev => {
+        const btn = ev.target.closest('[data-bulk-folder-id]');
+        if (!btn) return;
+        const folderId = btn.dataset.bulkFolderId;
+        selectedCards.forEach(id => moveSheetToFolder(id, folderId));
+        selectedCards.clear(); updateBulkBar();
+        popup.style.display = 'none';
+    };
+});
+document.addEventListener('click', e => {
+    const popup = document.getElementById('bulk-folder-popup');
+    if (popup && !popup.contains(e.target) && !e.target.closest('#bulk-folder-btn')) popup.style.display='none';
+    const cp = document.getElementById('color-picker-popup');
+    if (cp && cp.style.display!=='none' && !cp.contains(e.target) && !e.target.closest('[data-color-folder-id]')) closeColorPicker();
+});
+
+// ══════════════════════════════════════
+// 폴더 컬러 픽커
+// ══════════════════════════════════════
+function openColorPicker(folderId, btnEl) {
+    _colorPickerFolderId = folderId;
+    const popup = document.getElementById('color-picker-popup');
+    const node = findNode(folderId);
+    const curColor = node?.color || 'yellow';
+    popup.innerHTML = FOLDER_COLORS.map(c =>
+        `<div class="color-dot${c.id===curColor?' active':''}" style="background:${c.fill};border-color:${c.stroke}" data-color-id="${c.id}" title="${c.id}" onclick="setFolderColor('${folderId}','${c.id}')"></div>`
+    ).join('');
+    const rect = btnEl.getBoundingClientRect();
+    popup.style.top  = (rect.bottom + 6) + 'px';
+    popup.style.left = Math.min(rect.left, window.innerWidth - 130) + 'px';
+    popup.style.display = 'flex';
+}
+function closeColorPicker() {
+    _colorPickerFolderId = null;
+    const p = document.getElementById('color-picker-popup');
+    if (p) p.style.display = 'none';
+}
+function setFolderColor(folderId, colorId) {
+    treeData = mapTree(treeData, n => n.id === folderId ? {...n, color: colorId} : n);
+    closeColorPicker(); renderTree(); applyFilters();
+}
+
+// ══════════════════════════════════════
 // 모바일 사이드바 토글
 // ══════════════════════════════════════
 function openSidebar()  { document.body.classList.add('sidebar-open'); }
@@ -1651,6 +2195,10 @@ function toggleSidebar() { document.body.classList.contains('sidebar-open') ? cl
 // 초기화 (localStorage 복원)
 // ══════════════════════════════════════
 (function initStorage() {
+    // 다크 모드 먼저 적용 (깜빡임 방지)
+    const savedTheme = localStorage.getItem('sm-theme') || (window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
+    applyTheme(savedTheme);
+
     const saved = loadStorage();
     if (saved) {
         sheetsData.length = 0; saved.sheetsData.forEach(s => sheetsData.push(s));
@@ -1658,6 +2206,7 @@ function toggleSidebar() { document.body.classList.contains('sidebar-open') ? cl
         if (saved.currentFilter) currentFilter = saved.currentFilter;
         if (saved.currentView)   currentView   = saved.currentView;
         if (saved.currentSort)   currentSort   = saved.currentSort;
+        if (Array.isArray(saved.recentIds)) recentIds = saved.recentIds;
         if (saved.searchQuery) {
             const si = document.getElementById('searchInput');
             if (si) { si.value = saved.searchQuery; document.getElementById('btn-search-clear').style.display = saved.searchQuery ? 'block' : 'none'; }
