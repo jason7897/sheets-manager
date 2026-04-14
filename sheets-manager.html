@@ -1317,8 +1317,8 @@
 <div id="global-drop-overlay" class="global-drop-overlay" role="region" aria-label="URL 드롭 영역">
     <div class="global-drop-box">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-        <div class="global-drop-title">놓으면 시트가 추가됩니다</div>
-        <div class="global-drop-sub">구글 시트 탭을 끌어다 놓으면 바로 추가돼요</div>
+        <div class="global-drop-title">URL을 여기에 놓으세요</div>
+        <div class="global-drop-sub">주소창의 URL을 드래그하거나 Ctrl+V로 붙여넣으세요</div>
     </div>
 </div>
 
@@ -4010,81 +4010,99 @@ renderSheets = function(data) {
 }
 
 // ══════════════════════════════════════
-// 전역 드래그 드롭 — URL을 페이지에 바로 끌어다 놓기
+// 전역 드래그 드롭 + URL 붙여넣기
 // ══════════════════════════════════════
 (function() {
     const overlay = document.getElementById('global-drop-overlay');
     let _urlDragActive = false;
 
-    // 외부 URL 드래그 판별:
-    // - 내부 카드 드래그(_dragSheetId)는 제외
-    // - 'text/uri-list' 타입이 있으면 브라우저 탭/주소창 드래그로 간주
-    //   (내부 카드 드래그는 text/plain만 사용하므로 안전하게 구분 가능)
+    // 외부 URL 드래그 판별
+    // - 카드(_dragSheetId) / 트리(_treeDragNodeId) 내부 드래그는 제외
+    // - uri-list: 브라우저 주소창·북마크·링크 드래그
+    // - text/plain: 일부 브라우저/OS의 주소창 드래그
+    // (application/tree-node 만 있는 트리 드래그는 자동 제외됨)
     function isExternalUrlDrag(e) {
         if (_dragSheetId !== null) return false;
+        if (_treeDragNodeId !== null) return false;
         const types = Array.from(e.dataTransfer?.types || []);
-        return types.includes('text/uri-list');
+        return types.includes('text/uri-list') || types.includes('text/plain');
     }
 
-    // 커서가 페이지에 진입할 때 오버레이 표시
+    function showOverlay() {
+        if (!_urlDragActive) { _urlDragActive = true; overlay.classList.add('active'); }
+    }
+    function hideOverlay() {
+        _urlDragActive = false;
+        overlay.classList.remove('active', 'over');
+    }
+
+    // URL 추출 헬퍼
+    function extractUrl(dt) {
+        const uri = dt.getData('text/uri-list');
+        const txt = dt.getData('text/plain');
+        return (uri
+            ? uri.split('\n').map(l => l.trim()).find(l => l && !l.startsWith('#'))
+            : txt.trim()
+        ) || '';
+    }
+
+    // 오버레이 표시: 페이지 진입 시
     document.addEventListener('dragenter', e => {
-        if (!isExternalUrlDrag(e)) return;
-        if (!_urlDragActive) {
-            _urlDragActive = true;
-            overlay.classList.add('active');
-        }
+        if (isExternalUrlDrag(e)) showOverlay();
     });
 
-    // relatedTarget === null : 커서가 브라우저 창 밖으로 나갔을 때만 숨김
-    // 페이지 내 요소 간 이동에서 발생하는 dragleave는 무시
+    // 오버레이 숨김: 브라우저 창 밖으로 나갔을 때만 (relatedTarget === null)
     document.addEventListener('dragleave', e => {
-        if (!_urlDragActive) return;
-        if (e.relatedTarget === null) {
-            _urlDragActive = false;
-            overlay.classList.remove('active', 'over');
-        }
+        if (_urlDragActive && e.relatedTarget === null) hideOverlay();
     });
 
-    // drop이 가능하려면 dragover에서 preventDefault 필수
+    // dragover preventDefault 없으면 drop 자체가 발생하지 않음
     document.addEventListener('dragover', e => {
-        if (_urlDragActive) e.preventDefault();
+        if (_urlDragActive) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; }
     });
 
-    // 페이지 어딘가에 drop되어도 브라우저 기본 동작(URL 이동) 방지
+    // document 레벨 drop: 오버레이 밖에 드롭된 경우 처리 (URL 데이터 직접 읽기)
     document.addEventListener('drop', e => {
-        if (_urlDragActive) {
-            e.preventDefault();
-            _urlDragActive = false;
-            overlay.classList.remove('active', 'over');
-        }
+        if (!_urlDragActive) return;
+        e.preventDefault();
+        hideOverlay();
+        const url = extractUrl(e.dataTransfer);
+        if (url) quickAddByUrl(url);
+        else showToast('URL을 읽을 수 없습니다', '⚠️');
     });
 
+    // 오버레이 자체 drop (stopPropagation으로 document.drop과 중복 방지)
     overlay.addEventListener('dragover', e => {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'copy';
         overlay.classList.add('over');
     });
-
     overlay.addEventListener('dragleave', e => {
         if (!overlay.contains(e.relatedTarget)) overlay.classList.remove('over');
     });
-
     overlay.addEventListener('drop', e => {
         e.preventDefault();
-        e.stopPropagation(); // document drop 핸들러 중복 방지
-        _urlDragActive = false;
-        overlay.classList.remove('active', 'over');
+        e.stopPropagation();
+        hideOverlay();
+        const url = extractUrl(e.dataTransfer);
+        if (url) quickAddByUrl(url);
+        else showToast('URL을 읽을 수 없습니다', '⚠️');
+    });
 
-        const uri = e.dataTransfer.getData('text/uri-list');
-        const txt = e.dataTransfer.getData('text/plain');
-        // uri-list 우선, 여러 줄이면 첫 유효 URL 사용
-        const url = (uri
-            ? uri.split('\n').map(l => l.trim()).find(l => l && !l.startsWith('#'))
-            : txt.trim()
-        ) || '';
+    // ── Ctrl+V / Cmd+V 붙여넣기로 URL 추가 ──
+    // 인풋/텍스트에어리어에 포커스 없고, 모달 닫혀있을 때만 동작
+    document.addEventListener('paste', e => {
+        const active = document.activeElement;
+        if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) return;
+        const modals = ['add-modal','edit-modal','log-panel','dashboard-modal','comment-panel','template-modal','automation-modal'];
+        if (modals.some(id => document.getElementById(id)?.classList.contains('open'))) return;
 
-        if (!url) { showToast('URL을 읽을 수 없습니다', '⚠️'); return; }
-        quickAddByUrl(url);
+        const text = (e.clipboardData?.getData('text/plain') || '').trim();
+        if (!text) return;
+        if (text.startsWith('http') || text.match(SHEETS_ID_RE)) {
+            e.preventDefault();
+            quickAddByUrl(text);
+        }
     });
 })();
 
