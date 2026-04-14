@@ -1007,6 +1007,9 @@
             <button id="btn-template" onclick="openTemplateModal()" title="템플릿으로 시트 추가" class="header-icon-btn">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
             </button>
+            <button onclick="openBookmarkletModal()" title="북마클릿 설치 — 구글 시트 탭에서 바로 추가" class="header-icon-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+            </button>
             <button id="btn-log-toggle" onclick="openLogPanel()" title="활동 로그 보기" class="header-icon-btn">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                 <span id="log-btn-count" style="display:none;background:var(--primary);color:white;border-radius:6px;padding:1px 5px;font-size:10px;min-width:16px;text-align:center"></span>
@@ -1314,6 +1317,37 @@
 </div>
 
 <!-- 전역 드래그 드롭 오버레이 -->
+<!-- 북마클릿 안내 모달 -->
+<div id="bookmarklet-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-label="북마클릿 설치">
+    <div class="modal-box" style="max-width:480px">
+        <div class="modal-header">
+            <span class="modal-title" style="font-size:17px">🔖 북마클릿으로 바로 추가</span>
+            <button class="modal-close-btn" onclick="closeBookmarkletModal()" aria-label="닫기">✕</button>
+        </div>
+        <div style="padding:20px 24px 24px;display:flex;flex-direction:column;gap:18px">
+            <p style="font-size:14px;color:var(--muted);line-height:1.6;margin:0">
+                아래 버튼을 <strong style="color:var(--text)">즐겨찾기 바(북마크 바)</strong>로 드래그하면 설치됩니다.<br>
+                이후 구글 시트 페이지에서 버튼을 누르면 이 앱에 자동으로 추가돼요.
+            </p>
+            <div style="display:flex;justify-content:center">
+                <a id="bookmarklet-btn" href="" style="display:inline-flex;align-items:center;gap:8px;background:var(--primary);color:white;padding:12px 22px;border-radius:12px;font-weight:700;font-size:14px;text-decoration:none;box-shadow:0 2px 8px rgba(49,130,246,.3);cursor:grab" draggable="true">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                    📋 시트 매니저에 추가
+                </a>
+            </div>
+            <ol style="font-size:13px;color:var(--muted);line-height:1.8;margin:0;padding-left:20px">
+                <li>위 버튼을 브라우저 즐겨찾기 바로 드래그하세요</li>
+                <li>구글 시트 페이지로 이동하세요</li>
+                <li>즐겨찾기 바에서 <strong style="color:var(--text)">📋 시트 매니저에 추가</strong> 클릭</li>
+                <li>이 앱 탭이 열리며 시트가 자동 추가됩니다!</li>
+            </ol>
+            <div style="background:var(--hover-bg);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--muted)">
+                💡 즐겨찾기 바가 안 보이면 <strong style="color:var(--text)">Ctrl+Shift+B</strong>로 표시하세요
+            </div>
+        </div>
+    </div>
+</div>
+
 <div id="global-drop-overlay" class="global-drop-overlay" role="region" aria-label="URL 드롭 영역">
     <div class="global-drop-box">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
@@ -4104,6 +4138,45 @@ renderSheets = function(data) {
             quickAddByUrl(text);
         }
     });
+})();
+
+// ══════════════════════════════════════
+// 북마클릿 모달
+// ══════════════════════════════════════
+function openBookmarkletModal() {
+    // 현재 앱 URL 기반으로 북마클릿 코드 생성
+    const appUrl = location.origin + location.pathname.replace(/\/$/, '');
+    const code = `javascript:(function(){var u=encodeURIComponent(location.href);var w=window.open('${appUrl}?add='+u,'sm-app','noopener');if(w)w.focus();})();`;
+    const btn = document.getElementById('bookmarklet-btn');
+    if (btn) btn.href = code;
+    document.getElementById('bookmarklet-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+function closeBookmarkletModal() {
+    document.getElementById('bookmarklet-modal').classList.remove('open');
+    document.body.style.overflow = '';
+}
+document.getElementById('bookmarklet-modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('bookmarklet-modal')) closeBookmarkletModal();
+});
+document.getElementById('bookmarklet-modal').addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeBookmarkletModal();
+});
+
+// ══════════════════════════════════════
+// ?add=URL 쿼리 파라미터 처리
+// (북마클릿이 이 앱을 열면서 전달하는 URL)
+// ══════════════════════════════════════
+(function() {
+    const params = new URLSearchParams(window.location.search);
+    const addUrl = params.get('add');
+    if (!addUrl) return;
+    // URL 파라미터를 히스토리에서 제거 (새로고침 시 중복 방지)
+    window.history.replaceState({}, '', window.location.pathname);
+    // 앱 초기화 완료 후 추가
+    setTimeout(() => {
+        quickAddByUrl(decodeURIComponent(addUrl));
+    }, 400);
 })();
 
 function quickAddByUrl(url) {
