@@ -1,4 +1,5 @@
 {
-  "buildCommand": "node my-sheet-manager/build.mjs",
-  "outputDirectory": "my-sheet-manager/dist"
+  "buildCommand": "mkdir -p dist && cp sheets-manager.html dist/index.html && cp dashboard.html dist/dashboard.html",
+  "outputDirectory": "dist",
+  "framework": null
 }
