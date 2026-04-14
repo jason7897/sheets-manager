@@ -21,16 +21,39 @@
            CSS 변수 — Toss Design Token
         ══════════════════════════════════════ */
         :root {
-            --primary:       #3182f6;
-            --primary-light: #ebf3fe;
-            --primary-dark:  #1b64da;
-            --bg:            #f9fafb;
-            --card-bg:       #ffffff;
-            --text:          #191f28;
-            --muted:         #6b7684;
-            --border:        #e5e8eb;
-            --danger:        #f04452;
-            --danger-light:  #fff0f2;
+            --primary:        #3182f6;
+            --primary-light:  #ebf3fe;
+            --primary-dark:   #1b64da;
+            --bg:             #f9fafb;
+            --card-bg:        #ffffff;
+            --text:           #191f28;
+            --muted:          #6b7684;
+            --border:         #e5e8eb;
+            --danger:         #f04452;
+            --danger-light:   #fff0f2;
+            --hover-bg:       #f2f4f6;
+            --surface-bg:     #fafbfc;
+            --success:        #2e7d32;
+            --success-light:  #e8f5e9;
+            --warning:        #f59e0b;
+            --warning-light:  #fff8e1;
+
+            /* 타이포그래피 스케일 */
+            --text-xs:   11px;
+            --text-sm:   12px;
+            --text-base: 14px;
+            --text-md:   16px;
+            --text-lg:   18px;
+            --text-xl:   20px;
+            --text-2xl:  24px;
+
+            /* 간격 스케일 */
+            --radius-sm:  4px;
+            --radius-md:  8px;
+            --radius-lg:  12px;
+            --radius-xl:  16px;
+            --radius-2xl: 20px;
+            --radius-3xl: 24px;
         }
 
         *, *::before, *::after { box-sizing: border-box; }
@@ -72,7 +95,7 @@
             letter-spacing: 1px;
             border-bottom: 1px solid var(--border);
             flex-shrink: 0;
-            background: #fafbfc;
+            background: var(--surface-bg);
         }
         .sidebar-header-btns { display: flex; gap: 2px; }
         #tree-root { overflow-y: auto; flex: 1; padding: 6px 8px 12px; }
@@ -93,7 +116,7 @@
             user-select: none;
             transition: background .12s;
         }
-        .tree-row:hover { background: #f2f4f6; }
+        .tree-row:hover { background: var(--hover-bg); }
         .tree-node.selected > .tree-row { background: var(--primary-light); }
         .tree-node.selected > .tree-row .tree-name { color: var(--primary); font-weight: 700; }
 
@@ -123,8 +146,9 @@
         .tree-name {
             font-size: 13.5px; color: var(--text);
             overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-            flex: 1; min-width: 0; font-weight: 500;
+            flex: 1; min-width: 0; font-weight: 500; cursor: pointer;
         }
+        .tree-node[data-node-type="sheet"] > .tree-row .tree-name:hover { color: var(--primary); text-decoration: underline; }
 
         .tree-rename-wrap { display: flex; align-items: center; gap: 3px; flex: 1; min-width: 0; }
         .tree-rename-input, .tree-add-input {
@@ -172,7 +196,7 @@
         .search-wrap { flex: 1; min-width: 200px; position: relative; }
         .search-icon {
             position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
-            color: #adb5bd; pointer-events: none; display: flex; align-items: center;
+            color: var(--muted); pointer-events: none; display: flex; align-items: center;
         }
         .search-bar {
             width: 100%; padding: 11px 16px 11px 42px;
@@ -181,7 +205,7 @@
             transition: border-color .2s, box-shadow .2s; color: var(--text);
             font-family: inherit;
         }
-        .search-bar::placeholder { color: #adb5bd; }
+        .search-bar::placeholder { color: var(--muted); opacity: .6; }
         .search-bar:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(49,130,246,.12); }
 
         /* 결과 카운트 */
@@ -234,7 +258,7 @@
         }
         .badge.public     { background: #e8f5e9; color: #2e7d32; }
         .badge.restricted { background: #fff0f2; color: #c62828; }
-        .badge.archived   { background: #f2f4f6; color: var(--muted); }
+        .badge.archived   { background: var(--hover-bg); color: var(--muted); }
 
         .fav-btn {
             background: none; border: none; cursor: pointer;
@@ -259,7 +283,7 @@
             opacity: 0; transition: opacity .15s, background .12s; flex-shrink: 0;
         }
         .sheet-card:hover .card-pencil-btn { opacity: 1; }
-        .card-pencil-btn:hover { background: #f2f4f6; color: var(--text); }
+        .card-pencil-btn:hover { background: var(--hover-bg); color: var(--text); }
 
         .card-menu-btn {
             background: none; border: none; cursor: pointer;
@@ -269,7 +293,7 @@
             flex-shrink: 0; letter-spacing: 1px;
         }
         .sheet-card:hover .card-menu-btn { opacity: 1; }
-        .card-menu-btn:hover { background: #f2f4f6; color: var(--text); }
+        .card-menu-btn:hover { background: var(--hover-bg); color: var(--text); }
 
         /* ── 카드 삭제 버튼 ── */
         .card-trash-btn {
@@ -311,7 +335,7 @@
             font-size: 12.5px; color: var(--muted);
             display: flex; justify-content: space-between;
             margin-top: auto; padding-top: 14px;
-            border-top: 1px solid #f2f4f6;
+            border-top: 1px solid var(--border);
         }
 
         /* Empty State */
@@ -321,7 +345,7 @@
             align-items: center; gap: 18px;
         }
         .empty-state-icon {
-            width: 76px; height: 76px; background: #f2f4f6; border-radius: 24px;
+            width: 76px; height: 76px; background: var(--hover-bg); border-radius: 24px;
             display: flex; align-items: center; justify-content: center;
         }
         .empty-state-title { font-size: 18px; font-weight: 800; color: var(--text); letter-spacing: -.3px; }
@@ -370,7 +394,7 @@
             padding: 8px; border-radius: 10px; display: flex; align-items: center;
             transition: background .15s, color .15s;
         }
-        .modal-close:hover { background: #f2f4f6; color: var(--text); }
+        .modal-close:hover { background: var(--hover-bg); color: var(--text); }
         .field-label {
             font-size: 12px; font-weight: 800; color: var(--muted);
             margin-bottom: 8px; display: flex; align-items: center; gap: 5px;
@@ -388,21 +412,43 @@
         .url-feedback.success { color: #2e7d32; }
         .url-feedback.error   { color: var(--danger); }
         .sheet-id-chip {
-            display: inline-block; margin-top: 5px; background: #f2f4f6;
+            display: inline-block; margin-top: 5px; background: var(--hover-bg);
             border-radius: 7px; padding: 3px 9px; font-size: 11.5px;
             font-family: monospace; color: var(--muted); max-width: 100%;
             overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
+        /* 전역 드래그 드롭 오버레이 */
+        .global-drop-overlay {
+            position: fixed; inset: 0; z-index: 3000;
+            background: rgba(49,130,246,.12); backdrop-filter: blur(3px);
+            display: none; align-items: center; justify-content: center;
+            pointer-events: none; transition: opacity .15s;
+        }
+        .global-drop-overlay.active { display: flex; pointer-events: all; }
+        .global-drop-box {
+            background: var(--card-bg); border: 3px dashed var(--primary);
+            border-radius: 28px; padding: 56px 80px; text-align: center;
+            display: flex; flex-direction: column; align-items: center; gap: 16px;
+            box-shadow: 0 16px 64px rgba(49,130,246,.25);
+            animation: drop-box-in .18s cubic-bezier(.34,1.4,.64,1);
+        }
+        @keyframes drop-box-in { from { transform: scale(.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .global-drop-box svg { color: var(--primary); }
+        .global-drop-title { font-size: 20px; font-weight: 800; color: var(--primary); }
+        .global-drop-sub   { font-size: 13.5px; color: var(--muted); font-weight: 500; }
+        .global-drop-overlay.over .global-drop-box { background: var(--primary-light); border-style: solid; }
+        [data-theme="dark"] .global-drop-box { background: var(--surface-bg); }
+
         .dropzone {
             border: 2px dashed #d1d6db; border-radius: 18px; padding: 36px 20px;
             text-align: center; transition: background .15s, border-color .15s;
             display: flex; flex-direction: column; align-items: center; gap: 10px;
-            color: var(--muted); background: #fafbfc; cursor: default;
+            color: var(--muted); background: var(--surface-bg); cursor: default;
         }
         .dropzone.dragging { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
         .dropzone-label { font-size: 14px; font-weight: 700; color: #4b5563; }
-        .dropzone-sub   { font-size: 12.5px; color: #adb5bd; }
-        .divider { display: flex; align-items: center; gap: 12px; color: #adb5bd; font-size: 12px; font-weight: 700; letter-spacing: .4px; }
+        .dropzone-sub   { font-size: 12.5px; color: var(--muted); }
+        .divider { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .4px; }
         .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
         .drive-btn {
             width: 100%; padding: 14px; border: 1.5px solid var(--border); border-radius: 14px;
@@ -410,7 +456,7 @@
             display: flex; align-items: center; justify-content: center; gap: 10px; font-family: inherit;
             transition: all .2s; position: relative;
         }
-        .drive-btn:hover { background: #f9fafb; border-color: #adb5bd; box-shadow: 0 2px 8px rgba(0,0,0,.07); }
+        .drive-btn:hover { background: var(--hover-bg); border-color: var(--muted); box-shadow: 0 2px 8px rgba(0,0,0,.07); }
         .title-input {
             width: 100%; padding: 13px 16px; border: 1.5px solid var(--border);
             border-radius: 14px; font-size: 14px; outline: none; font-family: inherit;
@@ -423,14 +469,14 @@
             border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 700;
             color: var(--muted); transition: all .15s; font-family: inherit;
         }
-        .btn-cancel:hover { background: #f2f4f6; border-color: #adb5bd; color: var(--text); }
+        .btn-cancel:hover { background: var(--hover-bg); border-color: var(--muted); color: var(--text); }
         .btn-add {
             padding: 11px 24px; background: var(--primary); color: white;
             border: none; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 800;
             display: flex; align-items: center; gap: 7px; font-family: inherit;
             transition: all .2s ease-out; box-shadow: 0 4px 14px rgba(49,130,246,.3);
         }
-        .btn-add:disabled { background: #adb5bd; cursor: not-allowed; box-shadow: none; }
+        .btn-add:disabled { background: var(--muted); cursor: not-allowed; box-shadow: none; }
         .btn-add:not(:disabled):hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(49,130,246,.4); }
 
         /* ── 편집 모달 필드 ── */
@@ -482,7 +528,7 @@
             border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 700;
             color: var(--muted); transition: all .15s; font-family: inherit;
         }
-        .btn-confirm-cancel:hover { background: #f2f4f6; }
+        .btn-confirm-cancel:hover { background: var(--hover-bg); }
         .btn-confirm-delete {
             padding: 10px 20px; background: var(--danger); color: white;
             border: none; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 800;
@@ -515,7 +561,7 @@
         /* 사이드바 푸터 */
         .sidebar-footer {
             flex-shrink: 0; border-top: 1px solid var(--border);
-            padding: 10px 12px; display: flex; gap: 6px; background: #fafbfc;
+            padding: 10px 12px; display: flex; gap: 6px; background: var(--surface-bg);
         }
         .sidebar-footer-btn {
             flex: 1; padding: 8px 4px; border: 1.5px solid var(--border);
@@ -560,7 +606,10 @@
         [data-theme="dark"] {
             --primary:#4d9cf8; --primary-light:#1e3a5f; --primary-dark:#6baafa;
             --bg:#111827; --card-bg:#1f2937; --text:#f9fafb;
-            --muted:#9ca3af; --border:#374151; --danger:#f87171; --danger-light:#3b1f22;
+            --muted:#b0b8c4; --border:#374151; --danger:#f87171; --danger-light:#3b1f22;
+            --hover-bg:#374151; --surface-bg:#1a2532;
+            --success:#4ade80; --success-light:#1a3a1f;
+            --warning-light:#2a1f06;
         }
         [data-theme="dark"] body { background:var(--bg); }
         [data-theme="dark"] header { background:rgba(31,41,55,.97) !important; border-color:var(--border) !important; }
@@ -571,33 +620,89 @@
         [data-theme="dark"] .drive-btn { background:var(--card-bg);color:var(--text);border-color:var(--border); }
         [data-theme="dark"] mark { background:#78680a;color:#fef9c3; }
         [data-theme="dark"] .sidebar { border-color:var(--border); }
-        [data-theme="dark"] .sidebar-header,[data-theme="dark"] .sidebar-footer { background:#1a2532; }
+        [data-theme="dark"] #page-title { color: var(--text) !important; }
+        [data-theme="dark"] .sidebar-header,[data-theme="dark"] .sidebar-footer { background:var(--surface-bg); }
         [data-theme="dark"] .sidebar-footer-btn { background:var(--card-bg);border-color:var(--border); }
-        [data-theme="dark"] .tree-row:hover { background:#374151; }
+        [data-theme="dark"] .tree-row:hover { background:var(--hover-bg); }
         [data-theme="dark"] .sheet-card { background:var(--card-bg);border-color:var(--border); }
         [data-theme="dark"] .sheet-card:hover { border-color:var(--primary); }
         [data-theme="dark"] .meta-info { border-top-color:var(--border); }
         [data-theme="dark"] .btn { background:var(--card-bg);color:var(--muted);border-color:var(--border); }
         [data-theme="dark"] .btn:hover { background:var(--primary-light);color:var(--primary); }
-        [data-theme="dark"] .empty-state-icon { background:#374151; }
-        [data-theme="dark"] .dropzone { background:#1a2532;border-color:var(--border); }
+        [data-theme="dark"] .empty-state-icon { background:var(--hover-bg); }
+        [data-theme="dark"] .search-bar::placeholder { opacity:.4; }
+        [data-theme="dark"] .dropzone { background:var(--surface-bg);border-color:var(--border); }
         [data-theme="dark"] .tag { background:var(--primary-light); }
-        [data-theme="dark"] .badge.public { background:#1a3a1f;color:#4ade80; }
-        [data-theme="dark"] .badge.restricted { background:#3b1f22;color:#f87171; }
-        [data-theme="dark"] .badge.status-archived { background:#374151;color:var(--muted); }
-        [data-theme="dark"] .badge.status-active { background:#1a3a1f;color:#4ade80; }
+        [data-theme="dark"] .badge.public { background:var(--success-light);color:var(--success); }
+        [data-theme="dark"] .badge.restricted { background:var(--danger-light);color:var(--danger); }
+        [data-theme="dark"] .badge.status-archived { background:var(--hover-bg);color:var(--muted); }
+        [data-theme="dark"] .badge.status-active { background:var(--success-light);color:var(--success); }
         [data-theme="dark"] .badge.status-review { background:#3a2a0a;color:#fbbf24; }
         [data-theme="dark"] .badge.status-done { background:#1a2a4a;color:#60a5fa; }
-        [data-theme="dark"] .skel-line { background:#374151; }
+        [data-theme="dark"] .skel-line { background:var(--hover-bg); }
         [data-theme="dark"] .skeleton-card { background:var(--card-bg);border-color:var(--border); }
-        [data-theme="dark"] .list-table th { background:#1a2532; }
-        [data-theme="dark"] .list-table td { border-bottom-color:var(--border); }
-        [data-theme="dark"] .list-table tbody tr:hover td { background:#374151; }
-        [data-theme="dark"] .lt-folder-badge { background:#374151; }
-        [data-theme="dark"] .stat-num.green { color:#4ade80; }
-        [data-theme="dark"] .stat-num.star { color:#fbbf24; }
         [data-theme="dark"] .recent-chip { background:var(--card-bg);border-color:var(--border); }
         [data-theme="dark"] .color-picker-popup { background:var(--card-bg);border-color:var(--border); }
+        [data-theme="dark"] .log-panel { background:var(--card-bg);border-color:var(--border); }
+        [data-theme="dark"] .log-entry { border-bottom-color:var(--border); }
+        [data-theme="dark"] .log-entry:hover { background:var(--surface-bg); }
+        [data-theme="dark"] .log-panel-header { background:var(--surface-bg);border-bottom-color:var(--border); }
+        [data-theme="dark"] .log-filter-btn { background:var(--card-bg);border-color:var(--border);color:var(--muted); }
+        [data-theme="dark"] .log-filter-btn.active { background:var(--primary-light);color:var(--primary); }
+        [data-theme="dark"] .log-empty { color:var(--muted); }
+
+        /* ══ 활동 로그 패널 ══ */
+        .log-overlay { position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.35);opacity:0;pointer-events:none;transition:opacity .22s; }
+        .log-overlay.open { opacity:1;pointer-events:all; }
+        .log-panel { position:fixed;top:0;right:0;bottom:0;width:380px;max-width:100vw;z-index:701;background:var(--card-bg);box-shadow:-8px 0 40px rgba(0,0,0,.13);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1); }
+        .log-panel.open { transform:translateX(0); }
+        .log-panel-header { padding:18px 20px 14px;border-bottom:1px solid var(--border);background:var(--surface-bg);flex-shrink:0; }
+        .log-panel-title { display:flex;align-items:center;gap:8px;font-size:16px;font-weight:800;color:var(--text);margin-bottom:12px; }
+        .log-panel-actions { display:flex;align-items:center;gap:8px; }
+        .log-filter-row { display:flex;gap:5px;margin-top:10px;flex-wrap:wrap; }
+        .log-filter-btn { padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:var(--card-bg);color:var(--muted);font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .12s; }
+        .log-filter-btn.active { background:var(--primary-light);color:var(--primary);border-color:transparent; }
+        .log-panel-body { flex:1;overflow-y:auto;padding:0; }
+        .log-panel-body::-webkit-scrollbar { width:3px; }
+        .log-panel-body::-webkit-scrollbar-thumb { background:#d1d6db;border-radius:4px; }
+        .log-entry { display:flex;align-items:flex-start;gap:10px;padding:12px 18px;border-bottom:1px solid var(--border);transition:background .1s;cursor:default; }
+        .log-entry:hover { background:var(--hover-bg); }
+        .log-icon { width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:1px; }
+        .log-icon.add    { background:var(--success-light);color:var(--success); }
+        .log-icon.delete { background:var(--danger-light);color:var(--danger); }
+        .log-icon.edit   { background:var(--primary-light);color:var(--primary); }
+        .log-icon.move   { background:var(--warning-light);color:var(--warning); }
+        .log-icon.fav    { background:var(--warning-light);color:var(--warning); }
+        .log-icon.view   { background:var(--hover-bg);color:var(--muted); }
+        .log-icon.system { background:var(--hover-bg);color:var(--muted); }
+        .log-text { flex:1;min-width:0; }
+        .log-action { font-size:12.5px;font-weight:700;color:var(--text);line-height:1.3; }
+        .log-detail { font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.4;word-break:break-all; }
+        .log-time { font-size:10.5px;color:var(--muted);flex-shrink:0;margin-top:3px;white-space:nowrap; }
+        .log-empty { text-align:center;padding:60px 24px;color:var(--muted);font-size:13.5px;font-weight:600; }
+        .log-panel-footer { padding:12px 18px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0; }
+        .log-footer-btn { flex:1;padding:9px;border-radius:10px;border:1.5px solid var(--border);background:var(--card-bg);color:var(--muted);font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px; }
+        .log-footer-btn:hover { background:var(--primary-light);color:var(--primary);border-color:var(--primary); }
+        .log-footer-btn.danger:hover { background:var(--danger-light);color:var(--danger);border-color:var(--danger); }
+        @media(max-width:640px){ .log-panel{width:100vw;} }
+
+        /* ══ 모바일 개선 ══ */
+        @media (max-width: 640px) {
+            .tree-icon-btn, .fav-btn, .lt-fav-btn, .card-trash-btn, .card-menu-btn, .card-pencil-btn {
+                min-width: 36px;
+                min-height: 36px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .card-title {
+                white-space: normal;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
+            }
+        }
 
         /* ══ 통계 바 ══ */
         .stats-bar { display:flex;margin-bottom:18px;background:var(--card-bg);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.04); }
@@ -606,9 +711,9 @@
         .stat-item:hover { background:var(--primary-light); }
         .stat-num { font-size:18px;font-weight:800;color:var(--text);letter-spacing:-.5px;line-height:1.2; }
         .stat-num.blue { color:var(--primary); }
-        .stat-num.star { color:#f59e0b; }
+        .stat-num.star { color:var(--warning); }
         .stat-num.gray { color:var(--muted); }
-        .stat-num.green { color:#16a34a; }
+        .stat-num.green { color:var(--success); }
         .stat-label { font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px; }
 
         /* ══ 다중 선택 ══ */
@@ -653,34 +758,211 @@
         .badge.status-active   { background:#e8f5e9;color:#2e7d32; }
         .badge.status-review   { background:#fff8e1;color:#e65100; }
         .badge.status-done     { background:#e3f2fd;color:#1565c0; }
-        .badge.status-archived { background:#f2f4f6;color:var(--muted); }
+        .badge.status-archived { background:var(--hover-bg);color:var(--muted); }
 
         /* ══ 테이블 리스트 뷰 ══ */
         #sheet-container.list-view { display:block; }
         .list-table { width:100%;border-collapse:collapse;background:var(--card-bg);border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.04);border:1px solid var(--border); }
-        .list-table th { padding:10px 14px;text-align:left;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;background:#fafbfc;border-bottom:1px solid var(--border);white-space:nowrap;user-select:none; }
+        .list-table th { padding:10px 14px;text-align:left;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;background:var(--surface-bg);border-bottom:1px solid var(--border);white-space:nowrap;user-select:none; }
         .list-table th.sortable { cursor:pointer; }
         .list-table th.sortable:hover { color:var(--primary); }
         .list-table th.sort-active { color:var(--primary); }
-        .list-table td { padding:10px 14px;border-bottom:1px solid #f2f4f6;font-size:13.5px;vertical-align:middle;color:var(--text); }
+        .list-table td { padding:10px 14px;border-bottom:1px solid var(--border);font-size:13.5px;vertical-align:middle;color:var(--text); }
         .list-table tbody tr:last-child td { border-bottom:none; }
-        .list-table tbody tr:hover td { background:#f9fafb; }
+        .list-table tbody tr:hover td { background:var(--hover-bg); }
         .list-table tbody tr.lt-selected td { background:var(--primary-light) !important; }
         .lt-title-link { font-weight:700;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:6px;max-width:300px; }
         .lt-title-link:hover { color:var(--primary); }
         .lt-title-text { overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block; }
-        .lt-folder-badge { display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;color:var(--muted);background:#f2f4f6;padding:2px 8px;border-radius:6px;white-space:nowrap; }
+        .lt-folder-badge { display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;color:var(--muted);background:var(--hover-bg);padding:2px 8px;border-radius:6px;white-space:nowrap; }
         .lt-fav-btn { background:none;border:none;cursor:pointer;font-size:16px;padding:0 2px;transition:transform .2s; }
         .lt-fav-btn:hover { transform:scale(1.3); }
 
         /* ══ 카드 컬러 액센트 ══ */
         .sheet-card.has-accent { border-left-width:4px !important; }
 
+        /* ══ 전체 선택 버튼 (컨트롤바) ══ */
+        .btn-select-all-ctrl {
+            display: none; background: none; border: none; cursor: pointer;
+            font-size: 12.5px; font-weight: 700; color: var(--muted);
+            padding: 4px 8px; border-radius: 8px; font-family: inherit;
+            transition: color .15s, background .15s; white-space: nowrap;
+        }
+        .btn-select-all-ctrl:hover { background: var(--hover-bg); color: var(--text); }
+        .btn-select-all-ctrl.active { color: var(--primary); }
+
+        /* ══ 폴더 이동 팝업 옵션 ══ */
+        .bulk-folder-opt { padding: 8px 14px; cursor: pointer; font-size: 13.5px; font-weight: 600; display: flex; align-items: center; gap: 6px; transition: background .1s; }
+        .bulk-folder-opt:hover { background: var(--primary-light); }
+
+        /* ══ 헤더 아이콘 버튼 ══ */
+        .header-icon-btn {
+            background: none; border: 1.5px solid var(--border); border-radius: 12px;
+            cursor: pointer; padding: 9px 11px; display: flex; align-items: center; gap: 5px;
+            color: var(--muted); font-size: 12px; font-weight: 700; font-family: inherit;
+            transition: background .2s, color .2s, border-color .2s;
+        }
+        .header-icon-btn:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary-light); }
+
+        /* ══ 키보드 접근성 ══ */
+        :focus-visible {
+            outline: 2.5px solid var(--primary);
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
+        button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+            outline: 2.5px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        /* ══ 스크롤바 다크모드 ══ */
+        [data-theme="dark"] #tree-root::-webkit-scrollbar-thumb { background: #4b5563; }
+        [data-theme="dark"] .log-panel-body::-webkit-scrollbar-thumb { background: #4b5563; }
+
         /* ══ 트리 드래그 핸들 ══ */
         .tree-drag-handle { cursor:grab;color:var(--muted);padding:1px 2px;display:none;align-items:center;flex-shrink:0;border-radius:3px;opacity:.5; }
         .tree-row:hover .tree-drag-handle { display:flex; }
         .tree-drag-handle:hover { opacity:1; }
         .tree-node.drag-over-tree > .tree-row { outline:2px dashed var(--primary);outline-offset:-2px;border-radius:10px; }
+        .tree-node.kb-focus > .tree-row { outline:2px solid var(--primary);outline-offset:-2px;border-radius:10px; }
+
+        /* ══ 컨텍스트 메뉴 ══ */
+        .ctx-menu { position:fixed;z-index:2100;background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:5px;box-shadow:0 8px 32px rgba(0,0,0,.18);min-width:175px;animation:ctx-in .12s ease-out; }
+        @keyframes ctx-in { from{opacity:0;transform:scale(.95) translateY(-4px)} to{opacity:1;transform:none} }
+        .ctx-item { display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text);transition:background .1s; }
+        .ctx-item:hover { background:var(--hover-bg); }
+        .ctx-item.danger { color:var(--danger); }
+        .ctx-item.danger:hover { background:var(--danger-light); }
+        .ctx-item svg { flex-shrink:0;color:var(--muted); }
+        .ctx-item.danger svg { color:var(--danger); }
+        .ctx-sep { height:1px;background:var(--border);margin:4px 0; }
+        [data-theme="dark"] .ctx-menu { background:var(--card-bg);border-color:var(--border); }
+
+        /* ══ 그룹 뷰 ══ */
+        #sheet-container.group-view { display:block; }
+        .group-section { margin-bottom:28px; }
+        .group-header { display:flex;align-items:center;gap:10px;padding:8px 2px 12px;border-bottom:2px solid var(--border);margin-bottom:16px;cursor:pointer;user-select:none; }
+        .group-header-icon { flex-shrink:0; }
+        .group-header-title { font-size:15px;font-weight:800;color:var(--text);letter-spacing:-.3px; }
+        .group-header-count { font-size:12px;font-weight:700;color:var(--muted);background:var(--hover-bg);padding:2px 9px;border-radius:10px; }
+        .group-header-chev { color:var(--muted);transition:transform .2s;margin-left:auto;flex-shrink:0; }
+        .group-section.collapsed .group-header-chev { transform:rotate(-90deg); }
+        .group-section.collapsed .group-cards { display:none; }
+        .group-cards { display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); }
+
+        /* ══ 기한 배지 ══ */
+        .due-badge { display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;white-space:nowrap; }
+        .due-badge.overdue  { background:#fff0f2;color:var(--danger); }
+        .due-badge.due-soon { background:#fff8e1;color:#d97706; }
+        .due-badge.due-ok   { background:var(--success-light);color:var(--success); }
+        [data-theme="dark"] .due-badge.overdue  { background:var(--danger-light); }
+        [data-theme="dark"] .due-badge.due-soon { background:#2a1f06;color:#fbbf24; }
+        [data-theme="dark"] .due-badge.due-ok   { background:var(--success-light); }
+
+        /* ══ 고급 검색 힌트 ══ */
+        .search-syntax-hint { position:absolute;top:calc(100% + 6px);left:0;right:0;background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:10px 14px;z-index:350;box-shadow:0 8px 24px rgba(0,0,0,.12);display:none; }
+        .search-syntax-hint.show { display:block; }
+        .syntax-row { display:flex;align-items:baseline;gap:8px;padding:3px 0;font-size:12px; }
+        .syntax-kw { color:var(--primary);font-family:monospace;font-weight:700;flex-shrink:0;background:var(--primary-light);padding:1px 6px;border-radius:5px; }
+        .syntax-desc { color:var(--muted);font-weight:500; }
+        [data-theme="dark"] .search-syntax-hint { background:var(--card-bg);border-color:var(--border); }
+
+        /* ══ 저장된 검색 ══ */
+        .saved-search-section { padding:6px 8px 2px;flex-shrink:0;border-bottom:1px solid var(--border); }
+        .saved-search-header { font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;padding:4px 4px 5px;display:flex;align-items:center;justify-content:space-between; }
+        .saved-search-add-btn { background:none;border:none;cursor:pointer;color:var(--muted);padding:2px 4px;border-radius:5px;line-height:1;font-size:15px;transition:color .1s;font-family:inherit; }
+        .saved-search-add-btn:hover { color:var(--primary); }
+        .saved-search-item { display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:8px;cursor:pointer;font-size:12.5px;font-weight:600;color:var(--text);transition:background .1s; }
+        .saved-search-item:hover { background:var(--hover-bg); }
+        .saved-search-item.active { background:var(--primary-light);color:var(--primary); }
+        .saved-search-del { margin-left:auto;background:none;border:none;cursor:pointer;color:var(--muted);padding:1px 4px;border-radius:4px;opacity:0;font-size:14px;line-height:1;transition:opacity .1s,color .1s; }
+        .saved-search-item:hover .saved-search-del { opacity:1; }
+        .saved-search-del:hover { color:var(--danger); }
+
+        /* ══ 대시보드 ══ */
+        .dashboard-backdrop { position:fixed;inset:0;background:rgba(25,31,40,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;pointer-events:none;transition:opacity .2s; }
+        .dashboard-backdrop.open { opacity:1;pointer-events:all; }
+        .dashboard-box { background:var(--card-bg);border-radius:24px;width:100%;max-width:840px;max-height:90vh;overflow-y:auto;padding:36px;box-shadow:0 32px 80px rgba(0,0,0,.22);transform:translateY(20px) scale(.96);opacity:0;transition:transform .25s cubic-bezier(.34,1.3,.64,1),opacity .25s;margin:16px; }
+        .dashboard-backdrop.open .dashboard-box { transform:none;opacity:1; }
+        .dash-grid { display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:22px; }
+        @media(max-width:640px){ .dash-grid{grid-template-columns:1fr;} }
+        .dash-card { background:var(--surface-bg);border:1px solid var(--border);border-radius:16px;padding:18px 20px; }
+        .dash-card-title { font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:14px;display:flex;align-items:center;gap:6px; }
+        .dash-bar-row { display:flex;align-items:center;gap:10px;margin-bottom:9px; }
+        .dash-bar-label { font-size:12.5px;font-weight:600;color:var(--text);min-width:65px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex-shrink:0; }
+        .dash-bar-track { flex:1;height:7px;background:var(--hover-bg);border-radius:4px;overflow:hidden; }
+        .dash-bar-fill { height:100%;border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1); }
+        .dash-bar-val { font-size:12px;font-weight:700;color:var(--muted);min-width:22px;text-align:right;flex-shrink:0; }
+        .dash-big-num { font-size:32px;font-weight:800;color:var(--text);letter-spacing:-.8px;line-height:1.1; }
+        .dash-big-label { font-size:12px;font-weight:600;color:var(--muted);margin-top:4px; }
+        .dash-top-item { display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border); }
+        .dash-top-item:last-child { border-bottom:none; }
+        .dash-top-rank { font-size:13px;font-weight:800;color:var(--muted);min-width:20px;text-align:center; }
+        .dash-top-title { font-size:13px;font-weight:600;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+        .dash-top-meta { font-size:11.5px;font-weight:700;color:var(--primary);flex-shrink:0; }
+        .dash-kpi-grid { display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px; }
+        .dash-kpi { text-align:center;padding:12px 8px;background:var(--card-bg);border-radius:10px;border:1px solid var(--border); }
+        .dash-kpi-num { font-size:22px;font-weight:800;letter-spacing:-.4px; }
+        .dash-kpi-lbl { font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px; }
+        [data-theme="dark"] .dashboard-box { background:var(--card-bg); }
+        [data-theme="dark"] .dash-card { background:var(--surface-bg); }
+        [data-theme="dark"] .dash-kpi { background:var(--hover-bg); }
+
+        /* ══ 코멘트 패널 ══ */
+        .comment-overlay { position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.3);opacity:0;pointer-events:none;transition:opacity .22s; }
+        .comment-overlay.open { opacity:1;pointer-events:all; }
+        .comment-panel { position:fixed;top:0;right:0;bottom:0;width:360px;max-width:100vw;z-index:701;background:var(--card-bg);box-shadow:-8px 0 40px rgba(0,0,0,.13);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);border-left:1px solid var(--border); }
+        .comment-panel.open { transform:translateX(0); }
+        .comment-ph { padding:18px 20px 14px;border-bottom:1px solid var(--border);background:var(--surface-bg);flex-shrink:0; }
+        .comment-list { flex:1;overflow-y:auto;padding:14px 16px; }
+        .comment-item { display:flex;gap:10px;margin-bottom:18px; }
+        .comment-avatar { width:30px;height:30px;border-radius:50%;background:var(--primary-light);color:var(--primary);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+        .comment-bubble { flex:1;min-width:0; }
+        .comment-meta { font-size:11px;color:var(--muted);margin-bottom:4px;display:flex;align-items:center;gap:8px; }
+        .comment-author { font-weight:700;color:var(--text); }
+        .comment-body { font-size:13.5px;color:var(--text);line-height:1.65;background:var(--hover-bg);border-radius:0 12px 12px 12px;padding:10px 13px;word-break:break-word; }
+        .comment-del-btn { margin-left:auto;background:none;border:none;cursor:pointer;color:var(--muted);opacity:0;font-size:12px;padding:1px 3px;border-radius:4px;transition:opacity .1s,color .1s; }
+        .comment-item:hover .comment-del-btn { opacity:1; }
+        .comment-del-btn:hover { color:var(--danger); }
+        .comment-input-wrap { padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0; }
+        .comment-input { width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:12px;font-size:13.5px;font-family:inherit;resize:none;outline:none;min-height:68px;color:var(--text);background:var(--card-bg);transition:border-color .2s; }
+        .comment-input:focus { border-color:var(--primary);box-shadow:0 0 0 3px rgba(49,130,246,.12); }
+        .comment-send-btn { margin-top:8px;width:100%;padding:9px;background:var(--primary);color:white;border:none;border-radius:10px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s; }
+        .comment-send-btn:hover { background:var(--primary-dark); }
+        .comment-empty { text-align:center;padding:48px 20px;color:var(--muted);font-size:13.5px;font-weight:600; }
+        [data-theme="dark"] .comment-panel { background:var(--card-bg);border-color:var(--border); }
+        [data-theme="dark"] .comment-body { background:var(--hover-bg); }
+        [data-theme="dark"] .comment-input { background:var(--card-bg);color:var(--text);border-color:var(--border); }
+
+        /* ══ 템플릿 ══ */
+        .template-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-top:14px; }
+        .tpl-card { border:1.5px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;transition:all .15s;background:var(--card-bg);text-align:center; }
+        .tpl-card:hover { border-color:var(--primary);background:var(--primary-light); }
+        .tpl-card.selected { border-color:var(--primary);background:var(--primary-light);box-shadow:0 0 0 3px rgba(49,130,246,.15); }
+        .tpl-icon { font-size:26px;margin-bottom:8px; }
+        .tpl-name { font-size:13px;font-weight:800;color:var(--text); }
+        .tpl-desc { font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5; }
+
+        /* ══ 자동화 규칙 ══ */
+        .rule-card { border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;transition:background .1s;margin-bottom:10px; }
+        .rule-card:hover { background:var(--hover-bg); }
+        .rule-info { flex:1;min-width:0; }
+        .rule-name { font-size:13.5px;font-weight:700;color:var(--text); }
+        .rule-desc { font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4; }
+        .rule-last-run { font-size:11px;color:var(--muted);margin-top:3px; }
+        .toggle-sw { position:relative;width:38px;height:22px;display:inline-block;flex-shrink:0; }
+        .toggle-sw input { opacity:0;width:0;height:0; }
+        .toggle-sl { position:absolute;inset:0;background:var(--border);border-radius:22px;cursor:pointer;transition:background .2s; }
+        .toggle-sl::before { content:'';position:absolute;width:16px;height:16px;background:white;border-radius:50%;top:3px;left:3px;transition:transform .2s; }
+        .toggle-sw input:checked + .toggle-sl { background:var(--primary); }
+        .toggle-sw input:checked + .toggle-sl::before { transform:translateX(16px); }
+        .rule-run-btn { background:none;border:1px solid var(--border);cursor:pointer;color:var(--muted);padding:5px 10px;border-radius:8px;font-size:11.5px;font-weight:700;font-family:inherit;transition:all .12s;flex-shrink:0; }
+        .rule-run-btn:hover { background:var(--primary-light);color:var(--primary);border-color:var(--primary); }
+
+        /* ══ 복사 버튼 ══ */
+        .card-copy-btn { background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;border-radius:6px;display:flex;align-items:center;opacity:0;transition:opacity .15s,background .12s;flex-shrink:0; }
+        .sheet-card:hover .card-copy-btn { opacity:1; }
+        .card-copy-btn:hover { background:var(--hover-bg);color:var(--primary); }
     </style>
 </head>
 <body>
@@ -703,16 +985,33 @@
             </div>
         </div>
         <div class="flex items-center gap-2">
-            <button class="btn" id="btn-grid" data-view="grid">
+            <button class="btn" id="btn-grid" data-view="grid" title="카드 뷰">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
                 <span class="btn-view-label">카드 뷰</span>
             </button>
-            <button class="btn" id="btn-list" data-view="list">
+            <button class="btn" id="btn-list" data-view="list" title="리스트 뷰">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
                 <span class="btn-view-label">리스트 뷰</span>
             </button>
+            <button class="btn" id="btn-group" data-view="group" title="그룹 뷰 (폴더별)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="4" rx="1"/><rect x="3" y="10" width="18" height="4" rx="1"/><rect x="3" y="17" width="18" height="4" rx="1"/></svg>
+                <span class="btn-view-label">그룹 뷰</span>
+            </button>
             <div class="w-px h-5 mx-1" style="background:var(--border)"></div>
-            <button id="btn-dark-toggle" onclick="toggleTheme()" title="다크 모드 토글" style="background:none;border:1.5px solid var(--border);border-radius:12px;cursor:pointer;padding:9px 11px;display:flex;align-items:center;color:var(--muted);transition:all .2s" onmouseover="this.style.background='var(--primary-light)';this.style.color='var(--primary)'" onmouseout="this.style.background='none';this.style.color='var(--muted)'">
+            <button id="btn-dashboard" onclick="openDashboard()" title="대시보드" class="header-icon-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+            </button>
+            <button id="btn-automation" onclick="openAutomationModal()" title="자동화 규칙" class="header-icon-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </button>
+            <button id="btn-template" onclick="openTemplateModal()" title="템플릿으로 시트 추가" class="header-icon-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+            </button>
+            <button id="btn-log-toggle" onclick="openLogPanel()" title="활동 로그 보기" class="header-icon-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                <span id="log-btn-count" style="display:none;background:var(--primary);color:white;border-radius:6px;padding:1px 5px;font-size:10px;min-width:16px;text-align:center"></span>
+            </button>
+            <button id="btn-dark-toggle" onclick="toggleTheme()" title="다크 모드 토글" class="header-icon-btn">
                 <svg id="dark-icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
                 <svg id="dark-icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
             </button>
@@ -736,6 +1035,12 @@
             <div class="sidebar-header">
                 <span>내 드라이브</span>
                 <div class="flex items-center gap-1">
+                    <button class="tree-icon-btn" onclick="collapseAllFolders()" title="모두 접기" style="padding:4px">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18 3 12l6-6"/><path d="M21 18 15 12l6-6"/></svg>
+                    </button>
+                    <button class="tree-icon-btn" onclick="expandAllFolders()" title="모두 펼치기" style="padding:4px">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l6-6-6-6"/><path d="M3 18l6-6-6-6"/></svg>
+                    </button>
                     <div class="sidebar-header-btns" id="sidebar-root-add-btns">
                         <button class="tree-icon-btn add" data-root-add="folder" title="루트에 새 폴더 추가">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
@@ -746,6 +1051,8 @@
                     </button>
                 </div>
             </div>
+            <!-- 저장된 검색 -->
+            <div id="saved-search-section" class="saved-search-section" style="display:none"></div>
             <!-- 전체 보기 고정 항목 -->
             <div id="tree-root-all" style="padding:8px 8px 0;flex-shrink:0;border-bottom:1px solid var(--border)">
                 <div id="tree-all-row" class="tree-row" style="padding-left:8px;margin-bottom:4px" onclick="selectAllRoot()" role="button" tabindex="0">
@@ -797,8 +1104,15 @@
                     <span class="search-icon">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     </span>
-                    <input type="text" class="search-bar" id="searchInput" placeholder="문서 제목, 작성자, 태그 검색..." autocomplete="off">
-                    <button id="btn-search-clear" aria-label="검색어 지우기" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);display:none;background:none;border:none;cursor:pointer;color:#adb5bd;padding:3px;border-radius:6px;line-height:1;transition:color .12s" onmouseenter="this.style.color='#6b7684'" onmouseleave="this.style.color='#adb5bd'">
+                    <input type="text" class="search-bar" id="searchInput" placeholder="검색... (status: tag: owner: due: pinned:)" autocomplete="off">
+                    <div class="search-syntax-hint" id="search-syntax-hint">
+                        <div class="syntax-row"><span class="syntax-kw">status:active</span><span class="syntax-desc">상태로 필터 (active/review/done/archived)</span></div>
+                        <div class="syntax-row"><span class="syntax-kw">tag:마케팅</span><span class="syntax-desc">태그로 필터</span></div>
+                        <div class="syntax-row"><span class="syntax-kw">owner:김민수</span><span class="syntax-desc">담당자로 필터</span></div>
+                        <div class="syntax-row"><span class="syntax-kw">due:week</span><span class="syntax-desc">기한 필터 (today/week/overdue)</span></div>
+                        <div class="syntax-row"><span class="syntax-kw">pinned:true</span><span class="syntax-desc">고정된 시트만 보기</span></div>
+                    </div>
+                    <button id="btn-search-clear" aria-label="검색어 지우기" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);display:none;background:none;border:none;cursor:pointer;color:var(--muted);opacity:.6;padding:3px;border-radius:6px;line-height:1;transition:opacity .12s" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='.6'">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6"/><path d="M9 9l6 6"/></svg>
                     </button>
                 </div>
@@ -823,6 +1137,7 @@
                     <option value="name">이름순</option>
                 </select>
                 <div class="result-count" id="result-count"></div>
+                <button id="btn-select-all" onclick="toggleSelectAll()" title="전체 선택 / 해제" class="btn-select-all-ctrl">전체 선택</button>
             </div>
             <div id="recent-wrap"></div>
             <div id="sheet-container" class="grid-view">
@@ -844,7 +1159,7 @@
         <div class="modal-header">
             <div class="modal-title">
                 <div class="modal-title-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3182f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                 </div>
                 <span id="modal-title-text">구글 시트 추가</span>
             </div>
@@ -876,7 +1191,7 @@
                 <path d="M73.4 3.3c-.8-1.4-1.95-2.5-3.3-3.3L57.9 0 43.65 24l14.25 24h29.3c0-1.55-.4-3.1-1.2-4.5z" fill="#ffba00"/>
             </svg>
             구글 드라이브에서 직접 선택하기
-            <span style="position:absolute;top:-9px;right:12px;background:#f59e0b;color:white;font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;letter-spacing:.3px;pointer-events:none">Coming Soon</span>
+            <span style="position:absolute;top:-9px;right:12px;background:var(--warning);color:white;font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;letter-spacing:.3px;pointer-events:none">Coming Soon</span>
         </button>
         <div>
             <div class="field-label">시트 제목</div>
@@ -907,7 +1222,7 @@
         <div class="modal-header">
             <div class="modal-title">
                 <div class="modal-title-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3182f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </div>
                 <span id="edit-modal-title">시트 정보 편집</span>
             </div>
@@ -953,6 +1268,16 @@
                 </select>
             </div>
         </div>
+        <div class="edit-grid">
+            <div>
+                <div class="field-label">기한 <span style="font-weight:500;text-transform:none;letter-spacing:0;font-size:11px">(선택)</span></div>
+                <input type="date" class="title-input" id="edit-due-date" style="color:var(--text)">
+            </div>
+            <div>
+                <div class="field-label">담당자</div>
+                <input type="text" class="title-input" id="edit-owner" placeholder="담당자 이름" maxlength="30">
+            </div>
+        </div>
         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;padding:4px 0">
             <input type="checkbox" id="edit-pinned" style="width:17px;height:17px;accent-color:var(--primary);cursor:pointer;flex-shrink:0;border-radius:4px">
             <span style="font-size:14px;font-weight:700;color:var(--text)">📌 상단 고정</span>
@@ -973,7 +1298,7 @@
     <div class="confirm-box">
         <div style="display:flex;align-items:center;gap:16px">
             <div class="confirm-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f04452" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
             </div>
             <div class="confirm-title" id="confirm-title">정말 삭제할까요?</div>
         </div>
@@ -988,8 +1313,56 @@
     </div>
 </div>
 
+<!-- 전역 드래그 드롭 오버레이 -->
+<div id="global-drop-overlay" class="global-drop-overlay" role="region" aria-label="URL 드롭 영역">
+    <div class="global-drop-box">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        <div class="global-drop-title">놓으면 시트가 추가됩니다</div>
+        <div class="global-drop-sub">구글 시트 탭을 끌어다 놓으면 바로 추가돼요</div>
+    </div>
+</div>
+
 <!-- 토스트 -->
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<!-- 활동 로그 패널 -->
+<div id="log-overlay" class="log-overlay" onclick="closeLogPanel()"></div>
+<div id="log-panel" class="log-panel" role="dialog" aria-modal="true" aria-label="활동 로그">
+    <div class="log-panel-header">
+        <div class="log-panel-title">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            활동 로그
+            <span id="log-total-count" style="margin-left:2px;font-size:12px;font-weight:600;color:var(--muted)"></span>
+            <button onclick="closeLogPanel()" style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;display:flex;align-items:center;border-radius:8px" title="닫기">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+        </div>
+        <div class="log-filter-row" id="log-filter-row">
+            <button class="log-filter-btn active" data-log-filter="all">전체</button>
+            <button class="log-filter-btn" data-log-filter="add">추가</button>
+            <button class="log-filter-btn" data-log-filter="delete">삭제</button>
+            <button class="log-filter-btn" data-log-filter="edit">편집</button>
+            <button class="log-filter-btn" data-log-filter="move">이동</button>
+            <button class="log-filter-btn" data-log-filter="fav">즐겨찾기</button>
+            <button class="log-filter-btn" data-log-filter="view">뷰/필터</button>
+        </div>
+    </div>
+    <div class="log-panel-body" id="log-panel-body"></div>
+    <div class="log-panel-footer">
+        <button class="log-footer-btn" onclick="downloadLog()" title="JSON 형식으로 다운로드">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            JSON
+        </button>
+        <button class="log-footer-btn" onclick="downloadLogCSV()" title="엑셀에서 열 수 있는 CSV 형식으로 다운로드">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            CSV
+        </button>
+        <button class="log-footer-btn danger" onclick="clearLog()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            지우기
+        </button>
+    </div>
+</div>
 
 <!-- 일괄 작업 바 -->
 <div class="bulk-bar" id="bulk-bar">
@@ -1013,6 +1386,100 @@
 <!-- 일괄 폴더 이동 선택 팝업 -->
 <div id="bulk-folder-popup" style="display:none;position:fixed;z-index:400;background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:10px;box-shadow:0 8px 28px rgba(0,0,0,.18);min-width:180px;max-height:260px;overflow-y:auto"></div>
 
+<!-- 컨텍스트 메뉴 -->
+<div id="ctx-menu" class="ctx-menu" style="display:none"></div>
+
+<!-- 대시보드 모달 -->
+<div id="dashboard-modal" class="dashboard-backdrop" role="dialog" aria-modal="true" aria-label="대시보드">
+    <div class="dashboard-box">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.5px;display:flex;align-items:center;gap:12px">
+                <div style="width:44px;height:44px;background:var(--primary-light);border-radius:12px;display:flex;align-items:center;justify-content:center">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                </div>
+                대시보드
+            </div>
+            <button class="modal-close" onclick="closeDashboard()" aria-label="닫기">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+        </div>
+        <div id="dashboard-content" class="dash-grid"></div>
+    </div>
+</div>
+
+<!-- 코멘트 패널 -->
+<div id="comment-overlay" class="comment-overlay" onclick="closeComments()"></div>
+<div id="comment-panel" class="comment-panel" role="dialog" aria-modal="true" aria-label="코멘트">
+    <div class="comment-ph">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <div style="font-size:15px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:8px">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                코멘트
+            </div>
+            <button onclick="closeComments()" style="background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;display:flex;align-items:center;border-radius:8px" title="닫기">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+        </div>
+        <div id="comment-sheet-title" style="font-size:13px;color:var(--muted);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+    </div>
+    <div id="comment-list" class="comment-list"></div>
+    <div class="comment-input-wrap">
+        <textarea id="comment-input" class="comment-input" placeholder="코멘트를 입력하세요... (Ctrl+Enter로 전송)" rows="3"></textarea>
+        <button class="comment-send-btn" onclick="submitComment()">코멘트 추가</button>
+    </div>
+</div>
+
+<!-- 템플릿 모달 -->
+<div id="template-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-label="템플릿">
+    <div class="modal-box" style="max-width:600px">
+        <div class="modal-header">
+            <div class="modal-title">
+                <div class="modal-title-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+                </div>
+                템플릿으로 시트 추가
+            </div>
+            <button class="modal-close" onclick="closeTemplateModal()" aria-label="닫기">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+        </div>
+        <p style="font-size:13.5px;color:var(--muted);margin:0">자주 사용하는 시트 구성을 템플릿으로 빠르게 추가하세요.</p>
+        <div id="template-grid" class="template-grid"></div>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeTemplateModal()">취소</button>
+            <button class="btn-add" id="template-apply-btn" disabled onclick="applyTemplate()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                적용하기
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 자동화 규칙 모달 -->
+<div id="automation-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-label="자동화 규칙">
+    <div class="modal-box" style="max-width:580px">
+        <div class="modal-header">
+            <div class="modal-title">
+                <div class="modal-title-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                </div>
+                자동화 규칙
+            </div>
+            <button class="modal-close" onclick="closeAutomationModal()" aria-label="닫기">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+        </div>
+        <p style="font-size:13.5px;color:var(--muted);margin:0">조건에 따라 시트 상태를 자동으로 변경합니다. 규칙은 앱 시작 시와 수동 실행 시 적용됩니다.</p>
+        <div id="automation-rules-list" style="margin-top:18px"></div>
+        <div class="modal-footer">
+            <button class="btn-cancel" onclick="closeAutomationModal()">닫기</button>
+            <button class="btn-add" onclick="runAllAutomationRules()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                지금 모두 실행
+            </button>
+        </div>
+    </div>
+</div>
 
 <script>
 // ══════════════════════════════════════
@@ -1038,14 +1505,14 @@ const IC = {
 
 // ── 폴더 컬러 팔레트 ──
 const FOLDER_COLORS = [
-    { id:'yellow', fill:'#fde68a', stroke:'#f59e0b', hex:'#f59e0b' },
-    { id:'blue',   fill:'#bfdbfe', stroke:'#3182f6', hex:'#3182f6' },
-    { id:'green',  fill:'#bbf7d0', stroke:'#16a34a', hex:'#16a34a' },
-    { id:'red',    fill:'#fecaca', stroke:'#dc2626', hex:'#dc2626' },
-    { id:'purple', fill:'#e9d5ff', stroke:'#7c3aed', hex:'#7c3aed' },
-    { id:'pink',   fill:'#fbcfe8', stroke:'#db2777', hex:'#db2777' },
-    { id:'teal',   fill:'#99f6e4', stroke:'#0d9488', hex:'#0d9488' },
-    { id:'gray',   fill:'#e5e7eb', stroke:'#6b7280', hex:'#6b7280' },
+    { id:'yellow', name:'노랑', fill:'#fde68a', stroke:'#f59e0b', hex:'#f59e0b' },
+    { id:'blue',   name:'파랑', fill:'#bfdbfe', stroke:'#3182f6', hex:'#3182f6' },
+    { id:'green',  name:'초록', fill:'#bbf7d0', stroke:'#16a34a', hex:'#16a34a' },
+    { id:'red',    name:'빨강', fill:'#fecaca', stroke:'#dc2626', hex:'#dc2626' },
+    { id:'purple', name:'보라', fill:'#e9d5ff', stroke:'#7c3aed', hex:'#7c3aed' },
+    { id:'pink',   name:'분홍', fill:'#fbcfe8', stroke:'#db2777', hex:'#db2777' },
+    { id:'teal',   name:'청록', fill:'#99f6e4', stroke:'#0d9488', hex:'#0d9488' },
+    { id:'gray',   name:'회색', fill:'#e5e7eb', stroke:'#6b7280', hex:'#6b7280' },
 ];
 function folderIcon(colorId) {
     const c = FOLDER_COLORS.find(f => f.id === colorId) || FOLDER_COLORS[0];
@@ -1077,26 +1544,178 @@ const STATUS_CONFIG = {
 const STORAGE_KEY = 'sm-data-v1';
 function saveStorage() {
     const searchQuery = document.getElementById('searchInput')?.value || '';
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ sheetsData, treeData, nextId, currentFilter, currentView, currentSort, searchQuery, recentIds })); } catch(e) {}
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({ sheetsData, treeData, nextId, currentFilter, currentView, currentSort, searchQuery, recentIds }));
+    } catch(e) {
+        console.warn('localStorage 저장 실패:', e);
+        showToast('저장 공간이 부족합니다. 불필요한 데이터를 정리해주세요.', '⚠️');
+    }
 }
 function loadStorage() {
     try { const raw = localStorage.getItem(STORAGE_KEY); if (!raw) return null; return JSON.parse(raw); } catch(e) { return null; }
 }
 
 // ══════════════════════════════════════
-// Undo (1단계 스냅샷)
+// 활동 로그
 // ══════════════════════════════════════
-let _undoSnapshot = null;
-function saveUndoSnapshot() {
-    _undoSnapshot = { sheetsData: JSON.parse(JSON.stringify(sheetsData)), treeData: JSON.parse(JSON.stringify(treeData)), nextId };
+const LOG_KEY = 'sm-log-v1';
+const LOG_MAX = 500;
+let activityLog = [];
+let _logFilter  = 'all';
+
+(function initLog() {
+    try { const raw = localStorage.getItem(LOG_KEY); if (raw) activityLog = JSON.parse(raw); } catch(e) { activityLog = []; }
+})();
+
+function saveLog() {
+    try { localStorage.setItem(LOG_KEY, JSON.stringify(activityLog)); } catch(e) {}
 }
+
+// category: 'add' | 'delete' | 'edit' | 'move' | 'fav' | 'view' | 'system'
+function appLog(category, action, detail='') {
+    const entry = { ts: new Date().toISOString(), category, action, detail };
+    activityLog.unshift(entry);
+    if (activityLog.length > LOG_MAX) activityLog.length = LOG_MAX;
+    saveLog();
+    // 버튼 카운트 뱃지 갱신
+    const cnt = document.getElementById('log-btn-count');
+    if (cnt) { cnt.textContent = activityLog.length; cnt.style.display = activityLog.length ? '' : 'none'; }
+}
+
+const LOG_ICON = {
+    add:    { emoji:'➕', cls:'add' },
+    delete: { emoji:'🗑️', cls:'delete' },
+    edit:   { emoji:'✏️', cls:'edit' },
+    move:   { emoji:'📂', cls:'move' },
+    fav:    { emoji:'⭐', cls:'fav' },
+    view:   { emoji:'👁️', cls:'view' },
+    system: { emoji:'⚙️', cls:'system' },
+};
+
+function _logTime(isoStr) {
+    const d = new Date(isoStr);
+    const now = new Date();
+    const diffMs = now - d;
+    const diffMin = Math.floor(diffMs / 60000);
+    if (diffMin < 1) return '방금';
+    if (diffMin < 60) return `${diffMin}분 전`;
+    const diffH = Math.floor(diffMin / 60);
+    if (diffH < 24) return `${diffH}시간 전`;
+    return d.toLocaleDateString('ko-KR', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+
+function renderLogPanel() {
+    const body = document.getElementById('log-panel-body');
+    const total = document.getElementById('log-total-count');
+    if (!body) return;
+    const filtered = _logFilter === 'all' ? activityLog : activityLog.filter(e => e.category === _logFilter);
+    if (total) total.textContent = `(${activityLog.length}건)`;
+    if (!filtered.length) {
+        body.innerHTML = `<div class="log-empty">📋<br>${_logFilter === 'all' ? '아직 기록된 활동이 없습니다' : '해당 카테고리의 로그가 없습니다'}</div>`;
+        return;
+    }
+    body.innerHTML = filtered.map(e => {
+        const ic = LOG_ICON[e.category] || LOG_ICON.system;
+        return `<div class="log-entry">
+            <div class="log-icon ${ic.cls}">${ic.emoji}</div>
+            <div class="log-text">
+                <div class="log-action">${esc(e.action)}</div>
+                ${e.detail ? `<div class="log-detail">${esc(e.detail)}</div>` : ''}
+            </div>
+            <div class="log-time">${_logTime(e.ts)}</div>
+        </div>`;
+    }).join('');
+}
+
+let _logRefreshTimer = null;
+function openLogPanel() {
+    document.getElementById('log-overlay').classList.add('open');
+    document.getElementById('log-panel').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    renderLogPanel();
+    // 패널이 열려있는 동안 타임스탬프를 1분마다 갱신
+    _logRefreshTimer = setInterval(renderLogPanel, 60000);
+}
+function closeLogPanel() {
+    clearInterval(_logRefreshTimer); _logRefreshTimer = null;
+    document.getElementById('log-overlay').classList.remove('open');
+    document.getElementById('log-panel').classList.remove('open');
+    document.body.style.overflow = '';
+}
+function clearLog() {
+    showConfirm('모든 활동 로그를 삭제합니다. 되돌릴 수 없습니다.', () => {
+        activityLog = [];
+        saveLog();
+        renderLogPanel();
+        const cnt = document.getElementById('log-btn-count');
+        if (cnt) cnt.style.display = 'none';
+    });
+}
+function downloadLog() {
+    const blob = new Blob([JSON.stringify(activityLog, null, 2)], { type:'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `activity-log-${today()}.json`;
+    a.click(); URL.revokeObjectURL(a.href);
+}
+function downloadLogCSV() {
+    const rows = [['시간','카테고리','액션','상세']];
+    activityLog.forEach(e => {
+        const d = new Date(e.ts);
+        const ts = `${d.toLocaleDateString('ko-KR')} ${d.toLocaleTimeString('ko-KR', {hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;
+        rows.push([ts, e.category, e.action, e.detail || ''].map(v => `"${String(v).replace(/"/g,'""')}"`));
+    });
+    const csv = '\uFEFF' + rows.map(r => r.join(',')).join('\n'); // BOM for Excel
+    const blob = new Blob([csv], { type:'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `activity-log-${today()}.csv`;
+    a.click(); URL.revokeObjectURL(a.href);
+}
+// 로그 필터 버튼 이벤트
+document.getElementById('log-filter-row').addEventListener('click', e => {
+    const btn = e.target.closest('[data-log-filter]');
+    if (!btn) return;
+    _logFilter = btn.dataset.logFilter;
+    document.querySelectorAll('[data-log-filter]').forEach(b => b.classList.toggle('active', b.dataset.logFilter === _logFilter));
+    renderLogPanel();
+});
+// 초기 뱃지
+(function() {
+    const cnt = document.getElementById('log-btn-count');
+    if (cnt && activityLog.length) { cnt.textContent = activityLog.length; cnt.style.display = ''; }
+})();
+
+// ══════════════════════════════════════
+// Undo (최대 10단계 스택)
+// ══════════════════════════════════════
+const UNDO_MAX = 10;
+let _undoStack = [];
+// saveUndoSnapshot은 해당 스냅샷을 복원하는 클로저를 반환 → toast의 undoFn으로 사용
+function saveUndoSnapshot() {
+    const snap = { sheetsData: JSON.parse(JSON.stringify(sheetsData)), treeData: JSON.parse(JSON.stringify(treeData)), nextId };
+    _undoStack.push(snap);
+    if (_undoStack.length > UNDO_MAX) _undoStack.shift();
+    return function undoFn() {
+        // toast 버튼으로 undo 시 스택에서도 제거해 Ctrl+Z 중복 방지
+        const idx = _undoStack.indexOf(snap);
+        if (idx !== -1) _undoStack.splice(idx, 1);
+        sheetsData.length = 0; snap.sheetsData.forEach(s => sheetsData.push(s));
+        treeData = snap.treeData; nextId = snap.nextId;
+        appLog('system', '실행 취소 (Undo)');
+        renderTree(); applyFilters();
+        showToast('실행이 취소되었습니다', '↩️');
+    };
+}
+// Ctrl+Z 지원용 (스택 top 팝)
 function restoreUndo() {
-    if (!_undoSnapshot) return;
-    sheetsData.length = 0; _undoSnapshot.sheetsData.forEach(s => sheetsData.push(s));
-    treeData = _undoSnapshot.treeData; nextId = _undoSnapshot.nextId;
-    _undoSnapshot = null;
+    if (!_undoStack.length) return;
+    const snap = _undoStack.pop();
+    sheetsData.length = 0; snap.sheetsData.forEach(s => sheetsData.push(s));
+    treeData = snap.treeData; nextId = snap.nextId;
+    appLog('system', '실행 취소 (Undo)');
     renderTree(); applyFilters();
-    showToast('삭제가 취소되었습니다', '↩️');
+    showToast('실행이 취소되었습니다', '↩️');
 }
 
 // ══════════════════════════════════════
@@ -1132,6 +1751,39 @@ const selectedCards = new Set(); // 다중 선택
 let _colorPickerFolderId = null; // 폴더 컬러 픽커
 let _treeDragNodeId      = null; // 트리 순서 드래그
 let _treeDragOverNodeId  = null;
+
+// 고급 기능 상태
+let comments       = {};         // { [sheetId]: [{id, author, text, ts}] }
+let savedSearches  = [];         // [{id, name, query}]
+let _activeSavedSearch = null;   // 현재 적용된 저장 검색 id
+let automationRules = [          // 자동화 규칙 목록
+    { id:'r1', name:'오래된 시트 자동 보관', desc:'90일 이상 업데이트 없으면 status → archived', enabled:false, condition:{type:'stale',days:90}, action:{type:'setStatus',value:'archived'}, lastRun:null },
+    { id:'r2', name:'완료 시트 핀 해제',     desc:'status가 done이면 isPinned → false 자동 해제', enabled:true,  condition:{type:'status',value:'done'},    action:{type:'unpin'},                      lastRun:null },
+    { id:'r3', name:'기한 초과 시 검토중',   desc:'기한이 지난 시트를 status → review로 변경',  enabled:false, condition:{type:'overdue'},                 action:{type:'setStatus',value:'review'},    lastRun:null },
+];
+const TEMPLATES = [
+    { id:'budget',   icon:'💰', name:'예산 시트',     tags:['예산','재무'],    status:'active', access:'restricted', desc:'분기/연간 예산 집행 현황' },
+    { id:'meeting',  icon:'📋', name:'회의록',        tags:['회의록','공통'],  status:'active', access:'public',     desc:'정기 회의 안건 및 Action Item' },
+    { id:'tracker',  icon:'📊', name:'태스크 트래커', tags:['기획','프로젝트'],status:'active', access:'public',     desc:'프로젝트 마일스톤 및 진행 관리' },
+    { id:'report',   icon:'📈', name:'보고서',        tags:['보고','결산'],    status:'review', access:'restricted', desc:'주간/월간/분기 보고 자료' },
+    { id:'db',       icon:'🗄️', name:'데이터베이스', tags:['DB','데이터'],    status:'active', access:'restricted', desc:'마스터 데이터 및 연락처 관리' },
+    { id:'plan',     icon:'🗓️', name:'기획안',       tags:['기획'],           status:'active', access:'public',     desc:'신규 프로젝트 기획 및 제안서' },
+    { id:'kpi',      icon:'🎯', name:'KPI 대시보드', tags:['KPI','성과'],     status:'active', access:'public',     desc:'팀/개인 KPI 목표 및 달성 현황' },
+    { id:'blank',    icon:'📄', name:'빈 시트',       tags:[],                 status:'active', access:'public',     desc:'기본 템플릿으로 시작' },
+];
+let _selectedTemplate = null;
+let _commentSheetId = null;
+
+// localStorage 키
+const COMMENTS_KEY    = 'sm-comments-v1';
+const SEARCHES_KEY    = 'sm-searches-v1';
+const AUTOMATION_KEY  = 'sm-rules-v1';
+
+(function initAdvancedState() {
+    try { const r=localStorage.getItem(COMMENTS_KEY);   if(r) comments=JSON.parse(r); } catch(e) {}
+    try { const r=localStorage.getItem(SEARCHES_KEY);   if(r) savedSearches=JSON.parse(r); } catch(e) {}
+    try { const r=localStorage.getItem(AUTOMATION_KEY); if(r) { const saved=JSON.parse(r); automationRules=automationRules.map(ru=>{ const s=saved.find(x=>x.id===ru.id); return s ? {...ru,...s} : ru; }); } } catch(e) {}
+})();
 
 // ══════════════════════════════════════
 // 유틸
@@ -1210,7 +1862,7 @@ function renderTreeNode(node, depth) {
     } else {
         const sheetCount = node.type === 'folder' ? collectSheetIds([node]).length : 0;
         const countBadge = (node.type === 'folder' && sheetCount > 0)
-            ? `<span style="font-size:10px;font-weight:700;color:var(--muted);background:#f2f4f6;border-radius:10px;padding:1px 7px;flex-shrink:0;margin-left:2px">${sheetCount}</span>`
+            ? `<span style="font-size:10px;font-weight:700;color:var(--muted);background:var(--hover-bg);border-radius:10px;padding:1px 7px;flex-shrink:0;margin-left:2px">${sheetCount}</span>`
             : '';
         rowInner += `<span class="tree-name" data-select-id="${node.id}">${esc(node.name)}</span>${countBadge}`;
         let actions = '';
@@ -1225,7 +1877,7 @@ function renderTreeNode(node, depth) {
     }
     const selectedClass = isSelected ? ' selected' : '';
     const dropAttr = node.type === 'folder' ? ` data-drop-folder-id="${node.id}"` : '';
-    let html = `<div class="tree-node${selectedClass}" data-node-id="${node.id}"><div class="tree-row"${dropAttr} style="padding-left:${indent}px">${rowInner}</div>`;
+    let html = `<div class="tree-node${selectedClass}" data-node-id="${node.id}" data-node-type="${node.type}"><div class="tree-row"${dropAttr} style="padding-left:${indent}px">${rowInner}</div>`;
     if (node.type === 'folder') {
         if (isExpanded && node.children?.length) html += node.children.map(c => renderTreeNode(c, depth+1)).join('');
         if (addMode && addMode.parentId === node.id) {
@@ -1259,7 +1911,19 @@ function startRename(id) { treeEditingId = id; addMode = null; renderTree(); }
 function commitTreeRename() {
     const id = treeEditingId; if (!id) return;
     const inp = document.getElementById('tree-rename-input'); const newName = inp?.value.trim(); treeEditingId = null;
-    if (newName) { const node = findNode(id); treeData = mapTree(treeData, n => n.id===id ? {...n, name:newName} : n); if (node?.type==='sheet' && node.sheetId) { const s = sheetsData.find(s=>s.id===node.sheetId); if (s) s.title = newName; } }
+    if (newName) {
+        const node = findNode(id);
+        const oldName = node?.name || '';
+        if (newName !== oldName) {
+            const undoFn = saveUndoSnapshot();
+            treeData = mapTree(treeData, n => n.id===id ? {...n, name:newName} : n);
+            if (node?.type==='sheet' && node.sheetId) { const s = sheetsData.find(s=>s.id===node.sheetId); if (s) s.title = newName; }
+            appLog('edit', `${node?.type==='folder'?'폴더':'시트'} 이름 변경`, `"${oldName}" → "${newName}"`);
+            renderTree(); applyFilters();
+            showToast(`"${newName}"으로 이름 변경됨`, '✏️', undoFn);
+            return;
+        }
+    }
     renderTree(); applyFilters();
 }
 function cancelTreeRename() { treeEditingId = null; renderTree(); }
@@ -1276,6 +1940,8 @@ function commitAdd() {
         if (type === 'folder') { newNode = { id:newId, type:'folder', name, expanded:false, children:[] }; }
         else { const newSheetId = nextId++; sheetsData.unshift({ id:newSheetId, title:name, desc:'', owner:'나(PM)', updated:today(), tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'#' }); newNode = { id:newId, type:'sheet', name, sheetId:newSheetId }; }
         if (parentId === 'root') treeData = [...treeData, newNode]; else treeData = addToTree(parentId, newNode, treeData);
+        const parentNode = parentId !== 'root' ? findNode(parentId) : null;
+        appLog('add', `${type==='folder'?'폴더':'시트'} 추가 (트리)`, parentNode ? `"${name}" → "${parentNode.name}" 폴더` : `"${name}"`);
         showToast(`"${name}" ${type==='folder'?'폴더':'시트'}가 추가되었습니다`);
     }
     renderTree(); applyFilters();
@@ -1289,14 +1955,18 @@ function deleteNode(id) {
     showConfirm(desc, () => _doDeleteNode(id, node));
 }
 function _doDeleteNode(id, node) {
-    saveUndoSnapshot();
+    const undoFn = saveUndoSnapshot();
     if (node.type==='sheet' && node.sheetId) { const idx = sheetsData.findIndex(s=>s.id===node.sheetId); if (idx !== -1) sheetsData.splice(idx, 1); }
     if (node.type==='folder' && node.children?.length) { const ids = collectSheetIds(node.children); ids.forEach(sid => { const idx = sheetsData.findIndex(s=>s.id===sid); if (idx !== -1) sheetsData.splice(idx, 1); }); }
     treeData = deleteFromTree(id, treeData); if (selectedId === id) selectedId = 'root';
-    showToast(`"${node.name}" 이(가) 삭제되었습니다`, '🗑️', restoreUndo); renderTree(); applyFilters();
+    const deletedSheetIds = node.type==='folder' ? collectSheetIds(node.children||[]) : (node.sheetId ? [node.sheetId] : []);
+    cleanRecentIds(deletedSheetIds);
+    const childCount = node.type==='folder' ? deletedSheetIds.length : 0;
+    appLog('delete', `${node.type==='folder'?'폴더':'시트'} 삭제`, childCount > 0 ? `"${node.name}" (하위 ${childCount}개 포함)` : `"${node.name}"`);
+    showToast(`"${node.name}" 이(가) 삭제되었습니다`, '🗑️', undoFn); renderTree(); applyFilters();
 }
 function toggleExpand(id) { treeData = mapTree(treeData, n => n.id===id ? {...n, expanded:!n.expanded} : n); renderTree(); }
-function selectNode(id) { selectedId = id; treeEditingId = null; addMode = null; renderTree(); applyFilters(); updateAllRowStyle(); updateBreadcrumb(); if (window.innerWidth < 768) closeSidebar(); }
+function selectNode(id) { selectedCards.clear(); updateBulkBar(); selectedId = id; treeEditingId = null; addMode = null; renderTree(); applyFilters(); updateAllRowStyle(); updateBreadcrumb(); if (window.innerWidth < 768) closeSidebar(); }
 
 // ══════════════════════════════════════
 // 트리 이벤트 위임
@@ -1310,7 +1980,21 @@ document.getElementById('tree-root').addEventListener('click', e => {
     const btn = t.closest('[data-toggle-id],[data-select-id],[data-rename-id],[data-delete-id],[data-add-folder-id],[data-add-sheet-id],[data-color-folder-id]');
     if (!btn) return;
     if (btn.dataset.toggleId)      { toggleExpand(btn.dataset.toggleId); return; }
-    if (btn.dataset.selectId)      { selectNode(btn.dataset.selectId); return; }
+    if (btn.dataset.selectId) {
+        const _selNode = findNode(btn.dataset.selectId);
+        selectNode(btn.dataset.selectId);
+        if (_selNode && _selNode.type === 'sheet') {
+            const _selSheet = sheetsData.find(s => s.id === _selNode.sheetId);
+            if (_selSheet && _selSheet.link && _selSheet.link !== '#') {
+                addRecentId(_selSheet.id);
+                window.open(_selSheet.link, '_blank', 'noopener');
+            } else if (_selSheet) {
+                showToast('링크가 없습니다. 편집에서 URL을 추가해 주세요', '🔗');
+                openEditModal(_selSheet.id);
+            }
+        }
+        return;
+    }
     if (btn.dataset.renameId)      { startRename(btn.dataset.renameId); return; }
     if (btn.dataset.deleteId)      { deleteNode(btn.dataset.deleteId); return; }
     if (btn.dataset.addFolderId)   { startAdd(btn.dataset.addFolderId, 'folder'); return; }
@@ -1371,7 +2055,7 @@ function renderSheets(data) {
         const emptyBtn = inFolder
             ? `<button class="empty-state-btn" onclick="openModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>"${esc(selNode.name)}" 폴더에 시트 추가</button>`
             : (!isFiltered ? `<button class="empty-state-btn" onclick="openModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>시트 추가하기</button>` : '');
-        container.innerHTML = `<div class="empty-state"><div class="empty-state-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#adb5bd" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${isFiltered&&!inFolder?'<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>':'<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5z"/><polyline points="14 2 14 8 20 8"/>'}</svg></div><div class="empty-state-title">${isFiltered&&!inFolder?'검색 결과가 없습니다':inFolder?`"${esc(selNode.name)}" 폴더가 비어있어요`:'아직 시트가 없어요'}</div><p class="empty-state-desc">${isFiltered&&!inFolder?'다른 검색어나 필터를 사용해 보세요.':inFolder?'이 폴더에 시트를 추가하거나 드래그해서 옮겨보세요.':'시트 추가 버튼으로 첫 번째 스프레드시트를 연결해 보세요.'}</p>${emptyBtn}</div>`;
+        container.innerHTML = `<div class="empty-state"><div class="empty-state-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${isFiltered&&!inFolder?'<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>':'<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5z"/><polyline points="14 2 14 8 20 8"/>'}</svg></div><div class="empty-state-title">${isFiltered&&!inFolder?'검색 결과가 없습니다':inFolder?`"${esc(selNode.name)}" 폴더가 비어있어요`:'아직 시트가 없어요'}</div><p class="empty-state-desc">${isFiltered&&!inFolder?'다른 검색어나 필터를 사용해 보세요.':inFolder?'이 폴더에 시트를 추가하거나 드래그해서 옮겨보세요.':'시트 추가 버튼으로 첫 번째 스프레드시트를 연결해 보세요.'}</p>${emptyBtn}</div>`;
         return;
     }
     const sorted = sortData(data);
@@ -1408,8 +2092,8 @@ function renderSheets(data) {
                 <td>${highlight(sheet.owner, _q)}</td>
                 <td style="white-space:nowrap;color:var(--muted)" title="${sheet.updated}">${esc(relativeDate(sheet.updated))}</td>
                 <td><span class="badge ${st.cls}">${st.label}</span></td>
-                <td><button class="lt-fav-btn fav-btn" data-id="${sheet.id}" title="즐겨찾기">${sheet.isFavorite?'⭐':'☆'}</button></td>
-                <td><button class="card-menu-btn" data-card-edit-id="${sheet.id}" style="opacity:1">···</button></td>
+                <td><button class="lt-fav-btn fav-btn" data-id="${sheet.id}" title="즐겨찾기" aria-label="${sheet.isFavorite?'즐겨찾기 해제':'즐겨찾기 추가'}" aria-pressed="${sheet.isFavorite}">${sheet.isFavorite?'⭐':'☆'}</button></td>
+                <td><button class="card-menu-btn" data-card-edit-id="${sheet.id}" aria-label="${esc(sheet.title)} 편집" style="opacity:1">···</button></td>
             </tr>`;
         }).join('');
         container.innerHTML = `<table class="list-table">
@@ -1440,7 +2124,7 @@ function renderSheets(data) {
             const tagsHtml = sheet.tags.map(t=>`<span class="tag" data-tag-filter="${esc(t)}" style="cursor:pointer" title="${esc(t)} 태그로 필터">#${highlight(t, _q)}</span>`).join('');
             const folderName = selectedId === 'root' ? getFolderNameForSheet(sheet.id) : null;
             const folderColor = selectedId === 'root' ? getFolderColorHex(sheet.id) : null;
-            const folderBadge = folderName ? `<span style="display:inline-flex;align-items:center;gap:4px;background:#f2f4f6;color:var(--muted);padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;${folderColor?`border-left:3px solid ${folderColor}`:''}">${folderIcon((treeData.find(n=>n.name===folderName)||{}).color||'yellow')}${esc(folderName)}</span>` : '';
+            const folderBadge = folderName ? `<span style="display:inline-flex;align-items:center;gap:4px;background:var(--hover-bg);color:var(--muted);padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;${folderColor?`border-left:3px solid ${folderColor}`:''}">${folderIcon((treeData.find(n=>n.name===folderName)||{}).color||'yellow')}${esc(folderName)}</span>` : '';
             const favIcon  = sheet.isFavorite ? '⭐' : '☆';
             const pinIcon  = sheet.isPinned ? '<span class="pin-icon">📌</span>' : '';
             const hasLink  = sheet.link && sheet.link !== '#';
@@ -1455,7 +2139,7 @@ function renderSheets(data) {
             const accentStyle = folderColor ? `border-left:4px solid ${folderColor};padding-left:22px;` : '';
             return `<div class="sheet-card${isSelected?' selected':''}" draggable="true" data-id="${sheet.id}" style="${accentStyle}">
                 <div class="card-checkbox-wrap"><input type="checkbox" class="card-checkbox" data-card-select-id="${sheet.id}" ${isSelected?'checked':''}></div>
-                <div class="card-body"><div class="card-header"><div class="badges"><span class="badge ${accessClass}">${esc(accessLabel)}</span>${statusBadge}</div><div style="display:flex;align-items:center;gap:4px">${pinIcon}<button class="fav-btn" data-id="${sheet.id}" title="즐겨찾기 토글" aria-label="${sheet.isFavorite?'즐겨찾기 해제':'즐겨찾기 추가'}" aria-pressed="${sheet.isFavorite}">${favIcon}</button><button class="card-trash-btn" data-card-trash-id="${sheet.id}" title="시트 삭제">${IC.trashMd}</button><button class="card-menu-btn" data-card-edit-id="${sheet.id}" title="시트 편집">···</button></div></div>${titleHtml}<p class="card-desc">${highlight(sheet.desc, _q)}</p><div class="tags">${folderBadge}${tagsHtml}</div></div><div class="meta-info"><span>작성자: <strong>${highlight(sheet.owner, _q)}</strong></span><span title="${sheet.updated}">업데이트: ${esc(relDate)}</span></div>
+                <div class="card-body"><div class="card-header"><div class="badges"><span class="badge ${accessClass}">${esc(accessLabel)}</span>${statusBadge}</div><div style="display:flex;align-items:center;gap:4px">${pinIcon}<button class="fav-btn" data-id="${sheet.id}" title="즐겨찾기 토글" aria-label="${sheet.isFavorite?'즐겨찾기 해제':'즐겨찾기 추가'}" aria-pressed="${sheet.isFavorite}">${favIcon}</button><button class="card-trash-btn" data-card-trash-id="${sheet.id}" title="시트 삭제" aria-label="${esc(sheet.title)} 삭제">${IC.trashMd}</button><button class="card-menu-btn" data-card-edit-id="${sheet.id}" title="시트 편집" aria-label="${esc(sheet.title)} 편집">···</button></div></div>${titleHtml}<p class="card-desc">${highlight(sheet.desc, _q)}</p><div class="tags">${folderBadge}${tagsHtml}</div></div><div class="meta-info"><span>작성자: <strong>${highlight(sheet.owner, _q)}</strong></span><span title="${sheet.updated}">업데이트: ${esc(relDate)}</span></div>
             </div>`;
         }).join('');
     }
@@ -1475,7 +2159,20 @@ function startCardRename(sheetId) { cardEditingId = sheetId; applyFilters(); }
 function commitCardRename() {
     const id = cardEditingId; if (!id) return;
     const inp = document.getElementById('card-rename-input'); const newName = inp?.value.trim(); cardEditingId = null;
-    if (newName) { const sheet = sheetsData.find(s=>s.id===id); if (sheet) { sheet.title = newName; treeData = mapTree(treeData, n => (n.type==='sheet' && n.sheetId===id) ? {...n, name:newName} : n); renderTree(); } }
+    if (newName) {
+        const sheet = sheetsData.find(s=>s.id===id);
+        if (sheet && newName !== sheet.title) {
+            const undoFn = saveUndoSnapshot();
+            const old = sheet.title;
+            sheet.title = newName;
+            treeData = mapTree(treeData, n => (n.type==='sheet' && n.sheetId===id) ? {...n, name:newName} : n);
+            renderTree();
+            appLog('edit', '시트 이름 변경 (카드)', `"${old}" → "${newName}"`);
+            applyFilters();
+            showToast(`"${newName}"으로 이름 변경됨`, '✏️', undoFn);
+            return;
+        }
+    }
     applyFilters();
 }
 function cancelCardRename() { cardEditingId = null; applyFilters(); }
@@ -1486,14 +2183,17 @@ function cancelCardRename() { cardEditingId = null; applyFilters(); }
 function deleteSheetCard(sheetId) {
     const sheet = sheetsData.find(s => s.id === sheetId); if (!sheet) return;
     showConfirm(`"${sheet.title}"을(를) 삭제합니다. 이 작업은 되돌릴 수 없습니다.`, () => {
-        saveUndoSnapshot();
+        const undoFn = saveUndoSnapshot();
+        const title = sheet.title;
         const idx = sheetsData.findIndex(s => s.id === sheetId);
         if (idx !== -1) sheetsData.splice(idx, 1);
         let nodeId = null;
         function findNodeId(nodes) { for (const n of nodes) { if (n.type==='sheet' && n.sheetId===sheetId) { nodeId=n.id; return; } if (n.children) findNodeId(n.children); } }
         findNodeId(treeData);
         if (nodeId) treeData = deleteFromTree(nodeId, treeData);
-        showToast(`"${sheet.title}" 이(가) 삭제되었습니다`, '🗑️', restoreUndo);
+        cleanRecentIds(sheetId);
+        appLog('delete', '시트 삭제 (카드)', `"${title}"`);
+        showToast(`"${title}" 이(가) 삭제되었습니다`, '🗑️', undoFn);
         renderTree(); applyFilters();
     });
 }
@@ -1503,7 +2203,7 @@ function deleteSheetCard(sheetId) {
 // ══════════════════════════════════════
 let _dragSheetId = null;
 
-function moveSheetToFolder(sheetId, targetFolderId) {
+function moveSheetToFolder(sheetId, targetFolderId, { silent = false, noRender = false } = {}) {
     const sheet = sheetsData.find(s => s.id === sheetId); if (!sheet) return;
     const targetFolder = findNode(targetFolderId); if (!targetFolder) return;
     // 이미 해당 폴더에 있으면 무시
@@ -1518,8 +2218,11 @@ function moveSheetToFolder(sheetId, targetFolderId) {
     // 대상 폴더가 접혀있으면 자동 펼침
     treeData = mapTree(treeData, n => n.id === targetFolderId ? {...n, expanded: true} : n);
     treeData = addToTree(targetFolderId, newNode, treeData);
-    showToast(`"${sheet.title}"을 "${targetFolder.name}" 폴더로 이동했습니다`, '📂');
-    renderTree(); applyFilters();
+    if (!silent) {
+        appLog('move', '시트 폴더 이동', `"${sheet.title}" → "${targetFolder.name}"`);
+        showToast(`"${sheet.title}"을 "${targetFolder.name}" 폴더로 이동했습니다`, '📂');
+    }
+    if (!noRender) { renderTree(); applyFilters(); }
 }
 
 // ══════════════════════════════════════
@@ -1534,12 +2237,14 @@ function applyFilters() {
     }
     const filtered = sheetsData.filter(sheet => {
         if (allowedIds && !allowedIds.has(sheet.id)) return false;
-        const textMatch = !query || sheet.title.toLowerCase().includes(query) || sheet.desc.toLowerCase().includes(query) || sheet.owner.toLowerCase().includes(query) || sheet.tags.some(t=>t.toLowerCase().includes(query));
+        const folderNameForSearch = (getFolderNameForSheet(sheet.id) || '').toLowerCase();
+        const textMatch = !query || sheet.title.toLowerCase().includes(query) || sheet.desc.toLowerCase().includes(query) || sheet.owner.toLowerCase().includes(query) || sheet.tags.some(t=>t.toLowerCase().includes(query)) || folderNameForSearch.includes(query);
         const quickMatch = currentFilter==='all' ? true : currentFilter==='favorite' ? sheet.isFavorite : currentFilter==='archived' ? sheet.status==='archived' : sheet.owner === '나(PM)';
         return textMatch && quickMatch;
     });
     renderSheets(filtered);
     updateStatsBar();
+    updateSelectAllBtn();
     saveStorage();
 }
 
@@ -1568,7 +2273,7 @@ document.getElementById('sheet-container').addEventListener('click', e => {
         return;
     }
     const favBtn = e.target.closest('.fav-btn');
-    if (favBtn && favBtn.dataset.id) { const id = Number(favBtn.dataset.id); const s = sheetsData.find(s=>s.id===id); if (s) { s.isFavorite = !s.isFavorite; applyFilters(); } return; }
+    if (favBtn && favBtn.dataset.id) { const id = Number(favBtn.dataset.id); const s = sheetsData.find(s=>s.id===id); if (s) { s.isFavorite = !s.isFavorite; appLog('fav', s.isFavorite?'즐겨찾기 추가':'즐겨찾기 해제', `"${s.title}"`); applyFilters(); } return; }
     const pencilBtn = e.target.closest('[data-card-rename-id]');
     if (pencilBtn) { startCardRename(Number(pencilBtn.dataset.cardRenameId)); return; }
     const menuBtn = e.target.closest('[data-card-edit-id]');
@@ -1581,6 +2286,7 @@ document.getElementById('sheet-container').addEventListener('click', e => {
         const si = document.getElementById('searchInput');
         si.value = tag;
         document.getElementById('btn-search-clear').style.display = 'block';
+        appLog('view', '태그 필터', `#${tag}`);
         applyFilters();
         return;
     }
@@ -1590,17 +2296,42 @@ document.getElementById('sheet-container').addEventListener('click', e => {
 // 뷰 전환
 // ══════════════════════════════════════
 function setView(type) {
+    if (currentView !== type) appLog('view', '뷰 전환', `${type === 'grid' ? '카드 뷰' : '리스트 뷰'}`);
     currentView = type;
     document.getElementById('sheet-container').className = type + '-view';
     document.querySelectorAll('[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view===type));
     const ss = document.getElementById('sort-select');
     if (ss) ss.style.display = type === 'list' ? 'none' : '';
+    // 전체 선택 버튼은 그리드 뷰에서만 표시
+    updateSelectAllBtn();
+}
+function updateSelectAllBtn() {
+    const btn = document.getElementById('btn-select-all');
+    if (!btn) return;
+    btn.style.display = currentView === 'grid' ? '' : 'none';
+    const allSelected = sheetsData.length > 0 && sheetsData.every(s => selectedCards.has(s.id));
+    btn.textContent = allSelected ? '선택 해제' : '전체 선택';
+    btn.classList.toggle('active', allSelected);
+}
+function toggleSelectAll() {
+    const visibleCards = document.querySelectorAll('.sheet-card[data-id]');
+    const visibleIds = [...visibleCards].map(c => Number(c.dataset.id));
+    const allSelected = visibleIds.length > 0 && visibleIds.every(id => selectedCards.has(id));
+    if (allSelected) {
+        visibleIds.forEach(id => selectedCards.delete(id));
+    } else {
+        visibleIds.forEach(id => selectedCards.add(id));
+    }
+    updateBulkBar();
+    applyFilters();
 }
 document.querySelector('header').addEventListener('click', e => { const btn = e.target.closest('[data-view]'); if (btn) setView(btn.dataset.view); });
 document.querySelector('.controls').addEventListener('click', e => {
     const btn = e.target.closest('[data-filter]');
     if (!btn) return;
-    currentFilter = btn.dataset.filter;
+    const newFilter = btn.dataset.filter;
+    if (newFilter !== currentFilter) appLog('view', '필터 변경', `${newFilter}`);
+    currentFilter = newFilter;
     document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('active', b.dataset.filter===currentFilter));
     applyFilters();
 });
@@ -1608,12 +2339,22 @@ document.querySelector('.controls').addEventListener('click', e => {
 // 검색 + 지우기
 const searchInput    = document.getElementById('searchInput');
 const searchClearBtn = document.getElementById('btn-search-clear');
-searchInput.addEventListener('input', () => { searchClearBtn.style.display = searchInput.value ? 'block' : 'none'; });
-searchInput.addEventListener('input', debounce(applyFilters, 300));
+const _debouncedSearch = debounce(() => {
+    const q = searchInput.value.trim();
+    if (q) appLog('view', '검색', `"${q}"`);
+    applyFilters();
+}, 300);
+searchInput.addEventListener('input', () => {
+    searchClearBtn.style.display = searchInput.value ? 'block' : 'none';
+    _debouncedSearch();
+});
+searchInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); searchInput.blur(); applyFilters(); }
+});
 searchClearBtn.addEventListener('click', () => { searchInput.value = ''; searchClearBtn.style.display = 'none'; searchInput.focus(); applyFilters(); });
 
 // 정렬
-document.getElementById('sort-select').addEventListener('change', function() { currentSort = this.value; applyFilters(); });
+document.getElementById('sort-select').addEventListener('change', function() { appLog('view', '정렬 변경', this.value); currentSort = this.value; applyFilters(); });
 
 // ══════════════════════════════════════
 // 드래그 앤 드롭 — 카드 → 사이드바 폴더
@@ -1702,6 +2443,8 @@ document.getElementById('tree-root').addEventListener('dragend', () => {
     document.querySelectorAll('.tree-node.drag-over-tree').forEach(n => n.classList.remove('drag-over-tree'));
 });
 function reorderTreeNode(dragId, targetId) {
+    const srcNode = findNode(dragId);
+    const tgtNode = findNode(targetId);
     function findInArr(id, arr) {
         for (let i=0;i<arr.length;i++) {
             if (arr[i].id===id) return {arr,idx:i};
@@ -1715,6 +2458,7 @@ function reorderTreeNode(dragId, targetId) {
     const [removed] = src.arr.splice(src.idx, 1);
     const newIdx = src.arr.findIndex(n => n.id === targetId);
     src.arr.splice(newIdx + 1, 0, removed);
+    appLog('move', '트리 순서 변경', `"${srcNode?.name || dragId}" ↔ "${tgtNode?.name || targetId}"`);
     renderTree(); saveStorage();
 }
 
@@ -1814,22 +2558,47 @@ function closeEditModal() {
 function saveEditModal() {
     const id = Number(document.getElementById('edit-sheet-id').value);
     const sheet = sheetsData.find(s => s.id === id); if (!sheet) return;
-    const newTitle = document.getElementById('edit-title').value.trim() || sheet.title;
+    const newTitle  = document.getElementById('edit-title').value.trim() || sheet.title;
+    const oldTitle  = sheet.title;
+    const newLink   = document.getElementById('edit-link').value.trim();
+    const newDesc   = document.getElementById('edit-desc').value.trim();
+    const newTags   = document.getElementById('edit-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+    const newAccess = document.getElementById('edit-access').value;
+    const newStatus = document.getElementById('edit-status').value;
+    const newPinned = document.getElementById('edit-pinned').checked;
+
+    // URL 유효성 검사 (값이 있을 때만)
+    if (newLink && !newLink.match(SHEETS_ID_RE) && !newLink.startsWith('http')) {
+        showToast('올바른 URL 형식이 아닙니다', '⚠️'); return;
+    }
+
+    // 실제 변경 여부 확인 (updated 오염 방지)
+    const oldTagStr = (sheet.tags || []).join(',');
+    const newTagStr = newTags.join(',');
+    const changed = newTitle !== sheet.title || newLink !== (sheet.link === '#' ? '' : (sheet.link||''))
+        || newDesc !== sheet.desc || newTagStr !== oldTagStr
+        || newAccess !== sheet.access || newStatus !== sheet.status || newPinned !== sheet.isPinned;
+
     sheet.title   = newTitle;
-    const newLink = document.getElementById('edit-link').value.trim();
-    if (newLink) sheet.link = newLink;
-    sheet.desc    = document.getElementById('edit-desc').value.trim();
-    sheet.tags    = document.getElementById('edit-tags').value.split(',').map(t => t.trim()).filter(Boolean);
-    sheet.access  = document.getElementById('edit-access').value;
-    sheet.status  = document.getElementById('edit-status').value;
-    sheet.isPinned = document.getElementById('edit-pinned').checked;
-    sheet.updated  = today();
+    sheet.link    = newLink || '#';   // 빈 문자열이면 '#' 으로 리셋 (링크 제거 가능)
+    sheet.desc    = newDesc;
+    sheet.tags    = newTags;
+    sheet.access  = newAccess;
+    sheet.status  = newStatus;
+    sheet.isPinned = newPinned;
+    if (changed) sheet.updated = today();   // 변경이 있을 때만 날짜 갱신
+
     treeData = mapTree(treeData, n => (n.type==='sheet' && n.sheetId===id) ? {...n, name:newTitle} : n);
+    const detail = oldTitle !== newTitle ? `"${oldTitle}" → "${newTitle}"` : `"${newTitle}" (상태:${newStatus}, 핀:${newPinned?'O':'X'})`;
+    appLog('edit', '시트 정보 편집', detail);
     renderTree(); closeEditModal(); applyFilters();
     showToast(`"${newTitle}" 정보가 저장되었습니다`);
 }
 document.getElementById('edit-save-btn').addEventListener('click', saveEditModal);
 document.getElementById('edit-cancel-btn').addEventListener('click', closeEditModal);
+document.getElementById('edit-modal').addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') { e.preventDefault(); saveEditModal(); }
+});
 document.getElementById('edit-modal-close').addEventListener('click', closeEditModal);
 document.getElementById('edit-modal').addEventListener('click', e => { if (e.target===document.getElementById('edit-modal')) closeEditModal(); });
 
@@ -1848,7 +2617,7 @@ function showToast(msg, icon='✅', undoFn=null) {
     }
     el.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => el.classList.remove('show'), 5000);
+    toastTimer = setTimeout(() => el.classList.remove('show'), undoFn ? 7000 : 3500);
 }
 
 // ══════════════════════════════════════
@@ -1925,29 +2694,65 @@ document.getElementById('modal-add-btn').addEventListener('click',()=>{
         const newTreeNode = { id: uid('t-'), type:'sheet', name: title, sheetId: newSheetId };
         treeData = addToTree(targetFolderId, newTreeNode, treeData);
     }
+    const folderNode = targetFolderId ? findNode(targetFolderId) : null;
+    appLog('add', '시트 추가 (모달)', folderNode ? `"${title}" → "${folderNode.name}"` : `"${title}"`);
     closeModal(); renderTree(); applyFilters(); showToast(`"${title}" 시트가 추가되었습니다`);
 });
 document.getElementById('modal-close-btn').addEventListener('click',closeModal);
 document.getElementById('modal-cancel-btn').addEventListener('click',closeModal);
 document.getElementById('add-modal').addEventListener('click',e=>{ if(e.target===document.getElementById('add-modal')) closeModal(); });
+document.getElementById('add-modal').addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+        e.preventDefault();
+        const btn = document.getElementById('modal-add-btn');
+        if (!btn.disabled) btn.click();
+    }
+});
 document.getElementById('btn-add-sheet').addEventListener('click',openModal);
 
 // ══════════════════════════════════════
 // 삭제 확인 다이얼로그
 // ══════════════════════════════════════
 let _confirmCallback = null;
-function showConfirm(desc, onOk) { _confirmCallback = onOk; document.getElementById('confirm-desc').textContent = desc; document.getElementById('confirm-modal').classList.add('open'); document.getElementById('confirm-ok-btn').focus(); }
-function closeConfirm() { document.getElementById('confirm-modal').classList.remove('open'); _confirmCallback = null; }
+function showConfirm(desc, onOk) {
+    _confirmCallback = onOk;
+    document.getElementById('confirm-desc').textContent = desc;
+    document.getElementById('confirm-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    document.getElementById('confirm-ok-btn').focus();
+}
+function closeConfirm() {
+    document.getElementById('confirm-modal').classList.remove('open');
+    _confirmCallback = null;
+    // 로그 패널이나 다른 모달이 열려있지 않을 때만 스크롤 복원
+    const logOpen  = document.getElementById('log-panel').classList.contains('open');
+    const editOpen = document.getElementById('edit-modal').classList.contains('open');
+    const addOpen  = document.getElementById('add-modal').classList.contains('open');
+    if (!logOpen && !editOpen && !addOpen) document.body.style.overflow = '';
+}
 document.getElementById('confirm-ok-btn').addEventListener('click', () => { if (_confirmCallback) _confirmCallback(); closeConfirm(); });
 document.getElementById('confirm-cancel-btn').addEventListener('click', closeConfirm);
 document.getElementById('confirm-modal').addEventListener('click', e => { if (e.target===document.getElementById('confirm-modal')) closeConfirm(); });
 document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeConfirm(); closeModal(); closeEditModal(); return; }
+    if (e.key === 'Escape') { closeConfirm(); closeModal(); closeEditModal(); closeLogPanel(); return; }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        const active = document.activeElement;
+        const isInput = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
+        if (!isInput && _undoStack.length) { e.preventDefault(); restoreUndo(); }
+        return;
+    }
     // Ctrl+K / Cmd+K → 검색창 포커스
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
         e.preventDefault();
         const si = document.getElementById('searchInput');
         si.focus(); si.select();
+        return;
+    }
+    // Ctrl+N / Cmd+N → 시트 추가 모달
+    if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+        const addOpen  = document.getElementById('add-modal').classList.contains('open');
+        const editOpen = document.getElementById('edit-modal').classList.contains('open');
+        if (!addOpen && !editOpen) { e.preventDefault(); openModal(); }
     }
 });
 
@@ -1979,6 +2784,7 @@ function updateBreadcrumb() {
     if (pt) pt.textContent = node.name;
 }
 function selectAllRoot() {
+    selectedCards.clear(); updateBulkBar();
     selectedId = 'root'; treeEditingId = null; addMode = null;
     updateAllRowStyle(); updateBreadcrumb(); renderTree(); applyFilters();
     if (window.innerWidth < 768) closeSidebar();
@@ -2000,30 +2806,40 @@ document.getElementById('btn-export').addEventListener('click', () => {
     a.href = URL.createObjectURL(blob);
     a.download = `sheets-backup-${today()}.json`;
     a.click(); URL.revokeObjectURL(a.href);
+    appLog('system', 'JSON 백업 다운로드', `${sheetsData.length}개 시트`);
     showToast('백업 파일이 다운로드되었습니다', '💾');
 });
 document.getElementById('btn-import').addEventListener('click', () => {
     document.getElementById('import-file-input').click();
 });
-document.getElementById('import-file-input').addEventListener('change', e => {
+function _handleImportFile(e) {
     const file = e.target.files[0]; if (!file) return;
     const reader = new FileReader();
     reader.onload = ev => {
         try {
-            const data = JSON.parse(ev.target.result);
-            if (!Array.isArray(data.sheetsData) || !Array.isArray(data.treeData)) throw new Error('잘못된 형식');
-            saveUndoSnapshot();
-            sheetsData.length = 0; data.sheetsData.forEach(s => sheetsData.push(s));
-            treeData = data.treeData; nextId = data.nextId ?? nextId;
-            renderTree(); applyFilters();
-            showToast(`${data.sheetsData.length}개 시트를 가져왔습니다`, '📥');
-        } catch {
-            showToast('파일 형식이 올바르지 않습니다', '⚠️');
+            if (file.name.endsWith('.csv')) {
+                importCSV(ev.target.result);
+            } else {
+                const data = JSON.parse(ev.target.result);
+                if (!Array.isArray(data.sheetsData) || !Array.isArray(data.treeData)) throw new Error('배열 구조 없음');
+                if (data.sheetsData.length > 10000) throw new Error('시트 수 초과 (최대 10,000개)');
+                const invalidSheet = data.sheetsData.find(s => !s || typeof s.id === 'undefined' || !s.title || !s.owner);
+                if (invalidSheet) throw new Error('시트 필드 누락');
+                saveUndoSnapshot();
+                sheetsData.length = 0; data.sheetsData.forEach(s => sheetsData.push(s));
+                treeData = data.treeData; nextId = data.nextId ?? nextId;
+                appLog('system', 'JSON 복원', `${data.sheetsData.length}개 시트 가져옴`);
+                renderTree(); applyFilters();
+                showToast(`${data.sheetsData.length}개 시트를 가져왔습니다`, '📥');
+            }
+        } catch(err) {
+            showToast(`파일 형식이 올바르지 않습니다: ${err.message}`, '⚠️');
         }
         e.target.value = '';
     };
     reader.readAsText(file);
-});
+}
+document.getElementById('import-file-input').addEventListener('change', _handleImportFile);
 
 // ══════════════════════════════════════
 // 다크 모드
@@ -2038,7 +2854,9 @@ function applyTheme(theme) {
 }
 function toggleTheme() {
     const cur = document.documentElement.getAttribute('data-theme') || 'light';
-    applyTheme(cur === 'dark' ? 'light' : 'dark');
+    const next = cur === 'dark' ? 'light' : 'dark';
+    appLog('view', '다크모드 전환', next);
+    applyTheme(next);
 }
 
 // ══════════════════════════════════════
@@ -2047,10 +2865,19 @@ function toggleTheme() {
 function updateStatsBar() {
     const now = new Date();
     const weekAgo = new Date(now - 7*86400000);
-    const fav   = sheetsData.filter(s => s.isFavorite).length;
-    const arch  = sheetsData.filter(s => s.status === 'archived').length;
-    const week  = sheetsData.filter(s => new Date(s.updated) >= weekAgo).length;
-    const total = sheetsData.length;
+    // 폴더 선택 중이면 해당 폴더 범위, 아니면 전체
+    let scope = sheetsData;
+    if (selectedId !== 'root') {
+        const node = findNode(selectedId);
+        if (node && node.type === 'folder') {
+            const ids = new Set(collectSheetIds([node]));
+            scope = sheetsData.filter(s => ids.has(s.id));
+        }
+    }
+    const fav   = scope.filter(s => s.isFavorite).length;
+    const arch  = scope.filter(s => s.status === 'archived').length;
+    const week  = scope.filter(s => new Date(s.updated) >= weekAgo).length;
+    const total = scope.length;
     const el = id => document.getElementById(id);
     if (el('stat-total')) el('stat-total').textContent = total;
     if (el('stat-fav'))   el('stat-fav').textContent   = fav;
@@ -2069,6 +2896,10 @@ function setStatFilter(filter) {
 function addRecentId(id) {
     recentIds = [id, ...recentIds.filter(r => r !== id)].slice(0, 5);
     saveStorage();
+}
+function cleanRecentIds(deletedIds) {
+    const del = new Set(Array.isArray(deletedIds) ? deletedIds : [deletedIds]);
+    recentIds = recentIds.filter(id => !del.has(id));
 }
 function updateRecentSection() {
     const wrap = document.getElementById('recent-wrap');
@@ -2101,27 +2932,32 @@ function updateBulkBar() {
     } else {
         bar.classList.remove('show');
     }
+    updateSelectAllBtn();
 }
 document.getElementById('bulk-close-btn').addEventListener('click', () => {
     selectedCards.clear(); updateBulkBar(); applyFilters();
 });
 document.getElementById('bulk-fav-btn').addEventListener('click', () => {
     const allFav = [...selectedCards].every(id => sheetsData.find(s=>s.id===id)?.isFavorite);
+    const cnt = selectedCards.size;
     selectedCards.forEach(id => { const s = sheetsData.find(s=>s.id===id); if(s) s.isFavorite = !allFav; });
-    showToast(`${selectedCards.size}개 항목 즐겨찾기 ${allFav?'해제':'추가'}됨`);
+    appLog('fav', `다중선택 즐겨찾기 ${allFav?'해제':'추가'}`, `${cnt}개`);
+    showToast(`${cnt}개 항목 즐겨찾기 ${allFav?'해제':'추가'}됨`);
     applyFilters();
 });
 document.getElementById('bulk-delete-btn').addEventListener('click', () => {
     const cnt = selectedCards.size;
     showConfirm(`선택된 ${cnt}개 시트를 삭제합니다. 되돌릴 수 없습니다.`, () => {
-        saveUndoSnapshot();
+        const undoFn = saveUndoSnapshot();
         selectedCards.forEach(id => {
             const idx = sheetsData.findIndex(s=>s.id===id); if (idx!==-1) sheetsData.splice(idx,1);
             let nid=null; function fn(nodes){for(const n of nodes){if(n.type==='sheet'&&n.sheetId===id){nid=n.id;return;}if(n.children)fn(n.children);}} fn(treeData);
             if(nid) treeData = deleteFromTree(nid, treeData);
         });
+        cleanRecentIds([...selectedCards]);
         selectedCards.clear(); updateBulkBar();
-        showToast(`${cnt}개 시트가 삭제되었습니다`, '🗑️', restoreUndo);
+        appLog('delete', '다중선택 시트 삭제', `${cnt}개`);
+        showToast(`${cnt}개 시트가 삭제되었습니다`, '🗑️', undoFn);
         renderTree(); applyFilters();
     });
 });
@@ -2132,7 +2968,7 @@ document.getElementById('bulk-folder-btn').addEventListener('click', e => {
     function addOpts(nodes, depth) {
         for (const n of nodes) {
             if (n.type === 'folder') {
-                opts += `<div data-bulk-folder-id="${n.id}" style="padding:8px 14px 8px ${14+depth*14}px;cursor:pointer;font-size:13.5px;font-weight:600;display:flex;align-items:center;gap:6px;transition:background .1s" onmouseover="this.style.background='var(--primary-light)'" onmouseout="this.style.background=''">${folderIcon(n.color||'yellow')}${esc(n.name)}</div>`;
+                opts += `<div data-bulk-folder-id="${n.id}" class="bulk-folder-opt" style="padding-left:${14+depth*14}px">${folderIcon(n.color||'yellow')}${esc(n.name)}</div>`;
                 if (n.children) addOpts(n.children, depth+1);
             }
         }
@@ -2140,15 +2976,20 @@ document.getElementById('bulk-folder-btn').addEventListener('click', e => {
     addOpts(treeData, 0);
     popup.innerHTML = opts;
     const rect = e.currentTarget.getBoundingClientRect();
-    popup.style.left = rect.left + 'px';
+    popup.style.left = Math.min(rect.left, window.innerWidth - 210) + 'px';
     popup.style.bottom = (window.innerHeight - rect.top + 8) + 'px';
     popup.style.display = 'block';
     popup.onclick = ev => {
         const btn = ev.target.closest('[data-bulk-folder-id]');
         if (!btn) return;
         const folderId = btn.dataset.bulkFolderId;
-        selectedCards.forEach(id => moveSheetToFolder(id, folderId));
+        const cnt = selectedCards.size;
+        const folderNode = findNode(folderId);
+        selectedCards.forEach(id => moveSheetToFolder(id, folderId, { silent: true, noRender: true }));
+        appLog('move', '다중선택 폴더 이동', `${cnt}개 → "${folderNode?.name || folderId}"`);
+        showToast(`${cnt}개 시트를 "${folderNode?.name || folderId}" 폴더로 이동했습니다`, '📂');
         selectedCards.clear(); updateBulkBar();
+        renderTree(); applyFilters();
         popup.style.display = 'none';
     };
 });
@@ -2168,28 +3009,44 @@ function openColorPicker(folderId, btnEl) {
     const node = findNode(folderId);
     const curColor = node?.color || 'yellow';
     popup.innerHTML = FOLDER_COLORS.map(c =>
-        `<div class="color-dot${c.id===curColor?' active':''}" style="background:${c.fill};border-color:${c.stroke}" data-color-id="${c.id}" title="${c.id}" onclick="setFolderColor('${folderId}','${c.id}')"></div>`
+        `<div class="color-dot${c.id===curColor?' active':''}" style="background:${c.fill};border-color:${c.stroke}" data-color-id="${c.id}" data-color-folder-target="${folderId}" role="radio" aria-checked="${c.id===curColor}" aria-label="${c.name} 색상" title="${c.name}"></div>`
     ).join('');
     const rect = btnEl.getBoundingClientRect();
     popup.style.top  = (rect.bottom + 6) + 'px';
     popup.style.left = Math.min(rect.left, window.innerWidth - 130) + 'px';
     popup.style.display = 'flex';
 }
+// 컬러 픽커 이벤트 위임
+document.getElementById('color-picker-popup').addEventListener('click', e => {
+    const dot = e.target.closest('[data-color-id]');
+    if (!dot) return;
+    setFolderColor(dot.dataset.colorFolderTarget, dot.dataset.colorId);
+});
 function closeColorPicker() {
     _colorPickerFolderId = null;
     const p = document.getElementById('color-picker-popup');
     if (p) p.style.display = 'none';
 }
 function setFolderColor(folderId, colorId) {
+    const node = findNode(folderId);
     treeData = mapTree(treeData, n => n.id === folderId ? {...n, color: colorId} : n);
+    appLog('edit', '폴더 색상 변경', `"${node?.name || folderId}" → ${colorId}`);
     closeColorPicker(); renderTree(); applyFilters();
 }
 
 // ══════════════════════════════════════
 // 모바일 사이드바 토글
 // ══════════════════════════════════════
-function openSidebar()  { document.body.classList.add('sidebar-open'); }
-function closeSidebar() { document.body.classList.remove('sidebar-open'); }
+function openSidebar()  {
+    document.body.classList.add('sidebar-open');
+    const btn = document.getElementById('btn-sidebar-toggle');
+    if (btn) btn.setAttribute('aria-label', '메뉴 닫기');
+}
+function closeSidebar() {
+    document.body.classList.remove('sidebar-open');
+    const btn = document.getElementById('btn-sidebar-toggle');
+    if (btn) btn.setAttribute('aria-label', '메뉴 열기');
+}
 function toggleSidebar() { document.body.classList.contains('sidebar-open') ? closeSidebar() : openSidebar(); }
 // ══════════════════════════════════════
 // 초기화 (localStorage 복원)
@@ -2221,6 +3078,1029 @@ renderTree();
 applyFilters();
 updateAllRowStyle();
 updateBreadcrumb();
+renderSavedSearches();
+runAllAutomationRules(true); // 앱 시작 시 자동화 규칙 조용히 실행
+
+// ══════════════════════════════════════
+// 폴더 일괄 접기/펼치기
+// ══════════════════════════════════════
+function collapseAllFolders() {
+    treeData = mapTree(treeData, n => n.type==='folder' ? {...n, expanded:false} : n);
+    renderTree(); showToast('모든 폴더를 접었습니다', '📁');
+}
+function expandAllFolders() {
+    treeData = mapTree(treeData, n => n.type==='folder' ? {...n, expanded:true} : n);
+    renderTree(); showToast('모든 폴더를 펼쳤습니다', '📂');
+}
+
+// ══════════════════════════════════════
+// 컨텍스트 메뉴 (우클릭)
+// ══════════════════════════════════════
+function showCtxMenu(x, y, items) {
+    const menu = document.getElementById('ctx-menu');
+    menu.innerHTML = items.map(item => item === 'sep'
+        ? `<div class="ctx-sep"></div>`
+        : `<div class="ctx-item${item.danger?' danger':''}" data-ctx="${item.action}">${item.icon||''}<span>${item.label}</span></div>`
+    ).join('');
+    // 화면 안에 배치
+    menu.style.display = 'block';
+    const mw = menu.offsetWidth, mh = menu.offsetHeight;
+    menu.style.left = Math.min(x, window.innerWidth - mw - 8) + 'px';
+    menu.style.top  = Math.min(y, window.innerHeight - mh - 8) + 'px';
+}
+function hideCtxMenu() {
+    document.getElementById('ctx-menu').style.display = 'none';
+    _ctxTarget = null;
+}
+let _ctxTarget = null;
+document.addEventListener('click', e => {
+    if (!document.getElementById('ctx-menu').contains(e.target)) hideCtxMenu();
+});
+document.addEventListener('contextmenu', e => {
+    // 카드 우클릭
+    const card = e.target.closest('.sheet-card[data-id]');
+    if (card) {
+        e.preventDefault();
+        const id = Number(card.dataset.id);
+        const sheet = sheetsData.find(s=>s.id===id);
+        if (!sheet) return;
+        _ctxTarget = { type:'card', id };
+        const commentCount = (comments[id]||[]).length;
+        showCtxMenu(e.clientX, e.clientY, [
+            { label:'편집', icon:'✏️', action:'edit' },
+            { label:'이름 변경', icon:'📝', action:'rename' },
+            { label:`코멘트 (${commentCount})`, icon:'💬', action:'comment' },
+            sheet.link && sheet.link !== '#' ? { label:'링크 복사', icon:'🔗', action:'copylink' } : null,
+            'sep',
+            { label: sheet.isFavorite ? '즐겨찾기 해제' : '즐겨찾기 추가', icon:'⭐', action:'fav' },
+            { label: sheet.isPinned ? '핀 해제' : '상단 고정', icon:'📌', action:'pin' },
+            'sep',
+            { label:'삭제', icon:'🗑️', action:'delete', danger:true },
+        ].filter(Boolean));
+        return;
+    }
+    // 트리 행 우클릭
+    const row = e.target.closest('.tree-row[data-drop-folder-id], .tree-row');
+    const treeNode = row?.closest('.tree-node[data-node-id]');
+    if (treeNode && row) {
+        e.preventDefault();
+        const nid = treeNode.dataset.nodeId;
+        const node = findNode(nid);
+        if (!node) return;
+        _ctxTarget = { type:'tree', id:nid };
+        const items = node.type === 'folder' ? [
+            { label:'새 시트 추가', icon:'➕', action:'addsheet' },
+            { label:'새 서브폴더', icon:'📁', action:'addfolder' },
+            'sep',
+            { label:'이름 변경', icon:'📝', action:'rename' },
+            { label:'색상 변경', icon:'🎨', action:'color' },
+            'sep',
+            { label:'삭제', icon:'🗑️', action:'delete', danger:true },
+        ] : [
+            { label:'편집', icon:'✏️', action:'edit' },
+            { label:'이름 변경', icon:'📝', action:'rename' },
+            'sep',
+            { label:'삭제', icon:'🗑️', action:'delete', danger:true },
+        ];
+        showCtxMenu(e.clientX, e.clientY, items);
+    }
+});
+document.getElementById('ctx-menu').addEventListener('click', e => {
+    const item = e.target.closest('[data-ctx]');
+    if (!item || !_ctxTarget) return;
+    const action = item.dataset.ctx;
+    const { type, id } = _ctxTarget;
+    hideCtxMenu();
+    if (type === 'card') {
+        const sheet = sheetsData.find(s=>s.id===id);
+        if (action==='edit')     { openEditModal(id); return; }
+        if (action==='rename')   { startCardRename(id); return; }
+        if (action==='comment')  { openComments(id); return; }
+        if (action==='copylink') { copySheetLink(sheet); return; }
+        if (action==='fav')      { if(sheet){sheet.isFavorite=!sheet.isFavorite;appLog('fav',sheet.isFavorite?'즐겨찾기 추가':'즐겨찾기 해제',`"${sheet.title}"`);applyFilters();} return; }
+        if (action==='pin')      { if(sheet){const undoFn=saveUndoSnapshot();sheet.isPinned=!sheet.isPinned;appLog('edit','핀 상태 변경',`"${sheet.title}" ${sheet.isPinned?'고정':'해제'}`);applyFilters();showToast(sheet.isPinned?'상단에 고정됐습니다':'고정이 해제됐습니다','📌',undoFn);} return; }
+        if (action==='delete')   { deleteSheetCard(id); return; }
+    }
+    if (type === 'tree') {
+        if (action==='edit')      { const n=findNode(id); if(n?.sheetId) openEditModal(n.sheetId); return; }
+        if (action==='rename')    { startRename(id); return; }
+        if (action==='delete')    { deleteNode(id); return; }
+        if (action==='addsheet')  { startAdd(id,'sheet'); return; }
+        if (action==='addfolder') { startAdd(id,'folder'); return; }
+        if (action==='color')     { const btn=document.querySelector(`.tree-row [data-color-folder-id="${id}"]`); if(btn) openColorPicker(id,btn); return; }
+    }
+});
+
+// ══════════════════════════════════════
+// 기한 (Due Date) 유틸
+// ══════════════════════════════════════
+function getDueBadgeHtml(dueDate) {
+    if (!dueDate) return '';
+    const now = new Date(); now.setHours(0,0,0,0);
+    const due = new Date(dueDate);
+    const diff = Math.ceil((due - now) / 86400000);
+    if (diff < 0)  return `<span class="due-badge overdue">⚠️ D+${Math.abs(diff)} 초과</span>`;
+    if (diff === 0) return `<span class="due-badge overdue">🔴 오늘 마감</span>`;
+    if (diff <= 3) return `<span class="due-badge due-soon">🟡 D-${diff}</span>`;
+    return `<span class="due-badge due-ok">🟢 D-${diff}</span>`;
+}
+
+// ══════════════════════════════════════
+// 그룹 뷰
+// ══════════════════════════════════════
+function renderGroupView(data) {
+    const container = document.getElementById('sheet-container');
+    if (data.length === 0) { renderSheets(data); return; }
+    const _q = document.getElementById('searchInput').value.trim();
+    // 폴더별 그룹핑
+    const groups = new Map(); // folderId → { name, icon, sheets[], color }
+    const uncat = [];
+    for (const sheet of data) {
+        let placed = false;
+        function findGroup(nodes, depth=0) {
+            for (const n of nodes) {
+                if (n.type==='folder' && (n.children||[]).some(c=>c.type==='sheet'&&c.sheetId===sheet.id)) {
+                    if (!groups.has(n.id)) groups.set(n.id,{name:n.name,color:n.color||'yellow',sheets:[]});
+                    groups.get(n.id).sheets.push(sheet);
+                    placed=true; return;
+                }
+                if (n.children) findGroup(n.children, depth+1);
+            }
+        }
+        findGroup(treeData);
+        if (!placed) uncat.push(sheet);
+    }
+    let html = '';
+    groups.forEach((g, fid) => {
+        const collapsed = _collapsedGroups.has(fid);
+        const cards = sortData(g.sheets).map(s => renderCardHtml(s, _q)).join('');
+        html += `<div class="group-section${collapsed?' collapsed':''}" data-group-id="${fid}">
+            <div class="group-header" onclick="toggleGroupSection('${fid}')">
+                <span class="group-header-icon">${folderIcon(g.color)}</span>
+                <span class="group-header-title">${esc(g.name)}</span>
+                <span class="group-header-count">${g.sheets.length}</span>
+                <span class="group-header-chev">${IC.chevDown}</span>
+            </div>
+            <div class="group-cards">${cards}</div>
+        </div>`;
+    });
+    if (uncat.length) {
+        const collapsed = _collapsedGroups.has('__uncat__');
+        const cards = sortData(uncat).map(s => renderCardHtml(s, _q)).join('');
+        html += `<div class="group-section${collapsed?' collapsed':''}  group-uncategorized" data-group-id="__uncat__">
+            <div class="group-header" onclick="toggleGroupSection('__uncat__')">
+                <span class="group-header-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5z"/><polyline points="14 2 14 8 20 8"/></svg></span>
+                <span class="group-header-title">미분류</span>
+                <span class="group-header-count">${uncat.length}</span>
+                <span class="group-header-chev">${IC.chevDown}</span>
+            </div>
+            <div class="group-cards">${cards}</div>
+        </div>`;
+    }
+    container.innerHTML = html;
+    wireCardEvents();
+}
+const _collapsedGroups = new Set();
+function toggleGroupSection(gid) {
+    if (_collapsedGroups.has(gid)) _collapsedGroups.delete(gid);
+    else _collapsedGroups.add(gid);
+    const el = document.querySelector(`.group-section[data-group-id="${gid}"]`);
+    if (el) el.classList.toggle('collapsed', _collapsedGroups.has(gid));
+}
+
+// 카드 HTML을 순수 함수로 추출 (그룹 뷰에서 재사용)
+function renderCardHtml(sheet, _q='') {
+    const st = STATUS_CONFIG[sheet.status] || STATUS_CONFIG.active;
+    const accessLabel = sheet.access==='public' ? '팀 전체 공개' : '제한됨 🔒';
+    const accessClass = sheet.access==='public' ? 'public' : 'restricted';
+    const statusBadge = `<span class="badge ${st.cls}">${st.label}</span>`;
+    const tagsHtml = sheet.tags.map(t=>`<span class="tag" data-tag-filter="${esc(t)}" style="cursor:pointer" title="${esc(t)} 태그로 필터">#${highlight(t, _q)}</span>`).join('');
+    const folderName = selectedId === 'root' ? getFolderNameForSheet(sheet.id) : null;
+    const folderColor = selectedId === 'root' ? getFolderColorHex(sheet.id) : null;
+    const folderBadge = folderName && currentView !== 'group' ? `<span style="display:inline-flex;align-items:center;gap:4px;background:var(--hover-bg);color:var(--muted);padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;${folderColor?`border-left:3px solid ${folderColor}`:''}">${folderIcon((treeData.find(n=>n.name===folderName)||{}).color||'yellow')}${esc(folderName)}</span>` : '';
+    const favIcon  = sheet.isFavorite ? '⭐' : '☆';
+    const pinIcon  = sheet.isPinned ? '<span class="pin-icon">📌</span>' : '';
+    const hasLink  = sheet.link && sheet.link !== '#';
+    const linkHref = hasLink ? esc(sheet.link) : 'javascript:void(0)';
+    const linkAttr = hasLink ? `target="_blank" rel="noopener" onclick="addRecentId(${sheet.id})"` : `data-card-edit-id="${sheet.id}" title="링크를 설정하려면 클릭하세요"`;
+    const linkStyle = hasLink ? '' : `style="color:var(--muted);text-decoration:underline dotted"`;
+    const commentCount = (comments[sheet.id]||[]).length;
+    const commentBadge = commentCount > 0 ? `<span style="font-size:11px;font-weight:700;color:var(--muted);background:var(--hover-bg);padding:2px 7px;border-radius:8px;display:inline-flex;align-items:center;gap:3px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>${commentCount}</span>` : '';
+    const dueBadge = getDueBadgeHtml(sheet.dueDate);
+    const titleHtml = cardEditingId === sheet.id
+        ? `<div class="card-title-row"><input class="card-rename-input" id="card-rename-input" value="${esc(sheet.title)}" maxlength="60" data-card-id="${sheet.id}"><div class="card-rename-actions"><button class="rename-confirm-btn ok" id="card-rename-ok" onmousedown="event.preventDefault()" title="확인">${IC.check}</button><button class="rename-confirm-btn no" id="card-rename-no" onmousedown="event.preventDefault()" title="취소">${IC.x}</button></div></div>`
+        : `<div class="card-title-row"><a href="${linkHref}" class="card-title" ${linkAttr} ${linkStyle}>${highlight(sheet.title, _q)}</a><button class="card-copy-btn" data-copy-id="${sheet.id}" title="링크 복사">${IC.copy||'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>'}</button><button class="card-pencil-btn" data-card-rename-id="${sheet.id}" title="이름 수정">${IC.pencil}</button></div>`;
+    const relDate = relativeDate(sheet.updated);
+    const isSelected = selectedCards.has(sheet.id);
+    const accentColor = getFolderColorHex(sheet.id);
+    const accentStyle = accentColor ? `border-left:4px solid ${accentColor};padding-left:22px;` : '';
+    return `<div class="sheet-card${isSelected?' selected':''}" draggable="true" data-id="${sheet.id}" style="${accentStyle}">
+        <div class="card-checkbox-wrap"><input type="checkbox" class="card-checkbox" data-card-select-id="${sheet.id}" ${isSelected?'checked':''}></div>
+        <div class="card-body"><div class="card-header"><div class="badges"><span class="badge ${accessClass}">${esc(accessLabel)}</span>${statusBadge}</div><div style="display:flex;align-items:center;gap:4px">${pinIcon}<button class="fav-btn" data-id="${sheet.id}" title="즐겨찾기 토글" aria-label="${sheet.isFavorite?'즐겨찾기 해제':'즐겨찾기 추가'}" aria-pressed="${sheet.isFavorite}">${favIcon}</button><button class="card-trash-btn" data-card-trash-id="${sheet.id}" title="시트 삭제" aria-label="${esc(sheet.title)} 삭제">${IC.trashMd}</button><button class="card-menu-btn" data-card-edit-id="${sheet.id}" title="시트 편집" aria-label="${esc(sheet.title)} 편집">···</button></div></div>${titleHtml}<p class="card-desc">${highlight(sheet.desc, _q)}</p><div class="tags">${folderBadge}${tagsHtml}${dueBadge}${commentBadge}</div></div><div class="meta-info"><span>담당자: <strong>${highlight(sheet.owner, _q)}</strong></span><span title="${sheet.updated}">업데이트: ${esc(relDate)}</span></div>
+    </div>`;
+}
+function wireCardEvents() {
+    // 카드 rename input
+    if (cardEditingId) {
+        const inp = document.getElementById('card-rename-input');
+        if (inp) {
+            inp.focus(); inp.select();
+            inp.addEventListener('keydown', e => { if (e.key==='Enter'){e.preventDefault();commitCardRename();}if(e.key==='Escape')cancelCardRename(); });
+            inp.addEventListener('blur', () => { setTimeout(()=>{ if(cardEditingId) commitCardRename(); },120); });
+            document.getElementById('card-rename-ok')?.addEventListener('click', commitCardRename);
+            document.getElementById('card-rename-no')?.addEventListener('click', cancelCardRename);
+        }
+    }
+}
+
+// ══════════════════════════════════════
+// 복사 링크
+// ══════════════════════════════════════
+function copySheetLink(sheet) {
+    const url = sheet.link && sheet.link !== '#' ? sheet.link : location.href + '#sheet-' + sheet.id;
+    navigator.clipboard.writeText(url).then(() => showToast('링크가 복사됐습니다', '🔗')).catch(() => showToast('복사에 실패했습니다', '⚠️'));
+}
+// 카드 이벤트에 복사 버튼 추가 (위임)
+document.getElementById('sheet-container').addEventListener('click', e => {
+    const copyBtn = e.target.closest('[data-copy-id]');
+    if (copyBtn) {
+        const id = Number(copyBtn.dataset.copyId);
+        const sheet = sheetsData.find(s=>s.id===id);
+        if (sheet) copySheetLink(sheet);
+    }
+}, true); // capture phase so it runs before the main delegated listener
+
+// ══════════════════════════════════════
+// 고급 검색 쿼리 파서
+// ══════════════════════════════════════
+function parseAdvancedQuery(raw) {
+    const tokens = { status:null, tag:null, owner:null, due:null, pinned:null, text:'' };
+    const parts = raw.match(/(\w+):([\w가-힣]+)|"[^"]+"|[\S]+/g) || [];
+    const textParts = [];
+    for (const p of parts) {
+        const m = p.match(/^(\w+):(.+)$/);
+        if (m) {
+            const [,k,v] = m;
+            if (k==='status') tokens.status=v;
+            else if (k==='tag') tokens.tag=v;
+            else if (k==='owner') tokens.owner=v;
+            else if (k==='due') tokens.due=v;
+            else if (k==='pinned') tokens.pinned=v==='true';
+            else textParts.push(p);
+        } else { textParts.push(p); }
+    }
+    tokens.text = textParts.join(' ').toLowerCase().trim();
+    return tokens;
+}
+function matchesAdvancedQuery(sheet, tokens) {
+    if (tokens.status && sheet.status !== tokens.status) return false;
+    if (tokens.tag && !sheet.tags.some(t=>t.toLowerCase()===tokens.tag.toLowerCase())) return false;
+    if (tokens.owner && !sheet.owner.toLowerCase().includes(tokens.owner.toLowerCase())) return false;
+    if (tokens.pinned !== null && sheet.isPinned !== tokens.pinned) return false;
+    if (tokens.due) {
+        const now = new Date(); now.setHours(0,0,0,0);
+        const due = sheet.dueDate ? new Date(sheet.dueDate) : null;
+        if (tokens.due === 'today')   { if (!due || due.getTime()!==now.getTime()) return false; }
+        if (tokens.due === 'week')    { if (!due || (due-now)>7*86400000 || due<now) return false; }
+        if (tokens.due === 'overdue') { if (!due || due>=now) return false; }
+    }
+    if (tokens.text) {
+        const q = tokens.text;
+        const folderName = (getFolderNameForSheet(sheet.id)||'').toLowerCase();
+        if (!sheet.title.toLowerCase().includes(q) && !sheet.desc.toLowerCase().includes(q)
+            && !sheet.owner.toLowerCase().includes(q) && !sheet.tags.some(t=>t.toLowerCase().includes(q))
+            && !folderName.includes(q)) return false;
+    }
+    return true;
+}
+
+// 검색 힌트 토글
+document.getElementById('searchInput').addEventListener('focus', () => {
+    const h = document.getElementById('search-syntax-hint');
+    if (h && document.getElementById('searchInput').value === '') h.classList.add('show');
+});
+document.getElementById('searchInput').addEventListener('blur', () => {
+    setTimeout(() => { const h = document.getElementById('search-syntax-hint'); if(h) h.classList.remove('show'); }, 200);
+});
+document.getElementById('searchInput').addEventListener('input', () => {
+    const h = document.getElementById('search-syntax-hint');
+    const v = document.getElementById('searchInput').value;
+    if (h) h.classList.toggle('show', v === '' && document.activeElement === document.getElementById('searchInput'));
+});
+
+// ══════════════════════════════════════
+// 저장된 검색
+// ══════════════════════════════════════
+function renderSavedSearches() {
+    const sec = document.getElementById('saved-search-section');
+    if (!sec) return;
+    if (savedSearches.length === 0) { sec.style.display='none'; return; }
+    sec.style.display = '';
+    sec.innerHTML = `<div class="saved-search-header">
+        <span>저장된 검색</span>
+        <button class="saved-search-add-btn" onclick="saveCurrentSearch()" title="현재 검색 저장">+</button>
+    </div>` + savedSearches.map(s => `
+        <div class="saved-search-item${_activeSavedSearch===s.id?' active':''}" data-ss-id="${s.id}">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(s.query)}">${esc(s.name)}</span>
+            <button class="saved-search-del" data-ss-del="${s.id}" title="삭제" onmousedown="event.preventDefault()">✕</button>
+        </div>`).join('');
+    sec.querySelectorAll('.saved-search-item').forEach(el => {
+        el.addEventListener('click', e => {
+            if (e.target.closest('[data-ss-del]')) {
+                const id = e.target.closest('[data-ss-del]').dataset.ssDel;
+                savedSearches = savedSearches.filter(s=>s.id!==id);
+                if (_activeSavedSearch===id) { _activeSavedSearch=null; }
+                localStorage.setItem(SEARCHES_KEY, JSON.stringify(savedSearches));
+                renderSavedSearches(); return;
+            }
+            const id = el.dataset.ssId;
+            const ss = savedSearches.find(s=>s.id===id);
+            if (!ss) return;
+            _activeSavedSearch = id;
+            const si = document.getElementById('searchInput');
+            si.value = ss.query;
+            document.getElementById('btn-search-clear').style.display = 'block';
+            renderSavedSearches(); applyFilters();
+        });
+    });
+}
+function saveCurrentSearch() {
+    const q = document.getElementById('searchInput').value.trim();
+    if (!q) { showToast('검색어를 먼저 입력하세요', '⚠️'); return; }
+    const name = prompt('저장할 검색 이름을 입력하세요:', q);
+    if (!name) return;
+    const id = uid('ss-');
+    savedSearches.push({ id, name: name.trim(), query: q });
+    localStorage.setItem(SEARCHES_KEY, JSON.stringify(savedSearches));
+    _activeSavedSearch = id;
+    renderSavedSearches();
+    showToast(`"${name.trim()}" 검색이 저장됐습니다`, '🔖');
+}
+// 저장 버튼이 없을 때 사이드바에 추가 버튼 제공
+document.getElementById('searchInput').addEventListener('keydown', e => {
+    if (e.key === 's' && (e.ctrlKey||e.metaKey) && e.shiftKey) { e.preventDefault(); saveCurrentSearch(); }
+});
+
+// ══════════════════════════════════════
+// 대시보드
+// ══════════════════════════════════════
+function openDashboard() {
+    const modal = document.getElementById('dashboard-modal');
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    renderDashboard();
+}
+function closeDashboard() {
+    document.getElementById('dashboard-modal').classList.remove('open');
+    document.body.style.overflow = '';
+}
+document.getElementById('dashboard-modal').addEventListener('click', e => { if(e.target===document.getElementById('dashboard-modal')) closeDashboard(); });
+document.getElementById('dashboard-modal').addEventListener('keydown', e => { if(e.key==='Escape') closeDashboard(); });
+
+function renderDashboard() {
+    const el = document.getElementById('dashboard-content');
+    const total  = sheetsData.length;
+    const fav    = sheetsData.filter(s=>s.isFavorite).length;
+    const pinned = sheetsData.filter(s=>s.isPinned).length;
+    const today_str = today();
+    const weekAgo = new Date(Date.now()-7*86400000);
+    const week   = sheetsData.filter(s=>new Date(s.updated)>=weekAgo).length;
+    const arch   = sheetsData.filter(s=>s.status==='archived').length;
+    const withDue  = sheetsData.filter(s=>s.dueDate).length;
+    const overdue  = sheetsData.filter(s=>s.dueDate && new Date(s.dueDate)<new Date(today_str)).length;
+
+    // 상태별 분포
+    const statusDist = {};
+    sheetsData.forEach(s=>{ statusDist[s.status]=(statusDist[s.status]||0)+1; });
+    const statusColors = { active:'#3182f6', review:'#f59e0b', done:'#16a34a', archived:'#9ca3af' };
+    const statusBars = Object.entries(STATUS_CONFIG).map(([k,v])=>{
+        const cnt = statusDist[k]||0;
+        const pct = total ? Math.round(cnt/total*100) : 0;
+        return `<div class="dash-bar-row"><span class="dash-bar-label">${v.label}</span><div class="dash-bar-track"><div class="dash-bar-fill" style="width:${pct}%;background:${statusColors[k]}"></div></div><span class="dash-bar-val">${cnt}</span></div>`;
+    }).join('');
+
+    // 폴더별 분포
+    const folderDist = [];
+    function countFolder(nodes) { for(const n of nodes){ if(n.type==='folder'){ const cnt=collectSheetIds([n]).length; if(cnt>0)folderDist.push({name:n.name,cnt,color:n.color||'yellow'}); if(n.children)countFolder(n.children); } } }
+    countFolder(treeData);
+    folderDist.sort((a,b)=>b.cnt-a.cnt);
+    const maxF = folderDist[0]?.cnt||1;
+    const folderBars = folderDist.slice(0,5).map(f=>{
+        const c = FOLDER_COLORS.find(fc=>fc.id===f.color)||FOLDER_COLORS[0];
+        return `<div class="dash-bar-row"><span class="dash-bar-label">${esc(f.name)}</span><div class="dash-bar-track"><div class="dash-bar-fill" style="width:${Math.round(f.cnt/maxF*100)}%;background:${c.hex}"></div></div><span class="dash-bar-val">${f.cnt}</span></div>`;
+    }).join('') || '<div style="color:var(--muted);font-size:13px;text-align:center;padding:16px">폴더 없음</div>';
+
+    // 최근 열람 TOP 5
+    const topRecent = recentIds.slice(0,5).map((id,i)=>{
+        const s=sheetsData.find(s=>s.id===id); if(!s) return '';
+        return `<div class="dash-top-item"><span class="dash-top-rank">${i+1}</span><span class="dash-top-title">${esc(s.title)}</span><span class="dash-top-meta">${esc(relativeDate(s.updated))}</span></div>`;
+    }).filter(Boolean).join('') || '<div style="color:var(--muted);font-size:13px;text-align:center;padding:16px">아직 열람 기록 없음</div>';
+
+    // 태그 클라우드 top 8
+    const tagCount = {};
+    sheetsData.forEach(s=>s.tags.forEach(t=>{ tagCount[t]=(tagCount[t]||0)+1; }));
+    const topTags = Object.entries(tagCount).sort((a,b)=>b[1]-a[1]).slice(0,8);
+    const tagCloud = topTags.map(([t,c])=>`<span style="display:inline-flex;align-items:center;gap:4px;background:var(--primary-light);color:var(--primary);padding:4px 10px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer" onclick="closeDashboard();document.getElementById('searchInput').value='tag:${esc(t)}';document.getElementById('btn-search-clear').style.display='block';applyFilters()">#${esc(t)} <span style="color:var(--muted);font-weight:500">${c}</span></span>`).join('') || '<span style="color:var(--muted);font-size:13px">태그 없음</span>';
+
+    el.innerHTML = `
+        <div class="dash-card" style="grid-column:1/-1">
+            <div class="dash-card-title">📊 전체 현황</div>
+            <div class="dash-kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+                <div class="dash-kpi"><div class="dash-kpi-num" style="color:var(--primary)">${total}</div><div class="dash-kpi-lbl">전체 시트</div></div>
+                <div class="dash-kpi"><div class="dash-kpi-num" style="color:var(--warning)">${fav}</div><div class="dash-kpi-lbl">즐겨찾기</div></div>
+                <div class="dash-kpi"><div class="dash-kpi-num" style="color:var(--success)">${week}</div><div class="dash-kpi-lbl">이번 주 수정</div></div>
+                <div class="dash-kpi"><div class="dash-kpi-num" style="color:var(--danger)">${overdue}</div><div class="dash-kpi-lbl">기한 초과</div></div>
+            </div>
+        </div>
+        <div class="dash-card">
+            <div class="dash-card-title">📈 상태별 분포</div>
+            ${statusBars}
+        </div>
+        <div class="dash-card">
+            <div class="dash-card-title">📁 폴더별 시트 수</div>
+            ${folderBars}
+        </div>
+        <div class="dash-card">
+            <div class="dash-card-title">🕐 최근 열람</div>
+            ${topRecent}
+        </div>
+        <div class="dash-card">
+            <div class="dash-card-title">🏷️ 자주 쓰는 태그</div>
+            <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:4px">${tagCloud}</div>
+        </div>`;
+}
+
+// ══════════════════════════════════════
+// 코멘트
+// ══════════════════════════════════════
+function openComments(sheetId) {
+    _commentSheetId = sheetId;
+    const sheet = sheetsData.find(s=>s.id===sheetId);
+    document.getElementById('comment-sheet-title').textContent = sheet?.title || '';
+    document.getElementById('comment-overlay').classList.add('open');
+    document.getElementById('comment-panel').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    renderCommentList();
+    document.getElementById('comment-input').focus();
+}
+function closeComments() {
+    document.getElementById('comment-overlay').classList.remove('open');
+    document.getElementById('comment-panel').classList.remove('open');
+    document.body.style.overflow = '';
+    _commentSheetId = null;
+}
+function renderCommentList() {
+    const list = document.getElementById('comment-list');
+    if (!list) return;
+    const items = comments[_commentSheetId] || [];
+    if (!items.length) { list.innerHTML='<div class="comment-empty">💬<br>아직 코멘트가 없습니다</div>'; return; }
+    list.innerHTML = items.map(c=>{
+        const initials = (c.author||'?').slice(0,2).toUpperCase();
+        return `<div class="comment-item" data-comment-id="${c.id}">
+            <div class="comment-avatar">${initials}</div>
+            <div class="comment-bubble">
+                <div class="comment-meta"><span class="comment-author">${esc(c.author)}</span><span>${_logTime(c.ts)}</span>
+                    <button class="comment-del-btn" data-del-comment="${c.id}" title="삭제">✕</button>
+                </div>
+                <div class="comment-body">${esc(c.text).replace(/\n/g,'<br>')}</div>
+            </div>
+        </div>`;
+    }).join('');
+    list.scrollTop = list.scrollHeight;
+    list.querySelectorAll('[data-del-comment]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+            const cid = btn.dataset.delComment;
+            comments[_commentSheetId] = (comments[_commentSheetId]||[]).filter(c=>c.id!==cid);
+            localStorage.setItem(COMMENTS_KEY, JSON.stringify(comments));
+            renderCommentList(); applyFilters(); // 코멘트 수 뱃지 갱신
+        });
+    });
+}
+function submitComment() {
+    const inp = document.getElementById('comment-input');
+    const text = inp.value.trim();
+    if (!text || !_commentSheetId) return;
+    if (!comments[_commentSheetId]) comments[_commentSheetId] = [];
+    comments[_commentSheetId].push({ id:uid('c-'), author:'나(PM)', text, ts:new Date().toISOString() });
+    localStorage.setItem(COMMENTS_KEY, JSON.stringify(comments));
+    appLog('edit', '코멘트 추가', `"${sheetsData.find(s=>s.id===_commentSheetId)?.title||_commentSheetId}"`);
+    inp.value = '';
+    renderCommentList();
+    applyFilters(); // 뱃지 갱신
+}
+document.getElementById('comment-input').addEventListener('keydown', e => {
+    if ((e.ctrlKey||e.metaKey) && e.key==='Enter') { e.preventDefault(); submitComment(); }
+});
+// 코멘트 패널에서도 카드의 edit-id 클릭 처리
+document.getElementById('comment-overlay').addEventListener('click', closeComments);
+
+// ══════════════════════════════════════
+// 템플릿
+// ══════════════════════════════════════
+function openTemplateModal() {
+    _selectedTemplate = null;
+    const grid = document.getElementById('template-grid');
+    grid.innerHTML = TEMPLATES.map(t=>`
+        <div class="tpl-card" data-tpl-id="${t.id}">
+            <div class="tpl-icon">${t.icon}</div>
+            <div class="tpl-name">${esc(t.name)}</div>
+            <div class="tpl-desc">${esc(t.desc)}</div>
+        </div>`).join('');
+    grid.querySelectorAll('.tpl-card').forEach(card=>{
+        card.addEventListener('click', ()=>{
+            grid.querySelectorAll('.tpl-card').forEach(c=>c.classList.remove('selected'));
+            card.classList.add('selected');
+            _selectedTemplate = card.dataset.tplId;
+            document.getElementById('template-apply-btn').disabled = false;
+        });
+    });
+    const modal = document.getElementById('template-modal');
+    modal.classList.add('open'); document.body.style.overflow='hidden';
+}
+function closeTemplateModal() {
+    document.getElementById('template-modal').classList.remove('open');
+    document.body.style.overflow='';
+}
+function applyTemplate() {
+    const tpl = TEMPLATES.find(t=>t.id===_selectedTemplate);
+    if (!tpl) return;
+    const undoFn = saveUndoSnapshot();
+    const newId = nextId++;
+    const newSheet = { id:newId, title:`[${tpl.name}] 새 시트`, desc:tpl.desc, owner:'나(PM)',
+        updated:today(), tags:[...tpl.tags], isPinned:false, isFavorite:false,
+        access:tpl.access, status:tpl.status, link:'#', dueDate:null };
+    sheetsData.unshift(newSheet);
+    if (selectedId !== 'root') {
+        const sn = findNode(selectedId);
+        if (sn?.type==='folder') {
+            treeData = addToTree(selectedId, { id:uid('t-'), type:'sheet', name:newSheet.title, sheetId:newId }, treeData);
+        }
+    }
+    appLog('add', `템플릿으로 시트 추가`, `"${newSheet.title}" (${tpl.name})`);
+    closeTemplateModal(); renderTree(); applyFilters();
+    showToast(`"${newSheet.title}" 시트가 추가됐습니다 (편집하여 제목을 변경하세요)`, '📋', undoFn);
+}
+document.getElementById('template-modal').addEventListener('click', e=>{ if(e.target===document.getElementById('template-modal')) closeTemplateModal(); });
+document.getElementById('template-modal').addEventListener('keydown', e=>{ if(e.key==='Escape') closeTemplateModal(); });
+
+// ══════════════════════════════════════
+// 자동화 규칙
+// ══════════════════════════════════════
+function openAutomationModal() {
+    renderAutomationRules();
+    const modal = document.getElementById('automation-modal');
+    modal.classList.add('open'); document.body.style.overflow='hidden';
+}
+function closeAutomationModal() {
+    document.getElementById('automation-modal').classList.remove('open');
+    document.body.style.overflow='';
+}
+document.getElementById('automation-modal').addEventListener('click', e=>{ if(e.target===document.getElementById('automation-modal')) closeAutomationModal(); });
+document.getElementById('automation-modal').addEventListener('keydown', e=>{ if(e.key==='Escape') closeAutomationModal(); });
+
+function renderAutomationRules() {
+    const list = document.getElementById('automation-rules-list');
+    if (!list) return;
+    list.innerHTML = automationRules.map(r=>`
+        <div class="rule-card">
+            <div class="rule-info">
+                <div class="rule-name">${esc(r.name)}</div>
+                <div class="rule-desc">${esc(r.desc)}</div>
+                ${r.lastRun ? `<div class="rule-last-run">마지막 실행: ${_logTime(r.lastRun)}</div>` : ''}
+            </div>
+            <button class="rule-run-btn" data-run-rule="${r.id}" title="지금 실행">▶</button>
+            <label class="toggle-sw" title="${r.enabled?'비활성화':'활성화'}">
+                <input type="checkbox" ${r.enabled?'checked':''} data-rule-toggle="${r.id}">
+                <span class="toggle-sl"></span>
+            </label>
+        </div>`).join('');
+    list.querySelectorAll('[data-rule-toggle]').forEach(cb=>{
+        cb.addEventListener('change', ()=>{
+            const rule = automationRules.find(r=>r.id===cb.dataset.ruleToggle);
+            if (rule) rule.enabled = cb.checked;
+            localStorage.setItem(AUTOMATION_KEY, JSON.stringify(automationRules));
+        });
+    });
+    list.querySelectorAll('[data-run-rule]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+            const rid = btn.dataset.runRule;
+            const count = runRule(automationRules.find(r=>r.id===rid));
+            renderAutomationRules();
+            showToast(`규칙 실행 완료 — ${count}개 시트 변경됨`, '⚡');
+        });
+    });
+}
+function runRule(rule) {
+    if (!rule) return 0;
+    let count = 0;
+    const now = new Date(); now.setHours(0,0,0,0);
+    sheetsData.forEach(sheet => {
+        let conditionMet = false;
+        const { type, days, value } = rule.condition;
+        if (type==='stale') {
+            const diff = Math.floor((now - new Date(sheet.updated)) / 86400000);
+            conditionMet = diff >= days && sheet.status !== 'archived';
+        } else if (type==='status') {
+            conditionMet = sheet.status === value;
+        } else if (type==='overdue') {
+            conditionMet = !!sheet.dueDate && new Date(sheet.dueDate) < now;
+        }
+        if (!conditionMet) return;
+        const { type:aType, value:aValue } = rule.action;
+        if (aType==='setStatus' && sheet.status!==aValue) { sheet.status=aValue; count++; }
+        else if (aType==='unpin' && sheet.isPinned) { sheet.isPinned=false; count++; }
+    });
+    rule.lastRun = new Date().toISOString();
+    localStorage.setItem(AUTOMATION_KEY, JSON.stringify(automationRules));
+    if (count > 0) { appLog('system','자동화 규칙 실행',`"${rule.name}" — ${count}개 변경`); renderTree(); applyFilters(); }
+    return count;
+}
+function runAllAutomationRules(silent=false) {
+    const total = automationRules.filter(r=>r.enabled).reduce((sum,r)=>sum+runRule(r), 0);
+    if (!silent && total > 0) showToast(`자동화 완료 — 총 ${total}개 시트 변경됨`, '⚡');
+}
+
+// ══════════════════════════════════════
+// CSV 가져오기 (기존 JSON import 확장)
+// ══════════════════════════════════════
+function parseCSVLine(line) {
+    const result=[]; let cur=''; let inQ=false;
+    for(let i=0;i<line.length;i++){
+        const ch=line[i];
+        if(ch==='"'){if(inQ&&line[i+1]==='"'){cur+='"';i++;}else inQ=!inQ;}
+        else if(ch===','&&!inQ){result.push(cur);cur='';}
+        else cur+=ch;
+    }
+    result.push(cur); return result.map(s=>s.trim());
+}
+function importCSV(csvText) {
+    const lines = csvText.split(/\r?\n/).filter(l=>l.trim());
+    if (lines.length < 2) throw new Error('데이터 행이 없습니다');
+    const headers = parseCSVLine(lines[0]).map(h=>h.toLowerCase().trim());
+    const getCol = name => headers.indexOf(name);
+    const iTitle=getCol('title')||getCol('제목')!=-1?getCol('제목'):getCol('title');
+    if (iTitle===-1) throw new Error('"title" 또는 "제목" 컬럼이 필요합니다');
+    const iDesc=getCol('desc')!==-1?getCol('desc'):getCol('설명');
+    const iOwner=getCol('owner')!==-1?getCol('owner'):getCol('담당자');
+    const iLink=getCol('link')!==-1?getCol('link'):getCol('url');
+    const iTags=getCol('tags')!==-1?getCol('tags'):getCol('태그');
+    const iStatus=getCol('status')!==-1?getCol('status'):getCol('상태');
+    const iAccess=getCol('access')!==-1?getCol('access'):-1;
+    saveUndoSnapshot();
+    let added=0;
+    for(let i=1;i<lines.length;i++){
+        const cols=parseCSVLine(lines[i]);
+        const title=(cols[iTitle]||'').trim(); if(!title) continue;
+        const newId=nextId++;
+        sheetsData.push({
+            id:newId, title, desc:(iDesc!==-1?cols[iDesc]:'').trim(),
+            owner:(iOwner!==-1?cols[iOwner]:'').trim()||'외부 가져오기',
+            updated:today(), link:(iLink!==-1?cols[iLink]:'').trim()||'#',
+            tags:(iTags!==-1&&cols[iTags])?cols[iTags].split(/[;|]/).map(t=>t.trim()).filter(Boolean):[],
+            status:(iStatus!==-1&&STATUS_CONFIG[cols[iStatus]])?cols[iStatus]:'active',
+            access:(iAccess!==-1&&cols[iAccess]==='restricted')?'restricted':'public',
+            isPinned:false, isFavorite:false, dueDate:null
+        });
+        added++;
+    }
+    appLog('system','CSV 가져오기',`${added}개 시트 추가됨`);
+    renderTree(); applyFilters();
+    showToast(`CSV에서 ${added}개 시트를 가져왔습니다`, '📥');
+}
+
+// 사이드바 import 버튼에 CSV 지원 추가
+document.getElementById('import-file-input').setAttribute('accept', '.json,.csv');
+document.getElementById('btn-import').title = 'JSON 또는 CSV에서 가져오기';
+
+// ══════════════════════════════════════
+// 키보드 트리 탐색
+// ══════════════════════════════════════
+let _kbFocusNodeId = null;
+function getVisibleTreeNodes() {
+    const nodes = []; const allRow = document.getElementById('tree-all-row');
+    if (allRow) nodes.push({ el: allRow.closest('#tree-root-all'), id:'root', type:'all' });
+    function collect(domNodes) { domNodes.forEach(n=>{ nodes.push({ el:n, id:n.dataset.nodeId, type:'node' }); const children=[...n.children].filter(c=>c.classList.contains('tree-node')); collect(children); }); }
+    collect([...document.getElementById('tree-root').children].filter(c=>c.classList.contains('tree-node')));
+    return nodes;
+}
+document.getElementById('tree-root').addEventListener('keydown', e => {
+    if (!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter',' '].includes(e.key)) return;
+    e.preventDefault();
+    const nodes = getVisibleTreeNodes();
+    if (!nodes.length) return;
+    const curIdx = _kbFocusNodeId ? nodes.findIndex(n=>n.id===_kbFocusNodeId) : -1;
+    if (e.key==='ArrowDown') {
+        const next = nodes[Math.min(curIdx+1, nodes.length-1)];
+        setKbFocus(next, nodes);
+    } else if (e.key==='ArrowUp') {
+        const prev = nodes[Math.max(curIdx-1, 0)];
+        setKbFocus(prev, nodes);
+    } else if ((e.key==='Enter'||e.key===' ') && _kbFocusNodeId) {
+        if (_kbFocusNodeId==='root') selectAllRoot();
+        else selectNode(_kbFocusNodeId);
+    } else if (e.key==='ArrowRight' && _kbFocusNodeId && _kbFocusNodeId!=='root') {
+        const node=findNode(_kbFocusNodeId); if(node?.type==='folder'&&!node.expanded) toggleExpand(_kbFocusNodeId);
+    } else if (e.key==='ArrowLeft' && _kbFocusNodeId && _kbFocusNodeId!=='root') {
+        const node=findNode(_kbFocusNodeId); if(node?.type==='folder'&&node.expanded) toggleExpand(_kbFocusNodeId);
+    }
+});
+document.getElementById('tree-root').setAttribute('tabindex','0');
+function setKbFocus(target, nodes) {
+    if (!target) return;
+    nodes.forEach(n=>{ const el=n.el?.querySelector('.tree-row')||n.el; el?.classList.remove('kb-focus'); n.el?.classList.remove('kb-focus'); });
+    _kbFocusNodeId = target.id;
+    const el = target.el;
+    if (el) { el.classList.add('kb-focus'); el.scrollIntoView({ block:'nearest' }); }
+}
+
+// ══════════════════════════════════════
+// BroadcastChannel 멀티탭 동기화
+// ══════════════════════════════════════
+const _bc = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('sm-sync') : null;
+function broadcastChange() {
+    if (!_bc) return;
+    try { _bc.postMessage({ type:'update', ts:Date.now() }); } catch(e){}
+}
+if (_bc) {
+    _bc.onmessage = e => {
+        if (e.data?.type==='update') {
+            const saved = loadStorage();
+            if (saved) {
+                sheetsData.length=0; saved.sheetsData.forEach(s=>sheetsData.push(s));
+                treeData=saved.treeData; nextId=saved.nextId??nextId;
+                if(saved.recentIds) recentIds=saved.recentIds;
+                renderTree(); applyFilters();
+                showToast('다른 탭에서 변경사항이 동기화됐습니다','🔄');
+            }
+        }
+    };
+}
+// saveStorage 호출 시 브로드캐스트 (원본 래핑)
+const _origSaveStorage = saveStorage;
+saveStorage = function() { _origSaveStorage(); broadcastChange(); };
+
+// ══════════════════════════════════════
+// 편집 모달 기한/담당자 필드 처리
+// ══════════════════════════════════════
+const _origOpenEditModal = openEditModal;
+openEditModal = function(sheetId) {
+    _origOpenEditModal(sheetId);
+    const sheet = sheetsData.find(s=>s.id===sheetId);
+    if (sheet) {
+        const duEl = document.getElementById('edit-due-date');
+        const owEl = document.getElementById('edit-owner');
+        if (duEl) duEl.value = sheet.dueDate || '';
+        if (owEl) owEl.value = sheet.owner || '';
+    }
+};
+const _origSaveEditModal = saveEditModal;
+saveEditModal = function() {
+    // 기한/담당자 필드 먼저 반영
+    const id = Number(document.getElementById('edit-sheet-id').value);
+    const sheet = sheetsData.find(s=>s.id===id);
+    if (sheet) {
+        const newDue   = document.getElementById('edit-due-date')?.value || null;
+        const newOwner = document.getElementById('edit-owner')?.value.trim() || sheet.owner;
+        sheet.dueDate = newDue || null;
+        sheet.owner   = newOwner;
+    }
+    _origSaveEditModal();
+};
+
+// ══════════════════════════════════════
+// 템플릿 버튼 — 헤더 "시트 추가" 옆 드롭다운
+// ══════════════════════════════════════
+document.getElementById('btn-add-sheet').addEventListener('contextmenu', e => {
+    e.preventDefault();
+    _ctxTarget = null;
+    showCtxMenu(e.clientX, e.clientY, [
+        { label:'URL로 시트 추가', icon:'🔗', action:'__addurl' },
+        { label:'템플릿으로 추가',  icon:'📋', action:'__addtpl' },
+    ]);
+    document.getElementById('ctx-menu').addEventListener('click', function handler(ev){
+        const item = ev.target.closest('[data-ctx]');
+        if (!item) return;
+        hideCtxMenu();
+        document.getElementById('ctx-menu').removeEventListener('click', handler);
+        if (item.dataset.ctx==='__addurl') openModal();
+        if (item.dataset.ctx==='__addtpl') openTemplateModal();
+    }, { once:false });
+});
+
+// ══════════════════════════════════════
+// renderSheets 오버라이드: 고급 필터 + 그룹 뷰 통합
+// ══════════════════════════════════════
+// applyFilters를 고급 쿼리 파서로 업그레이드
+const _origApplyFilters = applyFilters;
+applyFilters = function() {
+    const rawQuery = document.getElementById('searchInput').value;
+    const tokens = parseAdvancedQuery(rawQuery);
+    const hasAdvanced = tokens.status || tokens.tag !== null || tokens.due || tokens.pinned !== null || (tokens.owner && rawQuery.includes('owner:'));
+
+    let allowedIds = null;
+    if (selectedId !== 'root') {
+        const node = findNode(selectedId);
+        if (node) { if(node.type==='folder') allowedIds=new Set(collectSheetIds([node])); else if(node.type==='sheet') allowedIds=new Set([node.sheetId]); }
+    }
+    const filtered = sheetsData.filter(sheet => {
+        if (allowedIds && !allowedIds.has(sheet.id)) return false;
+        if (hasAdvanced) return matchesAdvancedQuery(sheet, tokens);
+        const query = rawQuery.toLowerCase().trim();
+        const folderName = (getFolderNameForSheet(sheet.id)||'').toLowerCase();
+        const textMatch = !query || sheet.title.toLowerCase().includes(query)||sheet.desc.toLowerCase().includes(query)||sheet.owner.toLowerCase().includes(query)||sheet.tags.some(t=>t.toLowerCase().includes(query))||folderName.includes(query);
+        const quickMatch = currentFilter==='all'?true:currentFilter==='favorite'?sheet.isFavorite:currentFilter==='archived'?sheet.status==='archived':sheet.owner==='나(PM)';
+        return textMatch && quickMatch;
+    });
+
+    const countEl = document.getElementById('result-count');
+    if (countEl) countEl.innerHTML = filtered.length>0?`총 <strong>${filtered.length}</strong>개`:'';
+
+    if (currentView === 'group') {
+        updateRecentSection();
+        renderGroupView(filtered);
+    } else {
+        renderSheets(filtered);
+    }
+    updateStatsBar();
+    updateSelectAllBtn();
+    saveStorage();
+}
+
+// ══════════════════════════════════════
+// setView 확장: group 뷰 지원
+// ══════════════════════════════════════
+const _origSetView = setView;
+setView = function(type) {
+    if (currentView !== type) appLog('view','뷰 전환',`${type==='grid'?'카드 뷰':type==='list'?'리스트 뷰':'그룹 뷰'}`);
+    currentView = type;
+    const container = document.getElementById('sheet-container');
+    container.className = type + '-view';
+    document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===type));
+    const ss = document.getElementById('sort-select');
+    if (ss) ss.style.display = type==='list' ? 'none' : '';
+    updateSelectAllBtn();
+    const btnSelect = document.getElementById('btn-select-all');
+    if (btnSelect) btnSelect.style.display = type==='grid' ? '' : 'none';
+    applyFilters();
+}
+
+// renderSheets 기존 그리드 카드도 공통 renderCardHtml 사용 (override)
+const _origRenderSheets = renderSheets;
+renderSheets = function(data) {
+    const container = document.getElementById('sheet-container');
+    const countEl   = document.getElementById('result-count');
+    if (countEl) countEl.innerHTML = data.length>0?`총 <strong>${data.length}</strong>개`:'';
+    updateRecentSection();
+    if (data.length===0) {
+        const query=document.getElementById('searchInput').value.trim();
+        const isFiltered=currentFilter!=='all'||query||selectedId!=='root';
+        const selNode=selectedId!=='root'?findNode(selectedId):null;
+        const inFolder=selNode&&selNode.type==='folder';
+        const emptyBtn=inFolder?`<button class="empty-state-btn" onclick="openModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>"${esc(selNode.name)}" 폴더에 시트 추가</button>`:(!isFiltered?`<button class="empty-state-btn" onclick="openModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>시트 추가하기</button>`:'');
+        container.innerHTML=`<div class="empty-state"><div class="empty-state-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">${isFiltered&&!inFolder?'<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>':'<path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5z"/><polyline points="14 2 14 8 20 8"/>'}</svg></div><div class="empty-state-title">${isFiltered&&!inFolder?'검색 결과가 없습니다':inFolder?`"${esc(selNode.name)}" 폴더가 비어있어요`:'아직 시트가 없어요'}</div><p class="empty-state-desc">${isFiltered&&!inFolder?'다른 검색어나 필터를 사용해 보세요.':inFolder?'이 폴더에 시트를 추가하거나 드래그해서 옮겨보세요.':'시트 추가 버튼으로 첫 번째 스프레드시트를 연결해 보세요.'}</p>${emptyBtn}</div>`;
+        return;
+    }
+    const sorted=sortData(data);
+    const _q=document.getElementById('searchInput').value.trim();
+
+    if (currentView==='list') {
+        const sortIndicator=col=>{if(currentSort===col+'-asc')return' ↑';if(currentSort===col+'-desc')return' ↓';if(col==='updated'&&currentSort==='newest')return' ↓';if(col==='updated'&&currentSort==='oldest')return' ↑';if(col==='title'&&currentSort==='name')return' ↑';return'';};
+        const isActiveCol=col=>{const map={title:['name','title-asc','title-desc'],updated:['newest','oldest','updated-asc','updated-desc'],owner:['owner-asc','owner-desc'],status:['status-asc','status-desc']};return(map[col]||[]).includes(currentSort)?' sort-active':'';};
+        const allChecked=sorted.length>0&&sorted.every(s=>selectedCards.has(s.id));
+        let rows=sorted.map(sheet=>{
+            const st=STATUS_CONFIG[sheet.status]||STATUS_CONFIG.active;
+            const hasLink=sheet.link&&sheet.link!=='#';
+            const href=hasLink?esc(sheet.link):'javascript:void(0)';
+            const linkExtra=hasLink?`target="_blank" rel="noopener"`:`data-card-edit-id="${sheet.id}"`;
+            const folderName=getFolderNameForSheet(sheet.id);
+            const folderColor=getFolderColorHex(sheet.id);
+            const folderBadge=folderName?`<span class="lt-folder-badge" style="${folderColor?`border-left:3px solid ${folderColor};padding-left:6px`:''}">${esc(folderName)}</span>`:'—';
+            const isSel=selectedCards.has(sheet.id);
+            const dueBadge=getDueBadgeHtml(sheet.dueDate);
+            return `<tr data-id="${sheet.id}" class="${isSel?'lt-selected':''}">
+                <td style="width:40px;text-align:center"><input type="checkbox" class="card-checkbox" data-card-select-id="${sheet.id}" ${isSel?'checked':''} style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer"></td>
+                <td><a href="${href}" class="lt-title-link" ${linkExtra} onclick="addRecentId(${sheet.id})"><span class="lt-title-text">${highlight(sheet.title,_q)}</span></a>${dueBadge}</td>
+                <td>${folderBadge}</td>
+                <td>${highlight(sheet.owner,_q)}</td>
+                <td style="white-space:nowrap;color:var(--muted)" title="${sheet.updated}">${esc(relativeDate(sheet.updated))}</td>
+                <td><span class="badge ${st.cls}">${st.label}</span></td>
+                <td><button class="lt-fav-btn fav-btn" data-id="${sheet.id}" title="즐겨찾기" aria-label="${sheet.isFavorite?'즐겨찾기 해제':'즐겨찾기 추가'}" aria-pressed="${sheet.isFavorite}">${sheet.isFavorite?'⭐':'☆'}</button></td>
+                <td><button class="card-menu-btn" data-card-edit-id="${sheet.id}" aria-label="${esc(sheet.title)} 편집" style="opacity:1">···</button></td>
+            </tr>`;
+        }).join('');
+        container.innerHTML=`<table class="list-table"><thead><tr>
+            <th><input type="checkbox" id="lt-check-all" ${allChecked?'checked':''} style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer" title="전체 선택"></th>
+            <th class="sortable${isActiveCol('title')}" data-sort-col="title">제목${sortIndicator('title')}</th>
+            <th>폴더</th>
+            <th class="sortable${isActiveCol('owner')}" data-sort-col="owner">담당자${sortIndicator('owner')}</th>
+            <th class="sortable${isActiveCol('updated')}" data-sort-col="updated">날짜${sortIndicator('updated')}</th>
+            <th class="sortable${isActiveCol('status')}" data-sort-col="status">상태${sortIndicator('status')}</th>
+            <th>즐겨찾기</th><th></th>
+        </tr></thead><tbody>${rows}</tbody></table>`;
+        document.getElementById('lt-check-all')?.addEventListener('change',e=>{
+            if(e.target.checked)sorted.forEach(s=>selectedCards.add(s.id));
+            else sorted.forEach(s=>selectedCards.delete(s.id));
+            updateBulkBar();applyFilters();
+        });
+    } else {
+        container.innerHTML=sorted.map(s=>renderCardHtml(s,_q)).join('');
+        wireCardEvents();
+    }
+}
+
+// ══════════════════════════════════════
+// 전역 드래그 드롭 — URL을 페이지에 바로 끌어다 놓기
+// ══════════════════════════════════════
+(function() {
+    const overlay = document.getElementById('global-drop-overlay');
+    let _dragCount = 0;
+
+    // 외부 URL 드래그인지 판별 (내부 카드 이동과 구분)
+    function isUrlDrag(e) {
+        if (_dragSheetId !== null) return false; // 내부 카드 드래그
+        const types = Array.from(e.dataTransfer?.types || []);
+        return types.includes('text/uri-list') || types.includes('text/plain') || types.includes('Files');
+    }
+
+    document.addEventListener('dragenter', e => {
+        if (!isUrlDrag(e)) return;
+        _dragCount++;
+        overlay.classList.add('active');
+    });
+
+    document.addEventListener('dragleave', e => {
+        if (_dragSheetId !== null) return;
+        _dragCount = Math.max(0, _dragCount - 1);
+        if (_dragCount === 0) overlay.classList.remove('active');
+    });
+
+    document.addEventListener('dragend', () => {
+        _dragCount = 0;
+        overlay.classList.remove('active', 'over');
+    });
+
+    overlay.addEventListener('dragover', e => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+        overlay.classList.add('over');
+    });
+
+    overlay.addEventListener('dragleave', e => {
+        if (!overlay.contains(e.relatedTarget)) overlay.classList.remove('over');
+    });
+
+    overlay.addEventListener('drop', e => {
+        e.preventDefault();
+        _dragCount = 0;
+        overlay.classList.remove('active', 'over');
+
+        const uri = e.dataTransfer.getData('text/uri-list');
+        const url = (uri
+            ? uri.split('\n').find(l => l.trim() && !l.startsWith('#'))
+            : e.dataTransfer.getData('text/plain').trim()
+        ) || '';
+
+        if (!url) return;
+        quickAddByUrl(url);
+    });
+})();
+
+function quickAddByUrl(url) {
+    const m = url.match(SHEETS_ID_RE);
+    if (m) {
+        // Google Sheets URL → 즉시 추가
+        const sheetId = m[1];
+        const title   = '새 스프레드시트';
+        const newId   = nextId++;
+        const targetFolderId = (selectedId !== 'root' && findNode(selectedId)?.type === 'folder') ? selectedId : null;
+
+        sheetsData.unshift({
+            id: newId, title, desc: `시트 ID: ${sheetId}`,
+            owner: '나(PM)', updated: today(), tags: [],
+            isPinned: false, isFavorite: false,
+            access: 'public', status: 'active', link: url, dueDate: null
+        });
+
+        if (targetFolderId) {
+            treeData = addToTree(targetFolderId, { id: uid('t-'), type: 'sheet', name: title, sheetId: newId }, treeData);
+        }
+
+        appLog('add', '시트 추가 (드래그)', `"${title}" → ${url}`);
+        renderTree();
+        applyFilters();
+        showToast(`시트가 추가됐습니다. 이름을 바꿔보세요`, '📋');
+        // 이름 바로 수정할 수 있도록 편집 모달 열기
+        setTimeout(() => openEditModal(newId), 350);
+    } else {
+        // 일반 URL → 모달에 URL 채워서 열기
+        openModal();
+        setTimeout(() => {
+            document.getElementById('url-input').value = url;
+            handleUrlInput();
+        }, 60);
+    }
+}
 </script>
 </body>
 </html>
