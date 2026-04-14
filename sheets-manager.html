@@ -4014,30 +4014,49 @@ renderSheets = function(data) {
 // ══════════════════════════════════════
 (function() {
     const overlay = document.getElementById('global-drop-overlay');
-    let _dragCount = 0;
+    let _urlDragActive = false;
 
-    // 외부 URL 드래그인지 판별 (내부 카드 이동과 구분)
-    function isUrlDrag(e) {
-        if (_dragSheetId !== null) return false; // 내부 카드 드래그
+    // 외부 URL 드래그 판별:
+    // - 내부 카드 드래그(_dragSheetId)는 제외
+    // - 'text/uri-list' 타입이 있으면 브라우저 탭/주소창 드래그로 간주
+    //   (내부 카드 드래그는 text/plain만 사용하므로 안전하게 구분 가능)
+    function isExternalUrlDrag(e) {
+        if (_dragSheetId !== null) return false;
         const types = Array.from(e.dataTransfer?.types || []);
-        return types.includes('text/uri-list') || types.includes('text/plain') || types.includes('Files');
+        return types.includes('text/uri-list');
     }
 
+    // 커서가 페이지에 진입할 때 오버레이 표시
     document.addEventListener('dragenter', e => {
-        if (!isUrlDrag(e)) return;
-        _dragCount++;
-        overlay.classList.add('active');
+        if (!isExternalUrlDrag(e)) return;
+        if (!_urlDragActive) {
+            _urlDragActive = true;
+            overlay.classList.add('active');
+        }
     });
 
+    // relatedTarget === null : 커서가 브라우저 창 밖으로 나갔을 때만 숨김
+    // 페이지 내 요소 간 이동에서 발생하는 dragleave는 무시
     document.addEventListener('dragleave', e => {
-        if (_dragSheetId !== null) return;
-        _dragCount = Math.max(0, _dragCount - 1);
-        if (_dragCount === 0) overlay.classList.remove('active');
+        if (!_urlDragActive) return;
+        if (e.relatedTarget === null) {
+            _urlDragActive = false;
+            overlay.classList.remove('active', 'over');
+        }
     });
 
-    document.addEventListener('dragend', () => {
-        _dragCount = 0;
-        overlay.classList.remove('active', 'over');
+    // drop이 가능하려면 dragover에서 preventDefault 필수
+    document.addEventListener('dragover', e => {
+        if (_urlDragActive) e.preventDefault();
+    });
+
+    // 페이지 어딘가에 drop되어도 브라우저 기본 동작(URL 이동) 방지
+    document.addEventListener('drop', e => {
+        if (_urlDragActive) {
+            e.preventDefault();
+            _urlDragActive = false;
+            overlay.classList.remove('active', 'over');
+        }
     });
 
     overlay.addEventListener('dragover', e => {
@@ -4052,16 +4071,19 @@ renderSheets = function(data) {
 
     overlay.addEventListener('drop', e => {
         e.preventDefault();
-        _dragCount = 0;
+        e.stopPropagation(); // document drop 핸들러 중복 방지
+        _urlDragActive = false;
         overlay.classList.remove('active', 'over');
 
         const uri = e.dataTransfer.getData('text/uri-list');
+        const txt = e.dataTransfer.getData('text/plain');
+        // uri-list 우선, 여러 줄이면 첫 유효 URL 사용
         const url = (uri
-            ? uri.split('\n').find(l => l.trim() && !l.startsWith('#'))
-            : e.dataTransfer.getData('text/plain').trim()
+            ? uri.split('\n').map(l => l.trim()).find(l => l && !l.startsWith('#'))
+            : txt.trim()
         ) || '';
 
-        if (!url) return;
+        if (!url) { showToast('URL을 읽을 수 없습니다', '⚠️'); return; }
         quickAddByUrl(url);
     });
 })();
@@ -4069,7 +4091,7 @@ renderSheets = function(data) {
 function quickAddByUrl(url) {
     const m = url.match(SHEETS_ID_RE);
     if (m) {
-        // Google Sheets URL → 즉시 추가
+        // Google Sheets URL → 즉시 추가 후 편집 모달
         const sheetId = m[1];
         const title   = '새 스프레드시트';
         const newId   = nextId++;
@@ -4089,16 +4111,14 @@ function quickAddByUrl(url) {
         appLog('add', '시트 추가 (드래그)', `"${title}" → ${url}`);
         renderTree();
         applyFilters();
-        showToast(`시트가 추가됐습니다. 이름을 바꿔보세요`, '📋');
-        // 이름 바로 수정할 수 있도록 편집 모달 열기
-        setTimeout(() => openEditModal(newId), 350);
+        showToast('시트가 추가됐습니다. 이름을 바꿔보세요', '📋');
+        openEditModal(newId); // 즉시 편집 모달 열기 (setTimeout 없이)
     } else {
-        // 일반 URL → 모달에 URL 채워서 열기
+        // 비-Sheets URL → 시트 추가 모달에 URL 채워서 열기
+        // openModal()이 동기적으로 DOM을 렌더하므로 바로 값 주입 가능
         openModal();
-        setTimeout(() => {
-            document.getElementById('url-input').value = url;
-            handleUrlInput();
-        }, 60);
+        const urlInput = document.getElementById('url-input');
+        if (urlInput) { urlInput.value = url; handleUrlInput(); }
     }
 }
 </script>
