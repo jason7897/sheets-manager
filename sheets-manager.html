@@ -418,11 +418,12 @@
             overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         }
         /* 전역 드래그 드롭 오버레이 */
+        /* 전역 드롭 오버레이 */
         .global-drop-overlay {
             position: fixed; inset: 0; z-index: 3000;
-            background: rgba(49,130,246,.12); backdrop-filter: blur(3px);
+            background: rgba(49,130,246,.15); backdrop-filter: blur(4px);
             display: none; align-items: center; justify-content: center;
-            pointer-events: none; transition: opacity .15s;
+            pointer-events: none;
         }
         .global-drop-overlay.active { display: flex; pointer-events: all; }
         .global-drop-box {
@@ -431,6 +432,7 @@
             display: flex; flex-direction: column; align-items: center; gap: 16px;
             box-shadow: 0 16px 64px rgba(49,130,246,.25);
             animation: drop-box-in .18s cubic-bezier(.34,1.4,.64,1);
+            pointer-events: none; /* 오버레이 자체가 이벤트 받도록 박스는 none */
         }
         @keyframes drop-box-in { from { transform: scale(.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         .global-drop-box svg { color: var(--primary); }
@@ -438,6 +440,22 @@
         .global-drop-sub   { font-size: 13.5px; color: var(--muted); font-weight: 500; }
         .global-drop-overlay.over .global-drop-box { background: var(--primary-light); border-style: solid; }
         [data-theme="dark"] .global-drop-box { background: var(--surface-bg); }
+
+        /* 상시 노출 드롭 힌트 배너 */
+        #url-drop-hint {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            border: 2px dashed var(--border); border-radius: 14px;
+            padding: 14px 20px; margin-bottom: 16px;
+            color: var(--muted); font-size: 13px; font-weight: 600;
+            background: var(--surface-bg); cursor: pointer;
+            transition: border-color .15s, background .15s, color .15s;
+            user-select: none;
+        }
+        #url-drop-hint:hover, #url-drop-hint.drag-over {
+            border-color: var(--primary); background: var(--primary-light); color: var(--primary);
+        }
+        #url-drop-hint.drag-over { border-style: solid; }
+        [data-theme="dark"] #url-drop-hint { background: var(--surface-bg); }
 
         .dropzone {
             border: 2px dashed #d1d6db; border-radius: 18px; padding: 36px 20px;
@@ -1143,6 +1161,11 @@
                 <button id="btn-select-all" onclick="toggleSelectAll()" title="전체 선택 / 해제" class="btn-select-all-ctrl">전체 선택</button>
             </div>
             <div id="recent-wrap"></div>
+            <!-- URL 드롭 힌트 (항상 표시) -->
+            <div id="url-drop-hint" title="구글 시트 URL을 여기에 드래그하거나 클릭해서 추가" onclick="openModal()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                URL·북마크를 여기에 드래그하거나 Ctrl+V로 붙여넣어 시트를 추가하세요
+            </div>
             <div id="sheet-container" class="grid-view">
                 <div class="skeleton-card"><div class="skel-line" style="width:40%;height:10px"></div><div class="skel-line" style="width:75%;height:16px;margin-top:4px"></div><div class="skel-line" style="width:90%;height:12px;margin-top:8px"></div><div class="skel-line" style="width:60%;height:12px"></div></div>
                 <div class="skeleton-card"><div class="skel-line" style="width:35%;height:10px"></div><div class="skel-line" style="width:80%;height:16px;margin-top:4px"></div><div class="skel-line" style="width:85%;height:12px;margin-top:8px"></div><div class="skel-line" style="width:50%;height:12px"></div></div>
@@ -4048,92 +4071,107 @@ renderSheets = function(data) {
 // ══════════════════════════════════════
 (function() {
     const overlay = document.getElementById('global-drop-overlay');
-    let _urlDragActive = false;
+    const hint    = document.getElementById('url-drop-hint');
+    let _active = false;
 
-    // 외부 URL 드래그 판별
-    // - 카드(_dragSheetId) / 트리(_treeDragNodeId) 내부 드래그는 제외
-    // - uri-list: 브라우저 주소창·북마크·링크 드래그
-    // - text/plain: 일부 브라우저/OS의 주소창 드래그
-    // (application/tree-node 만 있는 트리 드래그는 자동 제외됨)
-    function isExternalUrlDrag(e) {
-        if (_dragSheetId !== null) return false;
-        if (_treeDragNodeId !== null) return false;
-        const types = Array.from(e.dataTransfer?.types || []);
-        return types.includes('text/uri-list') || types.includes('text/plain');
-    }
+    // 내부 드래그 여부: 카드(_dragSheetId) 또는 트리(_treeDragNodeId) 중이면 외부 드래그 아님
+    function isInternal() { return _dragSheetId !== null || _treeDragNodeId !== null; }
 
-    function showOverlay() {
-        if (!_urlDragActive) { _urlDragActive = true; overlay.classList.add('active'); }
-    }
-    function hideOverlay() {
-        _urlDragActive = false;
-        overlay.classList.remove('active', 'over');
-    }
-
-    // URL 추출 헬퍼
+    // 여러 포맷에서 URL 추출 (Chrome·Firefox·Safari·Edge 대응)
     function extractUrl(dt) {
-        const uri = dt.getData('text/uri-list');
-        const txt = dt.getData('text/plain');
-        return (uri
-            ? uri.split('\n').map(l => l.trim()).find(l => l && !l.startsWith('#'))
-            : txt.trim()
-        ) || '';
+        const fmts = ['text/uri-list', 'URL', 'text/x-moz-url', 'text/plain'];
+        for (const fmt of fmts) {
+            const raw = (dt.getData(fmt) || '').trim();
+            if (!raw) continue;
+            // uri-list / moz-url 은 줄 단위, 첫 번째 유효 URL
+            const line = raw.split(/\r?\n/).map(l => l.split('\t')[0].trim())
+                            .find(l => l && !l.startsWith('#') && /^https?:\/\//i.test(l));
+            if (line) return line;
+            // text/plain 이 URL 형태면 그대로 사용
+            if (/^https?:\/\//i.test(raw)) return raw;
+        }
+        return '';
     }
 
-    // 오버레이 표시: 페이지 진입 시
-    document.addEventListener('dragenter', e => {
-        if (isExternalUrlDrag(e)) showOverlay();
-    });
-
-    // 오버레이 숨김: 브라우저 창 밖으로 나갔을 때만 (relatedTarget === null)
-    document.addEventListener('dragleave', e => {
-        if (_urlDragActive && e.relatedTarget === null) hideOverlay();
-    });
-
-    // dragover preventDefault 없으면 drop 자체가 발생하지 않음
-    document.addEventListener('dragover', e => {
-        if (_urlDragActive) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; }
-    });
-
-    // document 레벨 drop: 오버레이 밖에 드롭된 경우 처리 (URL 데이터 직접 읽기)
-    document.addEventListener('drop', e => {
-        if (!_urlDragActive) return;
-        e.preventDefault();
-        hideOverlay();
-        const url = extractUrl(e.dataTransfer);
+    function activate() {
+        if (_active) return;
+        _active = true;
+        overlay.classList.add('active');
+        hint.classList.add('drag-over');
+    }
+    function deactivate() {
+        _active = false;
+        overlay.classList.remove('active', 'over');
+        hint.classList.remove('drag-over');
+    }
+    function handleDrop(dt) {
+        const url = extractUrl(dt);
         if (url) quickAddByUrl(url);
-        else showToast('URL을 읽을 수 없습니다', '⚠️');
-    });
+        else showToast('URL을 읽을 수 없습니다. Ctrl+V로 붙여넣어 보세요', '⚠️');
+    }
 
-    // 오버레이 자체 drop (stopPropagation으로 document.drop과 중복 방지)
+    // ── 오버레이 이벤트 ──
+    // dragover: preventDefault 필수 (없으면 drop 이벤트 자체가 발생하지 않음)
     overlay.addEventListener('dragover', e => {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'copy';
+        e.preventDefault(); e.dataTransfer.dropEffect = 'copy';
         overlay.classList.add('over');
     });
     overlay.addEventListener('dragleave', e => {
         if (!overlay.contains(e.relatedTarget)) overlay.classList.remove('over');
     });
     overlay.addEventListener('drop', e => {
+        e.preventDefault(); e.stopPropagation();
+        deactivate(); handleDrop(e.dataTransfer);
+    });
+
+    // ── 힌트 배너 이벤트 ──
+    hint.addEventListener('dragover', e => {
+        if (isInternal()) return;
+        e.preventDefault(); e.dataTransfer.dropEffect = 'copy';
+    });
+    hint.addEventListener('drop', e => {
+        if (isInternal()) return;
+        e.preventDefault(); e.stopPropagation();
+        deactivate(); handleDrop(e.dataTransfer);
+    });
+
+    // ── document 레벨: 오버레이/힌트 밖 드롭 안전망 ──
+    document.addEventListener('dragover', e => {
+        if (isInternal() || !_active) return;
+        e.preventDefault(); e.dataTransfer.dropEffect = 'copy';
+    });
+    document.addEventListener('drop', e => {
+        if (!_active) return;
         e.preventDefault();
-        e.stopPropagation();
-        hideOverlay();
-        const url = extractUrl(e.dataTransfer);
-        if (url) quickAddByUrl(url);
-        else showToast('URL을 읽을 수 없습니다', '⚠️');
+        deactivate(); handleDrop(e.dataTransfer);
+    });
+
+    // ── dragenter: 외부 콘텐츠가 페이지에 들어올 때 오버레이 표시 ──
+    document.addEventListener('dragenter', e => {
+        if (isInternal()) return;
+        const types = Array.from(e.dataTransfer?.types || []);
+        // text/ 계열이면 URL일 가능성 → 오버레이 표시
+        // application/tree-node(내부 트리) 는 위 isInternal 로 걸러짐
+        if (types.some(t => /^text\//i.test(t) || t === 'URL' || t === 'Files')) {
+            activate();
+        }
+    });
+
+    // relatedTarget === null → 커서가 브라우저 창 밖으로 나간 경우만 숨김
+    document.addEventListener('dragleave', e => {
+        if (!_active) return;
+        if (e.relatedTarget === null) deactivate();
     });
 
     // ── Ctrl+V / Cmd+V 붙여넣기로 URL 추가 ──
-    // 인풋/텍스트에어리어에 포커스 없고, 모달 닫혀있을 때만 동작
     document.addEventListener('paste', e => {
         const active = document.activeElement;
         if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) return;
         const modals = ['add-modal','edit-modal','log-panel','dashboard-modal','comment-panel','template-modal','automation-modal'];
         if (modals.some(id => document.getElementById(id)?.classList.contains('open'))) return;
-
         const text = (e.clipboardData?.getData('text/plain') || '').trim();
         if (!text) return;
-        if (text.startsWith('http') || text.match(SHEETS_ID_RE)) {
+        if (/^https?:\/\//i.test(text) || text.match(SHEETS_ID_RE)) {
             e.preventDefault();
             quickAddByUrl(text);
         }
