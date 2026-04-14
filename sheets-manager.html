@@ -4182,9 +4182,18 @@ renderSheets = function(data) {
 // 북마클릿 모달
 // ══════════════════════════════════════
 function openBookmarkletModal() {
-    // 현재 앱 URL 기반으로 북마클릿 코드 생성
+    // postMessage 방식 북마클릿: 앱이 이미 열려있으면 리로드 없이 즉시 추가
     const appUrl = location.origin + location.pathname.replace(/\/$/, '');
-    const code = `javascript:(function(){var u=encodeURIComponent(location.href);var w=window.open('${appUrl}?add='+u,'sm-app','noopener');if(w)w.focus();})();`;
+    const code = `javascript:(function(){` +
+        `var app='${appUrl}';` +
+        `var url=location.href;` +
+        `var msg={type:'sm-add',url:url};` +
+        `var w=window.open(app,'sm-app');` +
+        `if(!w){return;}` +
+        `w.focus();` +
+        `try{w.postMessage(msg,app);}catch(e){}` +
+        `setTimeout(function(){try{w.postMessage(msg,app);}catch(e){}},1500);` +
+    `})();`;
     const btn = document.getElementById('bookmarklet-btn');
     if (btn) btn.href = code;
     document.getElementById('bookmarklet-modal').classList.add('open');
@@ -4217,7 +4226,22 @@ document.getElementById('bookmarklet-modal').addEventListener('keydown', e => {
     }, 400);
 })();
 
+// postMessage 수신: 북마클릿이 앱에 URL을 전송
+// (북마클릿은 구글 시트 등 외부 페이지에서 실행되므로 origin 제한 없음)
+window.addEventListener('message', e => {
+    if (!e.data || e.data.type !== 'sm-add' || !e.data.url) return;
+    // URL 형식 기본 검증
+    if (!/^https?:\/\//i.test(e.data.url)) return;
+    quickAddByUrl(e.data.url);
+});
+
+let _lastAddedUrl = '';
+let _lastAddedTs  = 0;
 function quickAddByUrl(url) {
+    // 5초 내 같은 URL 중복 추가 방지 (postMessage 재시도 대응)
+    const now = Date.now();
+    if (url === _lastAddedUrl && now - _lastAddedTs < 5000) return;
+    _lastAddedUrl = url; _lastAddedTs = now;
     const m = url.match(SHEETS_ID_RE);
     if (m) {
         // Google Sheets URL → 즉시 추가 후 편집 모달
