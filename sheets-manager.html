@@ -443,19 +443,17 @@
 
         /* 상시 노출 드롭 힌트 배너 */
         #url-drop-hint {
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            border: 2px dashed var(--border); border-radius: 14px;
-            padding: 14px 20px; margin-bottom: 16px;
-            color: var(--muted); font-size: 13px; font-weight: 600;
-            background: var(--surface-bg); cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            border: 1.5px dashed var(--border); border-radius: 10px;
+            padding: 9px 16px; margin-bottom: 14px;
+            color: var(--muted); font-size: 12px; font-weight: 500;
+            background: transparent; cursor: pointer;
             transition: border-color .15s, background .15s, color .15s;
-            user-select: none;
+            user-select: none; opacity: .75;
         }
-        #url-drop-hint:hover, #url-drop-hint.drag-over {
-            border-color: var(--primary); background: var(--primary-light); color: var(--primary);
-        }
-        #url-drop-hint.drag-over { border-style: solid; }
-        [data-theme="dark"] #url-drop-hint { background: var(--surface-bg); }
+        #url-drop-hint:hover { opacity: 1; border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+        #url-drop-hint.drag-over { opacity: 1; border-style: solid; border-color: var(--primary); background: var(--primary-light); color: var(--primary); font-size: 13px; font-weight: 700; padding: 14px 16px; }
+        [data-theme="dark"] #url-drop-hint { background: transparent; }
 
         .dropzone {
             border: 2px dashed #d1d6db; border-radius: 18px; padding: 36px 20px;
@@ -634,6 +632,8 @@
         [data-theme="dark"] .search-bar,[data-theme="dark"] .url-input,
         [data-theme="dark"] .title-input,[data-theme="dark"] .edit-textarea,
         [data-theme="dark"] .edit-select,[data-theme="dark"] .sort-select { background-color:var(--card-bg);color:var(--text);border-color:var(--border); }
+        [data-theme="dark"] .tree-rename-input,[data-theme="dark"] .tree-add-input,
+        [data-theme="dark"] .card-rename-input { background-color:var(--card-bg);color:var(--text);border-color:var(--primary); }
         [data-theme="dark"] .modal-box,[data-theme="dark"] .confirm-box { background:var(--card-bg); }
         [data-theme="dark"] .drive-btn { background:var(--card-bg);color:var(--text);border-color:var(--border); }
         [data-theme="dark"] mark { background:#78680a;color:#fef9c3; }
@@ -981,6 +981,10 @@
         .card-copy-btn { background:none;border:none;cursor:pointer;color:var(--muted);padding:4px;border-radius:6px;display:flex;align-items:center;opacity:0;transition:opacity .15s,background .12s;flex-shrink:0; }
         .sheet-card:hover .card-copy-btn { opacity:1; }
         .card-copy-btn:hover { background:var(--hover-bg);color:var(--primary); }
+        /* ══ 열기 버튼 ══ */
+        .card-open-btn { display:flex;align-items:center;justify-content:center;padding:3px 5px;border-radius:6px;color:var(--muted);text-decoration:none;opacity:0;transition:opacity .15s,background .12s,color .12s;flex-shrink:0; }
+        .sheet-card:hover .card-open-btn { opacity:1; }
+        .card-open-btn:hover { background:var(--primary-light);color:var(--primary); }
     </style>
 </head>
 <body>
@@ -1125,12 +1129,12 @@
                     <span class="search-icon">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                     </span>
-                    <input type="text" class="search-bar" id="searchInput" placeholder="검색... (status: tag: owner: due: pinned:)" autocomplete="off">
+                    <input type="text" class="search-bar" id="searchInput" placeholder="제목, 담당자, 태그 검색... (Ctrl+K)" autocomplete="off">
                     <div class="search-syntax-hint" id="search-syntax-hint">
                         <div class="syntax-row"><span class="syntax-kw">status:active</span><span class="syntax-desc">상태로 필터 (active/review/done/archived)</span></div>
                         <div class="syntax-row"><span class="syntax-kw">tag:마케팅</span><span class="syntax-desc">태그로 필터</span></div>
                         <div class="syntax-row"><span class="syntax-kw">owner:김민수</span><span class="syntax-desc">담당자로 필터</span></div>
-                        <div class="syntax-row"><span class="syntax-kw">due:week</span><span class="syntax-desc">기한 필터 (today/week/overdue)</span></div>
+                        <div class="syntax-row"><span class="syntax-kw">due:overdue</span><span class="syntax-desc">기한 필터 (overdue/soon/today)</span></div>
                         <div class="syntax-row"><span class="syntax-kw">pinned:true</span><span class="syntax-desc">고정된 시트만 보기</span></div>
                     </div>
                     <button id="btn-search-clear" aria-label="검색어 지우기" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);display:none;background:none;border:none;cursor:pointer;color:var(--muted);opacity:.6;padding:3px;border-radius:6px;line-height:1;transition:opacity .12s" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='.6'">
@@ -1163,8 +1167,8 @@
             <div id="recent-wrap"></div>
             <!-- URL 드롭 힌트 (항상 표시) -->
             <div id="url-drop-hint" title="구글 시트 URL을 여기에 드래그하거나 클릭해서 추가" onclick="openModal()">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                URL·북마크를 여기에 드래그하거나 Ctrl+V로 붙여넣어 시트를 추가하세요
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                URL 드래그 또는 Ctrl+V로 시트 추가 &nbsp;·&nbsp; 클릭해서 직접 입력
             </div>
             <div id="sheet-container" class="grid-view">
                 <div class="skeleton-card"><div class="skel-line" style="width:40%;height:10px"></div><div class="skel-line" style="width:75%;height:16px;margin-top:4px"></div><div class="skel-line" style="width:90%;height:12px;margin-top:8px"></div><div class="skel-line" style="width:60%;height:12px"></div></div>
@@ -2188,9 +2192,13 @@ function renderSheets(data) {
             const linkHref = hasLink ? esc(sheet.link) : 'javascript:void(0)';
             const linkAttr = hasLink ? `target="_blank" rel="noopener" onclick="addRecentId(${sheet.id})"` : `data-card-edit-id="${sheet.id}" title="링크를 설정하려면 클릭하세요"`;
             const linkStyle = hasLink ? '' : `style="color:var(--muted);text-decoration:underline dotted"`;
+            // 외부 링크 열기 버튼 (링크 있을 때만)
+            const openBtn = hasLink
+                ? `<a href="${esc(sheet.link)}" target="_blank" rel="noopener" class="card-open-btn" onclick="addRecentId(${sheet.id})" title="새 탭에서 열기"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>`
+                : '';
             const titleHtml = cardEditingId === sheet.id
                 ? `<div class="card-title-row"><input class="card-rename-input" id="card-rename-input" value="${esc(sheet.title)}" maxlength="60" data-card-id="${sheet.id}"><div class="card-rename-actions"><button class="rename-confirm-btn ok" id="card-rename-ok" onmousedown="event.preventDefault()" title="확인">${IC.check}</button><button class="rename-confirm-btn no" id="card-rename-no" onmousedown="event.preventDefault()" title="취소">${IC.x}</button></div></div>`
-                : `<div class="card-title-row"><a href="${linkHref}" class="card-title" ${linkAttr} ${linkStyle}>${highlight(sheet.title, _q)}</a><button class="card-pencil-btn" data-card-rename-id="${sheet.id}" title="이름 수정">${IC.pencil}</button></div>`;
+                : `<div class="card-title-row"><a href="${linkHref}" class="card-title" ${linkAttr} ${linkStyle} ondblclick="event.preventDefault();startCardRename(${sheet.id})">${highlight(sheet.title, _q)}</a><button class="card-pencil-btn" data-card-rename-id="${sheet.id}" title="이름 수정 (더블클릭도 가능)">${IC.pencil}</button>${openBtn}</div>`;
             const relDate = relativeDate(sheet.updated);
             const isSelected = selectedCards.has(sheet.id);
             const accentStyle = folderColor ? `border-left:4px solid ${folderColor};padding-left:22px;` : '';
@@ -2791,7 +2799,16 @@ document.getElementById('confirm-ok-btn').addEventListener('click', () => { if (
 document.getElementById('confirm-cancel-btn').addEventListener('click', closeConfirm);
 document.getElementById('confirm-modal').addEventListener('click', e => { if (e.target===document.getElementById('confirm-modal')) closeConfirm(); });
 document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeConfirm(); closeModal(); closeEditModal(); closeLogPanel(); return; }
+    if (e.key === 'Escape') {
+        // 검색창에 포커스가 있으면 검색어 지우기
+        const si = document.getElementById('searchInput');
+        if (document.activeElement === si && si.value) {
+            si.value = '';
+            document.getElementById('btn-search-clear').style.display = 'none';
+            applyFilters(); si.blur(); return;
+        }
+        closeConfirm(); closeModal(); closeEditModal(); closeLogPanel(); return;
+    }
     if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
         const active = document.activeElement;
         const isInput = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
@@ -3344,9 +3361,12 @@ function renderCardHtml(sheet, _q='') {
     const commentCount = (comments[sheet.id]||[]).length;
     const commentBadge = commentCount > 0 ? `<span style="font-size:11px;font-weight:700;color:var(--muted);background:var(--hover-bg);padding:2px 7px;border-radius:8px;display:inline-flex;align-items:center;gap:3px"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>${commentCount}</span>` : '';
     const dueBadge = getDueBadgeHtml(sheet.dueDate);
+    const openBtn = hasLink
+        ? `<a href="${esc(sheet.link)}" target="_blank" rel="noopener" class="card-open-btn" onclick="addRecentId(${sheet.id})" title="새 탭에서 열기"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>`
+        : '';
     const titleHtml = cardEditingId === sheet.id
         ? `<div class="card-title-row"><input class="card-rename-input" id="card-rename-input" value="${esc(sheet.title)}" maxlength="60" data-card-id="${sheet.id}"><div class="card-rename-actions"><button class="rename-confirm-btn ok" id="card-rename-ok" onmousedown="event.preventDefault()" title="확인">${IC.check}</button><button class="rename-confirm-btn no" id="card-rename-no" onmousedown="event.preventDefault()" title="취소">${IC.x}</button></div></div>`
-        : `<div class="card-title-row"><a href="${linkHref}" class="card-title" ${linkAttr} ${linkStyle}>${highlight(sheet.title, _q)}</a><button class="card-copy-btn" data-copy-id="${sheet.id}" title="링크 복사">${IC.copy||'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>'}</button><button class="card-pencil-btn" data-card-rename-id="${sheet.id}" title="이름 수정">${IC.pencil}</button></div>`;
+        : `<div class="card-title-row"><a href="${linkHref}" class="card-title" ${linkAttr} ${linkStyle} ondblclick="event.preventDefault();startCardRename(${sheet.id})">${highlight(sheet.title, _q)}</a><button class="card-copy-btn" data-copy-id="${sheet.id}" title="링크 복사">${IC.copy||'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>'}</button><button class="card-pencil-btn" data-card-rename-id="${sheet.id}" title="이름 수정 (더블클릭도 가능)">${IC.pencil}</button>${openBtn}</div>`;
     const relDate = relativeDate(sheet.updated);
     const isSelected = selectedCards.has(sheet.id);
     const accentColor = getFolderColorHex(sheet.id);
@@ -3843,6 +3863,8 @@ function getVisibleTreeNodes() {
 }
 document.getElementById('tree-root').addEventListener('keydown', e => {
     if (!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter',' '].includes(e.key)) return;
+    // input/textarea 안에서는 기본 동작 허용 (스페이스·엔터 입력 가능)
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
     e.preventDefault();
     const nodes = getVisibleTreeNodes();
     if (!nodes.length) return;
