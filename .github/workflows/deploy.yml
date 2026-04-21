@@ -1,4 +1,4 @@
-name: Deploy to Vercel
+name: Deploy to Google Apps Script
 
 on:
   push:
@@ -11,11 +11,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Vercel CLI
-        run: npm install -g vercel
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-      - name: Deploy to Vercel
-        run: vercel --prod --yes --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Deploy to GAS
         env:
-          VERCEL_ORG_ID: team_tdCVpvSteWKP2th50AFFHTYn
-          VERCEL_PROJECT_ID: prj_xem3S99lGlPXRziMVtNMDHpm96r9
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
+          GAS_SCRIPT_ID: 1cWH5b3fEBXXEbno2YQy8a9d372EER9ZZoCrleVO3BpHj6qpIx6Lrw_sQ
+          GAS_DEPLOY_ID: AKfycbyAK4k1bbkWF_2DjexuV-ZgB2nJ1Q0mI4JnWKwo-PQ6Cy4W59Sdr4v70v0zXC19xqiB
+        run: node deploy_gas.js
