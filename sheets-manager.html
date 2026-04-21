@@ -1768,7 +1768,7 @@ let _gasSaveTimer = null;
 
 function saveStorage() {
     const searchQuery = document.getElementById('searchInput')?.value || '';
-    const payload = { sheetsData, treeData, nextId, currentFilter, currentView, currentSort, searchQuery, recentIds };
+    const payload = { sheetsData, treeData, nextId, currentFilter, currentView, currentSort, searchQuery, recentIds, updatedAt: Date.now() };
     // 1) localStorage 즉시 저장 (빠른 캐시)
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(payload)); } catch(e) {
         console.warn('localStorage 저장 실패:', e);
@@ -3555,15 +3555,30 @@ function _renderAll() {
     applyTheme(savedTheme);
 
     // 1단계: localStorage 캐시로 즉시 렌더 (빠른 초기 표시)
-    _applyStoredData(loadStorage());
+    const local = loadStorage();
+    _applyStoredData(local);
     _renderAll();
 
-    // 2단계: GAS에서 최신 데이터 로드 후 갱신
+    // 2단계: GAS와 타임스탬프 비교 → 더 최신 데이터 사용
     if (GAS_URL) {
         showSyncIndicator(true);
         const remote = await _loadFromGAS();
         showSyncIndicator(false);
-        if (remote) { _applyStoredData(remote); _renderAll(); }
+        if (remote) {
+            const localTs  = (local  && local.updatedAt)  ? local.updatedAt  : 0;
+            const remoteTs = remote.updatedAt ? remote.updatedAt : 0;
+            if (remoteTs >= localTs) {
+                // GAS가 최신 → 로컬에 반영
+                _applyStoredData(remote); _renderAll();
+            } else {
+                // 로컬이 최신 → GAS에 즉시 업로드 (동기화)
+                console.log('[SM] 로컬 데이터가 최신 → GAS 업로드');
+                _saveToGAS(local);
+            }
+        } else if (local) {
+            // GAS가 비어있으면 로컬 데이터로 GAS 초기화
+            _saveToGAS(local);
+        }
     }
 })();
 
