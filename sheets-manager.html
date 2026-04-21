@@ -56,6 +56,7 @@
             --radius-3xl: 24px;
         }
 
+        @keyframes spin { to { transform: rotate(360deg); } }
         *, *::before, *::after { box-sizing: border-box; }
 
         body {
@@ -1166,6 +1167,11 @@
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
                 <span id="log-btn-count" style="display:none;background:var(--primary);color:white;border-radius:6px;padding:1px 5px;font-size:10px;min-width:16px;text-align:center"></span>
             </button>
+            <!-- GAS 동기화 상태 표시 -->
+            <span id="gas-sync-indicator" title="Google Sheets 동기화 중..." style="display:none;align-items:center;gap:4px;font-size:11px;color:var(--muted);padding:0 4px">
+                <svg style="animation:spin 1s linear infinite" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                동기화 중
+            </span>
             <button id="btn-dark-toggle" onclick="toggleTheme()" title="다크 모드 토글" class="header-icon-btn">
                 <svg id="dark-icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
                 <svg id="dark-icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
@@ -1749,19 +1755,66 @@ const STATUS_CONFIG = {
 };
 
 // ══════════════════════════════════════
-// localStorage 영속성
+// Google Apps Script 연동 설정
+// GAS Web App URL을 아래에 입력하세요
+// ══════════════════════════════════════
+const GAS_URL = ''; // 예: 'https://script.google.com/macros/s/XXXXX/exec'
+
+// ══════════════════════════════════════
+// 영속성 (localStorage + GAS)
 // ══════════════════════════════════════
 const STORAGE_KEY = 'sm-data-v1';
+let _gasSaveTimer = null;
+
 function saveStorage() {
     const searchQuery = document.getElementById('searchInput')?.value || '';
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({ sheetsData, treeData, nextId, currentFilter, currentView, currentSort, searchQuery, recentIds }));
-    } catch(e) {
+    const payload = { sheetsData, treeData, nextId, currentFilter, currentView, currentSort, searchQuery, recentIds };
+    // 1) localStorage 즉시 저장 (빠른 캐시)
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(payload)); } catch(e) {
         console.warn('localStorage 저장 실패:', e);
         showToast('저장 공간이 부족합니다. 불필요한 데이터를 정리해주세요.', '⚠️');
     }
+    // 2) GAS 저장 (디바운스 1.5초 — 연속 변경 시 마지막 1회만 전송)
+    if (GAS_URL) {
+        clearTimeout(_gasSaveTimer);
+        _gasSaveTimer = setTimeout(() => _saveToGAS(payload), 1500);
+    }
     broadcastChange();
 }
+
+async function _saveToGAS(payload) {
+    try {
+        showSyncIndicator(true);
+        await fetch(GAS_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'data=' + encodeURIComponent(JSON.stringify(payload))
+        });
+    } catch(e) {
+        console.warn('GAS 저장 실패 (오프라인?):', e);
+    } finally {
+        showSyncIndicator(false);
+    }
+}
+
+async function _loadFromGAS() {
+    if (!GAS_URL) return null;
+    try {
+        const res  = await fetch(GAS_URL + '?t=' + Date.now());
+        const json = await res.json();
+        if (json.ok && json.data) {
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(json.data)); } catch(e) {}
+            return json.data;
+        }
+    } catch(e) { console.warn('GAS 로드 실패, localStorage 폴백 사용:', e); }
+    return null;
+}
+
+function showSyncIndicator(on) {
+    const el = document.getElementById('gas-sync-indicator');
+    if (el) el.style.display = on ? 'flex' : 'none';
+}
+
 function loadStorage() {
     try { const raw = localStorage.getItem(STORAGE_KEY); if (!raw) return null; return JSON.parse(raw); } catch(e) { return null; }
 }
@@ -3472,37 +3525,47 @@ function closeSidebar() {
 }
 function toggleSidebar() { document.body.classList.contains('sidebar-open') ? closeSidebar() : openSidebar(); }
 // ══════════════════════════════════════
-// 초기화 (localStorage 복원)
+// 초기화 (GAS → localStorage 복원)
 // ══════════════════════════════════════
-(function initStorage() {
+function _applyStoredData(saved) {
+    if (!saved) return;
+    sheetsData.length = 0; saved.sheetsData.forEach(s => sheetsData.push(s));
+    treeData = saved.treeData; nextId = saved.nextId ?? nextId;
+    if (saved.currentFilter) currentFilter = saved.currentFilter;
+    if (saved.currentView)   currentView   = saved.currentView;
+    if (saved.currentSort)   currentSort   = saved.currentSort;
+    if (Array.isArray(saved.recentIds)) recentIds = saved.recentIds;
+    if (saved.searchQuery) {
+        const si = document.getElementById('searchInput');
+        if (si) { si.value = saved.searchQuery; document.getElementById('btn-search-clear').style.display = saved.searchQuery ? 'block' : 'none'; }
+    }
+}
+
+function _renderAll() {
+    setView(currentView);
+    document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('active', b.dataset.filter === currentFilter));
+    const sortEl = document.getElementById('sort-select'); if (sortEl) sortEl.value = currentSort;
+    renderTree(); applyFilters(); updateAllRowStyle(); updateBreadcrumb();
+    renderSavedSearches(); runAllAutomationRules(true);
+}
+
+(async function initApp() {
     // 다크 모드 먼저 적용 (깜빡임 방지)
     const savedTheme = localStorage.getItem('sm-theme') || (window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
     applyTheme(savedTheme);
 
-    const saved = loadStorage();
-    if (saved) {
-        sheetsData.length = 0; saved.sheetsData.forEach(s => sheetsData.push(s));
-        treeData = saved.treeData; nextId = saved.nextId ?? nextId;
-        if (saved.currentFilter) currentFilter = saved.currentFilter;
-        if (saved.currentView)   currentView   = saved.currentView;
-        if (saved.currentSort)   currentSort   = saved.currentSort;
-        if (Array.isArray(saved.recentIds)) recentIds = saved.recentIds;
-        if (saved.searchQuery) {
-            const si = document.getElementById('searchInput');
-            if (si) { si.value = saved.searchQuery; document.getElementById('btn-search-clear').style.display = saved.searchQuery ? 'block' : 'none'; }
-        }
+    // 1단계: localStorage 캐시로 즉시 렌더 (빠른 초기 표시)
+    _applyStoredData(loadStorage());
+    _renderAll();
+
+    // 2단계: GAS에서 최신 데이터 로드 후 갱신
+    if (GAS_URL) {
+        showSyncIndicator(true);
+        const remote = await _loadFromGAS();
+        showSyncIndicator(false);
+        if (remote) { _applyStoredData(remote); _renderAll(); }
     }
 })();
-
-setView(currentView);
-document.querySelectorAll('[data-filter]').forEach(b => b.classList.toggle('active', b.dataset.filter === currentFilter));
-const sortEl = document.getElementById('sort-select'); if (sortEl) sortEl.value = currentSort;
-renderTree();
-applyFilters();
-updateAllRowStyle();
-updateBreadcrumb();
-renderSavedSearches();
-runAllAutomationRules(true); // 앱 시작 시 자동화 규칙 조용히 실행
 
 // ══════════════════════════════════════
 // 폴더 일괄 접기/펼치기
