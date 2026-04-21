@@ -3565,19 +3565,29 @@ function _renderAll() {
         const remote = await _loadFromGAS();
         showSyncIndicator(false);
         if (remote) {
-            const localTs  = (local  && local.updatedAt)  ? local.updatedAt  : 0;
-            const remoteTs = remote.updatedAt ? remote.updatedAt : 0;
-            if (remoteTs >= localTs) {
-                // GAS가 최신 → 로컬에 반영
+            const localTs   = (local  && local.updatedAt)  ? local.updatedAt  : 0;
+            const remoteTs  = remote.updatedAt ? remote.updatedAt : 0;
+            const localCnt  = (local  && Array.isArray(local.sheetsData))  ? local.sheetsData.length  : 0;
+            const remoteCnt = Array.isArray(remote.sheetsData) ? remote.sheetsData.length : 0;
+
+            // 로컬에 타임스탬프가 없으면(구버전 데이터) 로컬이 기준 — GAS에 업로드
+            // 타임스탬프가 둘 다 있으면 더 최신 것이 기준
+            // 타임스탬프 같고 로컬에 시트가 더 많으면 로컬이 기준
+            const useRemote = localTs > 0 && remoteTs > localTs;
+            if (useRemote) {
                 _applyStoredData(remote); _renderAll();
+                console.log('[SM] GAS 최신 데이터 적용');
             } else {
-                // 로컬이 최신 → GAS에 즉시 업로드 (동기화)
-                console.log('[SM] 로컬 데이터가 최신 → GAS 업로드');
-                _saveToGAS(local);
+                // 로컬이 기준 → 현재 타임스탬프 붙여서 GAS 동기화
+                const pushPayload = Object.assign({}, local || {}, { updatedAt: Date.now() });
+                try { localStorage.setItem(STORAGE_KEY, JSON.stringify(pushPayload)); } catch(e) {}
+                _saveToGAS(pushPayload);
+                console.log('[SM] 로컬 데이터를 GAS에 업로드 (localTs=' + localTs + ' remoteTs=' + remoteTs + ')');
             }
         } else if (local) {
-            // GAS가 비어있으면 로컬 데이터로 GAS 초기화
-            _saveToGAS(local);
+            const pushPayload = Object.assign({}, local, { updatedAt: Date.now() });
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(pushPayload)); } catch(e) {}
+            _saveToGAS(pushPayload);
         }
     }
 })();
