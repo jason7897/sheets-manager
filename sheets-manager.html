@@ -251,6 +251,7 @@
             font-size: 13.5px; color: var(--text);
             overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
             flex: 1; min-width: 0; font-weight: 500; cursor: pointer;
+            text-decoration: none;
         }
         .tree-node[data-node-type="sheet"] > .tree-row .tree-name:hover { color: var(--primary); text-decoration: underline; }
 
@@ -2107,7 +2108,17 @@ function renderTreeNode(node, depth) {
         const countBadge = (node.type === 'folder' && sheetCount > 0)
             ? `<span style="font-size:10px;font-weight:700;color:var(--muted);background:var(--hover-bg);border-radius:10px;padding:1px 7px;flex-shrink:0;margin-left:2px">${sheetCount}</span>`
             : '';
-        rowInner += `<span class="tree-name" data-select-id="${node.id}">${esc(node.name)}</span>${countBadge}`;
+        if (node.type === 'sheet') {
+            const _treeSheet = sheetsData.find(s => s.id === node.sheetId);
+            const _treeLink  = _treeSheet && _treeSheet.link && _treeSheet.link !== '#' ? _treeSheet.link : null;
+            if (_treeLink) {
+                rowInner += `<a class="tree-name" href="${esc(_treeLink)}" target="_blank" rel="noopener noreferrer" data-select-id="${node.id}" onclick="selectNode('${node.id}');addRecentId(${node.sheetId});event.stopPropagation()">${esc(node.name)}</a>`;
+            } else {
+                rowInner += `<span class="tree-name" data-select-id="${node.id}">${esc(node.name)}</span>`;
+            }
+        } else {
+            rowInner += `<span class="tree-name" data-select-id="${node.id}">${esc(node.name)}</span>${countBadge}`;
+        }
         let actions = '';
         if (node.type === 'folder') {
             actions += `<button class="tree-icon-btn add" data-add-folder-id="${node.id}" title="새 폴더 추가">${IC.addFolder}</button>`;
@@ -2230,12 +2241,10 @@ document.getElementById('tree-root').addEventListener('click', e => {
     if (btn.dataset.selectId) {
         const _selNode = findNode(btn.dataset.selectId);
         selectNode(btn.dataset.selectId);
+        // <a> 태그 시트 노드는 href로 직접 열리므로 링크 없는 경우만 처리
         if (_selNode && _selNode.type === 'sheet') {
             const _selSheet = sheetsData.find(s => s.id === _selNode.sheetId);
-            if (_selSheet && _selSheet.link && _selSheet.link !== '#') {
-                addRecentId(_selSheet.id);
-                const _a = document.createElement('a'); _a.href = _selSheet.link; _a.target = '_blank'; _a.rel = 'noopener noreferrer'; document.body.appendChild(_a); _a.click(); document.body.removeChild(_a);
-            } else if (_selSheet) {
+            if (!(_selSheet && _selSheet.link && _selSheet.link !== '#')) {
                 showToast('링크가 없습니다. 편집에서 URL을 추가해 주세요', '🔗');
                 openEditModal(_selSheet.id);
             }
