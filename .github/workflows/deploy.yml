@@ -1,9 +1,12 @@
-name: Deploy to Google Apps Script
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches:
       - master
+
+permissions:
+  contents: write
 
 jobs:
   deploy:
@@ -11,15 +14,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
+      - name: Prepare index.html
+        run: cp sheets-manager.html index.html
 
-      - name: Deploy to GAS
-        env:
-          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
-          GOOGLE_REFRESH_TOKEN: ${{ secrets.GOOGLE_REFRESH_TOKEN }}
-          GAS_SCRIPT_ID: 1cWH5b3fEBXXEbno2YQy8a9d372EER9ZZoCrleVO3BpHj6qpIx6Lrw_sQ
-          GAS_DEPLOY_ID: AKfycbyAK4k1bbkWF_2DjexuV-ZgB2nJ1Q0mI4JnWKwo-PQ6Cy4W59Sdr4v70v0zXC19xqiB
-        run: node deploy_gas.js
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./
+          publish_branch: gh-pages
+          include_files: index.html
