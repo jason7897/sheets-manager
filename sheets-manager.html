@@ -952,6 +952,10 @@
         .tree-row:hover .tree-drag-handle { display:flex; }
         .tree-drag-handle:hover { opacity:1; }
         .tree-node.drag-over-tree > .tree-row { outline:2px dashed var(--primary);outline-offset:-2px;border-radius:10px; }
+        /* 폴더 내부로 이동 — 파란 배경 */
+        .tree-node.drag-into-folder > .tree-row { background:var(--primary-light) !important;outline:2px solid var(--primary);outline-offset:-2px;border-radius:10px; }
+        /* 아이템 다음에 삽입 — 하단 구분선 */
+        .tree-node.drag-after-item > .tree-row { border-bottom:2px solid var(--primary);border-radius:0; }
         .tree-node.kb-focus > .tree-row { outline:2px solid var(--primary);outline-offset:-2px;border-radius:10px; }
 
         /* ══ 컨텍스트 메뉴 ══ */
@@ -1758,15 +1762,17 @@ const STATUS_CONFIG = {
 // Google Apps Script 연동 설정
 // GAS Web App URL을 아래에 입력하세요
 // ══════════════════════════════════════
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbx6HA8mGcwCmGJRYxmzBESsSLsZS5DOXJHze0WWpd1P59v-o-7itPpKV6clKgpjPMWLpQ/exec'; // 예: 'https://script.google.com/macros/s/XXXXX/exec'
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyZTbVby_nfOn52pQuAn8Anb418Mx_b5J-r4HRV4tx1CAK7EOpxfV101Ike4mTFNFQ0/exec'; // 예: 'https://script.google.com/macros/s/XXXXX/exec'
 
 // ══════════════════════════════════════
 // 영속성 (localStorage + GAS)
 // ══════════════════════════════════════
 const STORAGE_KEY = 'sm-data-v1';
 let _gasSaveTimer = null;
+let _isInitializing = true; // 초기화 중엔 GAS 저장 차단
 
 function saveStorage() {
+    if (_isInitializing) return; // 페이지 로드 중 샘플 데이터가 GAS를 덮어쓰는 것 방지
     const searchQuery = document.getElementById('searchInput')?.value || '';
     const payload = { sheetsData, treeData, nextId, currentFilter, currentView, currentSort, searchQuery, recentIds, updatedAt: Date.now() };
     // 1) localStorage 즉시 저장 (빠른 캐시)
@@ -1783,6 +1789,10 @@ function saveStorage() {
 }
 
 async function _saveToGAS(payload) {
+    if (!payload || !Array.isArray(payload.sheetsData) || payload.sheetsData.length === 0) {
+        console.warn('[SM] GAS 저장 스킵: 시트가 0개인 데이터는 저장하지 않음');
+        return;
+    }
     try {
         showSyncIndicator(true);
         await fetch(GAS_URL, {
@@ -2041,6 +2051,7 @@ const selectedCards = new Set(); // 다중 선택
 let _colorPickerFolderId = null; // 폴더 컬러 픽커
 let _treeDragNodeId      = null; // 트리 순서 드래그
 let _treeDragOverNodeId  = null;
+let _treeDragOverMode    = null; // 'into'=폴더 내부로 | 'after'=다음에 삽입
 
 // 고급 기능 상태
 let comments       = {};         // { [sheetId]: [{id, author, text, ts}] }
@@ -2136,6 +2147,59 @@ function findTreeNodeIdBySheetId(sheetId, nodes=treeData) {
     return null;
 }
 
+// ── 폴더 드래그 이동 유틸 ──────────────────────────────────────────────────────
+
+// [안전장치] targetId 가 sourceId 의 자손인지 재귀 확인 (순환 참조 차단)
+function isDescendantTree(sourceId, targetId) {
+    if (sourceId === targetId) return true;
+    const node = findNode(sourceId);
+    if (!node?.children) return false;
+    return node.children.some(c => isDescendantTree(c.id, targetId));
+}
+
+// afterId 다음에 newNode 를 삽입 (불변 — 새 배열 반환)
+function insertAfterNode(afterId, newNode, nodes) {
+    const result = [];
+    for (const n of nodes) {
+        const updated = n.children
+            ? {...n, children: insertAfterNode(afterId, newNode, n.children)}
+            : {...n};
+        result.push(updated);
+        if (n.id === afterId) result.push(newNode);
+    }
+    return result;
+}
+
+// 트리 노드 이동 (폴더 → 내부 / 시트·루트 → 다음에 삽입)
+function moveTreeNode(dragId, targetId) {
+    // 순환 참조 차단: 상위 폴더를 하위로 넣으려는 경우
+    if (isDescendantTree(dragId, targetId)) {
+        showToast('상위 폴더를 하위 폴더로 이동할 수 없습니다', '⚠️');
+        return;
+    }
+    const srcNode = JSON.parse(JSON.stringify(findNode(dragId))); // deep copy
+    const tgtNode = findNode(targetId);
+    if (!srcNode || !tgtNode) return;
+
+    const undoFn = saveUndoSnapshot();
+
+    // 원본 위치에서 제거 (불변)
+    treeData = deleteFromTree(dragId, treeData);
+
+    if (tgtNode.type === 'folder') {
+        // 폴더 위에 드롭 → 해당 폴더 내부 맨 끝에 추가
+        treeData = addToTree(targetId, srcNode, treeData);
+        appLog('move', '폴더로 이동', `"${srcNode.name}" → "${tgtNode.name}" 내부`);
+    } else {
+        // 파일·시트 위에 드롭 → 그 아이템 바로 다음(아래)에 삽입
+        treeData = insertAfterNode(targetId, srcNode, treeData);
+        appLog('move', '순서 변경', `"${srcNode.name}" → "${tgtNode.name}" 다음`);
+    }
+
+    showToast(`"${srcNode.name}" 이(가) 이동되었습니다`, '📁', undoFn);
+    renderTree(); saveStorage();
+}
+
 // ══════════════════════════════════════
 // 트리 렌더링
 // ══════════════════════════════════════
@@ -2186,7 +2250,8 @@ function renderTreeNode(node, depth) {
     }
     const selectedClass = isSelected ? ' selected' : '';
     const dropAttr = node.type === 'folder' ? ` data-drop-folder-id="${node.id}"` : '';
-    let html = `<div class="tree-node${selectedClass}" data-node-id="${node.id}" data-node-type="${node.type}"><div class="tree-row"${dropAttr} style="padding-left:${indent}px">${rowInner}</div>`;
+    // 행 전체를 드래그 가능하게 (버튼·입력 제외는 dragstart에서 처리)
+    let html = `<div class="tree-node${selectedClass}" data-node-id="${node.id}" data-node-type="${node.type}"><div class="tree-row" draggable="true" data-drag-id="${node.id}"${dropAttr} style="padding-left:${indent}px">${rowInner}</div>`;
     if (node.type === 'folder') {
         if (isExpanded && node.children?.length) html += node.children.map(c => renderTreeNode(c, depth+1)).join('');
         if (addMode && addMode.parentId === node.id) {
@@ -2703,43 +2768,66 @@ document.getElementById('tree-root').addEventListener('drop', e => {
 // 트리 노드 순서 드래그 앤 드롭
 // ══════════════════════════════════════
 document.getElementById('tree-root').addEventListener('dragstart', e => {
+    // 버튼·링크·입력 위에서 시작된 드래그는 무시 (클릭 동작 보호)
+    if (e.target.closest('button,a,input')) return;
     const handle = e.target.closest('[data-drag-id]');
     if (!handle) return;
     _treeDragNodeId = handle.dataset.dragId;
     e.dataTransfer.setData('application/tree-node', _treeDragNodeId);
     e.dataTransfer.effectAllowed = 'move';
+    // 드래그 중인 행 시각 처리
+    setTimeout(() => {
+        const row = document.querySelector(`.tree-node[data-node-id="${_treeDragNodeId}"]`);
+        if (row) row.style.opacity = '0.4';
+    }, 0);
 });
+function _clearTreeDragHighlight() {
+    document.querySelectorAll('.tree-node.drag-into-folder,.tree-node.drag-after-item,.tree-node.drag-over-tree')
+        .forEach(n => n.classList.remove('drag-into-folder','drag-after-item','drag-over-tree'));
+}
 document.getElementById('tree-root').addEventListener('dragover', e => {
     if (!_treeDragNodeId || _dragSheetId !== null) return;
     const node = e.target.closest('.tree-node[data-node-id]');
     if (!node) return;
     const nid = node.dataset.nodeId;
     if (nid === _treeDragNodeId) return;
+    // 순환 참조가 될 대상은 hover 자체를 무시
+    if (isDescendantTree(_treeDragNodeId, nid)) return;
     e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    // 이전 하이라이트 제거
     if (_treeDragOverNodeId && _treeDragOverNodeId !== nid) {
-        document.querySelector(`.tree-node[data-node-id="${_treeDragOverNodeId}"]`)?.classList.remove('drag-over-tree');
+        const prev = document.querySelector(`.tree-node[data-node-id="${_treeDragOverNodeId}"]`);
+        prev?.classList.remove('drag-into-folder','drag-after-item');
     }
     _treeDragOverNodeId = nid;
-    node.classList.add('drag-over-tree');
+    const isFolder = node.dataset.nodeType === 'folder';
+    _treeDragOverMode  = isFolder ? 'into' : 'after';
+    node.classList.remove('drag-into-folder','drag-after-item');
+    node.classList.add(isFolder ? 'drag-into-folder' : 'drag-after-item');
 });
 document.getElementById('tree-root').addEventListener('dragleave', e => {
     const node = e.target.closest('.tree-node[data-node-id]');
-    if (node && !node.contains(e.relatedTarget)) node.classList.remove('drag-over-tree');
+    if (node && !node.contains(e.relatedTarget))
+        node.classList.remove('drag-into-folder','drag-after-item');
 });
 document.getElementById('tree-root').addEventListener('drop', e => {
     if (!_treeDragNodeId) return;
     const appData = e.dataTransfer.getData('application/tree-node');
-    if (!appData) return; // card-to-folder drop, let existing handler run
+    if (!appData) return; // 카드→폴더 drop은 기존 핸들러가 처리
     e.preventDefault();
     const node = e.target.closest('.tree-node[data-node-id]');
-    node?.classList.remove('drag-over-tree');
+    _clearTreeDragHighlight();
     const targetId = node?.dataset.nodeId;
-    if (targetId && targetId !== _treeDragNodeId) reorderTreeNode(_treeDragNodeId, targetId);
-    _treeDragNodeId = null; _treeDragOverNodeId = null;
+    if (targetId && targetId !== _treeDragNodeId) moveTreeNode(_treeDragNodeId, targetId);
+    _treeDragNodeId = null; _treeDragOverNodeId = null; _treeDragOverMode = null;
 });
-document.getElementById('tree-root').addEventListener('dragend', () => {
-    _treeDragNodeId = null;
-    document.querySelectorAll('.tree-node.drag-over-tree').forEach(n => n.classList.remove('drag-over-tree'));
+document.getElementById('tree-root').addEventListener('dragend', e => {
+    // 드래그 중 반투명 처리 원복
+    const draggingNode = e.target.closest('.tree-node[data-node-id]');
+    if (draggingNode) draggingNode.style.opacity = '';
+    _treeDragNodeId = null; _treeDragOverMode = null;
+    _clearTreeDragHighlight();
 });
 // ── 노드 위/아래 이동 (▲▼ 버튼) ──
 function moveTreeNodeUpDown(nodeId, dir) {
@@ -3559,37 +3647,25 @@ function _renderAll() {
     _applyStoredData(local);
     _renderAll();
 
-    // 2단계: GAS와 타임스탬프 비교 → 더 최신 데이터 사용
+    // 2단계: GAS 데이터 로드 — 타임스탬프 비교로 더 최신 데이터 사용
     if (GAS_URL) {
         showSyncIndicator(true);
         const remote = await _loadFromGAS();
         showSyncIndicator(false);
         if (remote) {
-            const localTs   = (local  && local.updatedAt)  ? local.updatedAt  : 0;
-            const remoteTs  = remote.updatedAt ? remote.updatedAt : 0;
-            const localCnt  = (local  && Array.isArray(local.sheetsData))  ? local.sheetsData.length  : 0;
-            const remoteCnt = Array.isArray(remote.sheetsData) ? remote.sheetsData.length : 0;
-
-            // 로컬에 타임스탬프가 없으면(구버전 데이터) 로컬이 기준 — GAS에 업로드
-            // 타임스탬프가 둘 다 있으면 더 최신 것이 기준
-            // 타임스탬프 같고 로컬에 시트가 더 많으면 로컬이 기준
-            const useRemote = localTs > 0 && remoteTs > localTs;
-            if (useRemote) {
-                _applyStoredData(remote); _renderAll();
-                console.log('[SM] GAS 최신 데이터 적용');
-            } else {
-                // 로컬이 기준 → 현재 타임스탬프 붙여서 GAS 동기화
-                const pushPayload = Object.assign({}, local || {}, { updatedAt: Date.now() });
-                try { localStorage.setItem(STORAGE_KEY, JSON.stringify(pushPayload)); } catch(e) {}
-                _saveToGAS(pushPayload);
-                console.log('[SM] 로컬 데이터를 GAS에 업로드 (localTs=' + localTs + ' remoteTs=' + remoteTs + ')');
-            }
+            // GAS에 데이터가 있으면 무조건 GAS가 정답
+            _applyStoredData(remote); _renderAll();
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(remote)); } catch(e) {}
+            console.log('[SM] GAS 데이터 적용 완료 (' + (remote.sheetsData||[]).length + '개)');
         } else if (local) {
+            // GAS가 비어 있을 때만 로컬 데이터를 GAS에 최초 업로드
             const pushPayload = Object.assign({}, local, { updatedAt: Date.now() });
             try { localStorage.setItem(STORAGE_KEY, JSON.stringify(pushPayload)); } catch(e) {}
             _saveToGAS(pushPayload);
+            console.log('[SM] GAS 비어 있음 → 로컬 최초 업로드');
         }
     }
+    _isInitializing = false; // 초기화 완료 — 이후부터 saveStorage() 정상 작동
 })();
 
 // ══════════════════════════════════════
