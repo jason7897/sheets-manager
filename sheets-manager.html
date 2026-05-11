@@ -417,6 +417,9 @@
         .sheet-card[draggable="true"]:active { cursor: grabbing; }
         .sheet-card.dragging { opacity: .45; transform: rotate(1.5deg) scale(1.03); box-shadow: 0 20px 50px rgba(49,130,246,.18); }
         .tree-row.drag-over { background: var(--primary-light) !important; outline: 2px dashed var(--primary); outline-offset: -2px; border-radius: 10px; }
+        /* 카드 내 순서 변경 드롭 인디케이터 */
+        .sheet-card.card-drop-before { border-top: 3px solid var(--primary) !important; }
+        .sheet-card.card-drop-after  { border-bottom: 3px solid var(--primary) !important; }
 
         .card-rename-input {
             flex: 1; border: 1.5px solid var(--primary); border-radius: 9px;
@@ -871,11 +874,18 @@
         .recent-chip-title { font-size:12.5px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
         .recent-chip-meta { font-size:11px;color:var(--muted);font-weight:500; }
 
-        /* ══ 폴더 컬러 픽커 ══ */
-        .color-picker-popup { position:fixed;z-index:400;background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:8px;display:flex;gap:4px;flex-wrap:wrap;width:120px;box-shadow:0 8px 28px rgba(0,0,0,.18); }
+        /* ══ 폴더 스타일 픽커 ══ */
+        .color-picker-popup { position:fixed;z-index:400;background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:12px;width:208px;box-shadow:0 8px 28px rgba(0,0,0,.18); }
+        .color-picker-popup .picker-section-label { font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:6px;display:block; }
+        .color-picker-popup .picker-divider { border:none;border-top:1px solid var(--border);margin:10px 0; }
+        .color-picker-popup .color-row { display:flex;gap:4px;flex-wrap:wrap; }
         .color-dot { width:22px;height:22px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;transition:transform .12s,border-color .12s; }
         .color-dot:hover { transform:scale(1.25); }
         .color-dot.active { border-color:var(--text); }
+        .icon-dot { width:28px;height:28px;border-radius:8px;cursor:pointer;border:2px solid transparent;display:flex;align-items:center;justify-content:center;font-size:15px;transition:transform .12s,border-color .12s,background .12s; }
+        .icon-dot:hover { transform:scale(1.18);background:var(--hover-bg); }
+        .icon-dot.active { border-color:var(--primary);background:var(--primary-light); }
+        .icon-picker-grid { display:grid;grid-template-columns:repeat(6,1fr);gap:3px; }
 
         /* ══ 스켈레톤 ══ */
         @keyframes skel-pulse { 0%,100%{opacity:1}50%{opacity:.42} }
@@ -1120,6 +1130,11 @@
         .card-open-btn { display:flex;align-items:center;justify-content:center;padding:3px 5px;border-radius:6px;color:var(--muted);text-decoration:none;opacity:0;transition:opacity .15s,background .12s,color .12s;flex-shrink:0; }
         .sheet-card:hover .card-open-btn { opacity:1; }
         .card-open-btn:hover { background:var(--primary-light);color:var(--primary); }
+        /* ══ 더보기 드롭다운 메뉴 ══ */
+        .more-menu-item { display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;border:none;background:none;cursor:pointer;font-size:13px;font-weight:600;color:var(--text);border-radius:8px;transition:background .12s;font-family:inherit; }
+        .more-menu-item:hover { background:var(--hover-bg); }
+        /* ══ 키보드 포커스 카드 ══ */
+        .sheet-card.kb-focused { outline:2.5px solid var(--primary);outline-offset:2px; }
     </style>
 </head>
 <body>
@@ -1140,6 +1155,11 @@
                 <div class="font-extrabold text-gray-900 leading-tight" style="font-size:17px;letter-spacing:-.5px">스프레드시트 매니저</div>
                 <div class="text-xs font-medium leading-none mt-0.5" style="color:var(--muted)">Team Spreadsheet Manager</div>
             </div>
+            <!-- 사용자 이름 칩 -->
+            <span id="user-chip" onclick="changeUserName()" title="클릭하여 이름 변경" style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:var(--primary-light);color:var(--primary);border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;border:1px solid rgba(49,130,246,.2);transition:background .15s,box-shadow .15s;user-select:none" onmouseover="this.style.background='var(--primary)';this.style.color='white'" onmouseout="this.style.background='var(--primary-light)';this.style.color='var(--primary)'">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                <span id="user-chip-name"></span>
+            </span>
         </div>
         <div class="flex items-center gap-2">
             <button class="btn" id="btn-grid" data-view="grid" title="카드 뷰">
@@ -1164,18 +1184,23 @@
             <button id="btn-template" onclick="openTemplateModal()" title="템플릿으로 시트 추가" class="header-icon-btn">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
             </button>
-            <button onclick="openBookmarkletModal()" title="북마클릿 설치 — 구글 시트 탭에서 바로 추가" class="header-icon-btn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-            </button>
-            <button id="btn-log-toggle" onclick="openLogPanel()" title="활동 로그 보기" class="header-icon-btn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                <span id="log-btn-count" style="display:none;background:var(--primary);color:white;border-radius:6px;padding:1px 5px;font-size:10px;min-width:16px;text-align:center"></span>
-            </button>
-            <!-- GAS 동기화 상태 표시 -->
-            <span id="gas-sync-indicator" title="Google Sheets 동기화 중..." style="display:none;align-items:center;gap:4px;font-size:11px;color:var(--muted);padding:0 4px">
-                <svg style="animation:spin 1s linear infinite" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-                동기화 중
-            </span>
+            <!-- 더보기 드롭다운 -->
+            <div style="position:relative">
+                <button id="btn-more-actions" class="header-icon-btn" title="더보기" onclick="toggleMoreMenu()" aria-haspopup="true" aria-expanded="false">
+                    <span style="font-size:16px;line-height:1;letter-spacing:1px">···</span>
+                </button>
+                <div id="more-menu-dropdown" style="display:none;position:absolute;right:0;top:100%;z-index:200;background:var(--card-bg);border:1px solid var(--border);border-radius:12px;padding:6px;min-width:160px;box-shadow:0 8px 24px rgba(0,0,0,.12);margin-top:4px">
+                    <button class="more-menu-item" onclick="openBookmarkletModal();closeMoreMenu()">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                        북마클릿 설치
+                    </button>
+                    <button class="more-menu-item" onclick="openLogPanel();closeMoreMenu()">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                        활동 로그
+                        <span id="log-btn-count" style="display:none;background:var(--primary);color:white;border-radius:6px;padding:1px 5px;font-size:10px;min-width:16px;text-align:center;margin-left:auto"></span>
+                    </button>
+                </div>
+            </div>
             <button id="btn-dark-toggle" onclick="toggleTheme()" title="다크 모드 토글" class="header-icon-btn">
                 <svg id="dark-icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
                 <svg id="dark-icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
@@ -1319,6 +1344,7 @@
                     <option value="newest">최신순</option>
                     <option value="oldest">오래된순</option>
                     <option value="name">이름순</option>
+                    <option value="manual">수동 정렬</option>
                 </select>
                 <div class="result-count" id="result-count"></div>
                 <button id="btn-select-all" onclick="toggleSelectAll()" title="전체 선택 / 해제" class="btn-select-all-ctrl">전체 선택</button>
@@ -1557,6 +1583,9 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
             </button>
         </div>
+        <div style="margin-bottom:8px">
+            <input id="log-search-input" type="text" placeholder="로그 검색..." oninput="logSearch=this.value;renderLogPanel()" style="width:100%;padding:7px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:12.5px;font-family:inherit;outline:none;background:var(--card-bg);color:var(--text)">
+        </div>
         <div class="log-filter-row" id="log-filter-row">
             <button class="log-filter-btn active" data-log-filter="all">전체</button>
             <button class="log-filter-btn" data-log-filter="add">추가</button>
@@ -1585,6 +1614,43 @@
 </div>
 
 <!-- 일괄 작업 바 -->
+<!-- 온보딩 모달 -->
+<div id="onboarding-modal" class="modal-backdrop" style="z-index:1100">
+  <div class="modal-box" style="max-width:480px;text-align:center">
+    <div style="font-size:40px;margin-bottom:8px">📊</div>
+    <h2 style="font-size:22px;font-weight:800;letter-spacing:-.4px;margin:0 0 10px">스프레드시트 매니저에<br>오신 것을 환영합니다!</h2>
+    <p style="color:var(--muted);font-size:14px;line-height:1.7;margin:0 0 24px">팀의 구글 시트를 폴더로 정리하고,<br>검색·태그·즐겨찾기로 빠르게 찾아보세요.</p>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:28px;text-align:left">
+      <div style="display:flex;align-items:center;gap:12px;background:var(--surface-bg);border-radius:12px;padding:14px 16px">
+        <span style="font-size:20px">📁</span>
+        <div><div style="font-weight:700;font-size:13.5px">폴더로 구조화</div><div style="font-size:12.5px;color:var(--muted)">사이드바에서 폴더를 만들어 시트를 분류하세요</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;background:var(--surface-bg);border-radius:12px;padding:14px 16px">
+        <span style="font-size:20px">🔗</span>
+        <div><div style="font-weight:700;font-size:13.5px">URL로 시트 추가</div><div style="font-size:12.5px;color:var(--muted)">구글 시트 URL을 붙여넣거나 드래그하세요</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;background:var(--surface-bg);border-radius:12px;padding:14px 16px">
+        <span style="font-size:20px">🔍</span>
+        <div><div style="font-weight:700;font-size:13.5px">강력한 검색</div><div style="font-size:12.5px;color:var(--muted)">Ctrl+K로 제목·태그·담당자를 한 번에 검색</div></div>
+      </div>
+    </div>
+    <button onclick="completeOnboarding()" style="width:100%;padding:14px;background:var(--primary);color:white;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 4px 14px rgba(49,130,246,.35)">시작하기</button>
+    <button onclick="skipOnboarding()" style="margin-top:10px;background:none;border:none;color:var(--muted);font-size:13px;cursor:pointer;font-family:inherit;text-decoration:underline">건너뛰기</button>
+  </div>
+</div>
+
+<!-- 일괄 폴더 이동 모달 -->
+<div id="bulk-move-modal" class="modal-backdrop">
+    <div class="modal-box" style="max-width:360px">
+      <div class="modal-header">
+        <div class="modal-title">폴더 선택</div>
+        <button class="modal-close" onclick="document.getElementById('bulk-move-modal').classList.remove('open')">×</button>
+      </div>
+      <p style="font-size:13px;color:var(--muted);margin:0 0 12px">선택한 시트를 이동할 폴더를 선택하세요.</p>
+      <div id="bulk-move-folder-list" style="max-height:300px;overflow-y:auto"></div>
+    </div>
+</div>
+
 <div class="bulk-bar" id="bulk-bar">
     <span id="bulk-count-label">0개 선택됨</span>
     <div class="bulk-sep"></div>
@@ -1593,6 +1659,7 @@
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
         폴더 이동
     </button>
+    <button class="bulk-bar-btn" onclick="bulkMoveToFolder()">📂 폴더 이동</button>
     <button class="bulk-bar-btn danger" id="bulk-delete-btn">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
         삭제
@@ -1666,6 +1733,10 @@
         <p style="font-size:13.5px;color:var(--muted);margin:0">자주 사용하는 시트 구성을 템플릿으로 빠르게 추가하세요.</p>
         <div id="template-grid" class="template-grid"></div>
         <div class="modal-footer">
+            <button class="btn" onclick="saveCurrentAsTemplate()" style="margin-right:auto">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                현재 구조 저장
+            </button>
             <button class="btn-cancel" onclick="closeTemplateModal()">취소</button>
             <button class="btn-add" id="template-apply-btn" disabled onclick="applyTemplate()">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -1734,7 +1805,38 @@ const FOLDER_COLORS = [
     { id:'teal',   name:'청록', fill:'#99f6e4', stroke:'#0d9488', hex:'#0d9488' },
     { id:'gray',   name:'회색', fill:'#e5e7eb', stroke:'#6b7280', hex:'#6b7280' },
 ];
-function folderIcon(colorId) {
+const FOLDER_ICONS = [
+    { id:'default', emoji:null,  name:'기본 폴더' },
+    { id:'open',    emoji:'📂',  name:'열린 폴더' },
+    { id:'card',    emoji:'🗂️',  name:'카드 정리' },
+    { id:'chart',   emoji:'📊',  name:'차트' },
+    { id:'trend',   emoji:'📈',  name:'트렌드' },
+    { id:'brief',   emoji:'💼',  name:'업무' },
+    { id:'clip',    emoji:'📋',  name:'클립보드' },
+    { id:'star',    emoji:'⭐',  name:'스타' },
+    { id:'pin',     emoji:'📌',  name:'핀' },
+    { id:'rocket',  emoji:'🚀',  name:'로켓' },
+    { id:'target',  emoji:'🎯',  name:'목표' },
+    { id:'bulb',    emoji:'💡',  name:'아이디어' },
+    { id:'money',   emoji:'💰',  name:'재무' },
+    { id:'team',    emoji:'👥',  name:'팀' },
+    { id:'lock',    emoji:'🔒',  name:'보안' },
+    { id:'book',    emoji:'📖',  name:'문서' },
+    { id:'mail',    emoji:'📧',  name:'메일' },
+    { id:'setting', emoji:'⚙️',  name:'설정' },
+    { id:'heart',   emoji:'❤️',  name:'즐겨찾기' },
+    { id:'flag',    emoji:'🚩',  name:'플래그' },
+    { id:'calendar',emoji:'📅',  name:'일정' },
+    { id:'bell',    emoji:'🔔',  name:'알림' },
+    { id:'fire',    emoji:'🔥',  name:'핫이슈' },
+    { id:'check',   emoji:'✅',  name:'완료' },
+];
+function folderIcon(colorId, icon) {
+    if (icon && icon !== 'default') {
+        const entry = FOLDER_ICONS.find(i => i.id === icon);
+        const emoji = entry?.emoji || icon;
+        return `<span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;font-size:13px;line-height:1">${emoji}</span>`;
+    }
     const c = FOLDER_COLORS.find(f => f.id === colorId) || FOLDER_COLORS[0];
     return `<svg width="14" height="14" viewBox="0 0 24 24" fill="${c.fill}" stroke="${c.stroke}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
 }
@@ -1836,6 +1938,7 @@ const LOG_KEY = 'sm-log-v1';
 const LOG_MAX = 500;
 let activityLog = [];
 let _logFilter  = 'all';
+let logSearch   = '';
 
 (function initLog() {
     try { const raw = localStorage.getItem(LOG_KEY); if (raw) activityLog = JSON.parse(raw); } catch(e) { activityLog = []; }
@@ -1883,7 +1986,11 @@ function renderLogPanel() {
     const body = document.getElementById('log-panel-body');
     const total = document.getElementById('log-total-count');
     if (!body) return;
-    const filtered = _logFilter === 'all' ? activityLog : activityLog.filter(e => e.category === _logFilter);
+    let filtered = _logFilter === 'all' ? activityLog : activityLog.filter(e => e.category === _logFilter);
+    if (logSearch && logSearch.trim()) {
+        const sq = logSearch.trim().toLowerCase();
+        filtered = filtered.filter(e => (e.action||'').toLowerCase().includes(sq) || (e.detail||'').toLowerCase().includes(sq) || (e.category||'').toLowerCase().includes(sq));
+    }
     if (total) total.textContent = `(${activityLog.length}건)`;
     if (!filtered.length) {
         body.innerHTML = `<div class="log-empty">📋<br>${_logFilter === 'all' ? '아직 기록된 활동이 없습니다' : '해당 카테고리의 로그가 없습니다'}</div>`;
@@ -2044,6 +2151,9 @@ let cardEditingId = null;
 let currentFilter = 'all';
 let currentView   = 'grid';
 let currentSort   = 'pinned';
+let currentUser   = localStorage.getItem('smCurrentUser') || '나';
+let cardPageSize  = 50;
+let cardPage      = 1;
 
 // 새 기능 상태
 let recentIds      = [];         // 최근 열람 (max 5)
@@ -2216,7 +2326,7 @@ function renderTreeNode(node, depth) {
     } else {
         rowInner += `<span class="tree-toggle invis">${IC.chevRight}</span>`;
     }
-    const fIcon = node.type === 'folder' ? folderIcon(node.color || 'yellow') : IC.sheet;
+    const fIcon = node.type === 'folder' ? folderIcon(node.color || 'yellow', node.icon) : IC.sheet;
     rowInner += `<span style="flex-shrink:0;display:flex;align-items:center">${fIcon}</span>`;
     if (isEditing) {
         rowInner += `<span class="tree-rename-wrap"><input class="tree-rename-input" id="tree-rename-input" value="${esc(node.name)}" maxlength="60" data-edit-id="${node.id}"><button class="rename-confirm-btn ok" id="tree-rename-ok" onmousedown="event.preventDefault()" title="확인">${IC.check}</button><button class="rename-confirm-btn no" id="tree-rename-no" onmousedown="event.preventDefault()" title="취소">${IC.x}</button></span>`;
@@ -2340,7 +2450,16 @@ function _doDeleteNode(id, node) {
     showToast(`"${node.name}" 이(가) 삭제되었습니다`, '🗑️', undoFn); renderTree(); applyFilters();
 }
 function toggleExpand(id) { treeData = mapTree(treeData, n => n.id===id ? {...n, expanded:!n.expanded} : n); renderTree(); }
-function selectNode(id) { selectedCards.clear(); updateBulkBar(); selectedId = id; treeEditingId = null; addMode = null; renderTree(); applyFilters(); updateAllRowStyle(); updateBreadcrumb(); if (window.innerWidth < 768) closeSidebar(); }
+function updateManualSortOption() {
+    const opt = document.querySelector('#sort-select option[value="manual"]');
+    if (!opt) return;
+    const node = selectedId !== 'root' ? findNode(selectedId) : null;
+    const enabled = node && node.type === 'folder';
+    opt.disabled = !enabled;
+    opt.title = enabled ? '' : '폴더를 선택하면 사용할 수 있습니다';
+    if (!enabled && currentSort === 'manual') { currentSort = 'pinned'; const sel = document.getElementById('sort-select'); if (sel) sel.value = 'pinned'; }
+}
+function selectNode(id) { selectedCards.clear(); updateBulkBar(); selectedId = id; treeEditingId = null; addMode = null; renderTree(); applyFilters(); updateAllRowStyle(); updateBreadcrumb(); if (window.innerWidth < 768) closeSidebar(); updateManualSortOption(); try { history.replaceState(null,'', id === 'root' ? location.pathname : location.pathname + '?folder=' + encodeURIComponent(id)); } catch(e){} }
 
 // ══════════════════════════════════════
 // 트리 이벤트 위임
@@ -2396,6 +2515,18 @@ function getFolderNameForSheet(sheetId, nodes=treeData) {
 }
 
 function sortData(data) {
+    if (currentSort === 'manual') {
+        const selNode = selectedId !== 'root' ? findNode(selectedId) : null;
+        if (selNode && selNode.type === 'folder') {
+            const orderedIds = collectSheetIds([selNode]);
+            const indexMap = new Map(orderedIds.map((id, i) => [id, i]));
+            return [...data].sort((a, b) => {
+                const ai = indexMap.has(a.id) ? indexMap.get(a.id) : 9999;
+                const bi = indexMap.has(b.id) ? indexMap.get(b.id) : 9999;
+                return ai - bi;
+            });
+        }
+    }
     return [...data].sort((a, b) => {
         if (currentSort === 'pinned' && b.isPinned !== a.isPinned) return b.isPinned - a.isPinned;
         switch (currentSort) {
@@ -2414,6 +2545,16 @@ function sortData(data) {
             default:             return b.updated.localeCompare(a.updated);
         }
     });
+}
+function getParentFolderNode(sheetId, nodes=treeData) {
+    for (const n of nodes) {
+        if (n.type === 'folder') {
+            if ((n.children||[]).some(c => c.type==='sheet' && c.sheetId===sheetId)) return n;
+            const found = getParentFolderNode(sheetId, n.children||[]);
+            if (found) return found;
+        }
+    }
+    return null;
 }
 function renderSheets(data) {
     const container = document.getElementById('sheet-container');
@@ -2490,9 +2631,33 @@ function renderSheets(data) {
         });
     } else {
         // ── 그리드 카드 뷰 (공통 renderCardHtml 사용) ──
-        container.innerHTML = sorted.map(s => renderCardHtml(s, _q)).join('');
+        const pageData = sorted.slice(0, cardPage * cardPageSize);
+        const hasMore = sorted.length > pageData.length;
+        container.innerHTML = pageData.map(s => renderCardHtml(s, _q)).join('')
+            + (hasMore ? `<div id="load-more-wrap" style="grid-column:1/-1;text-align:center;padding:20px 0"><button onclick="loadMoreCards()" style="padding:11px 28px;border:1.5px solid var(--border);border-radius:12px;background:var(--card-bg);font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .2s" onmouseover="this.style.borderColor='var(--primary)';this.style.color='var(--primary)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">더 보기 <strong style="color:var(--primary)">${sorted.length - pageData.length}개</strong> 남음</button></div>` : '');
         wireCardEvents();
     }
+}
+function loadMoreCards() {
+    cardPage++;
+    const rawQuery = document.getElementById('searchInput').value;
+    const tokens = parseAdvancedQuery(rawQuery);
+    const hasAdvanced = tokens.status || tokens.tag !== null || tokens.due || tokens.pinned !== null || (tokens.owner && rawQuery.includes('owner:'));
+    let allowedIds = null;
+    if (selectedId !== 'root') {
+        const node = findNode(selectedId);
+        if (node) { if(node.type==='folder') allowedIds=new Set(collectSheetIds([node])); else if(node.type==='sheet') allowedIds=new Set([node.sheetId]); }
+    }
+    const filtered = sheetsData.filter(sheet => {
+        if (allowedIds && !allowedIds.has(sheet.id)) return false;
+        if (hasAdvanced) return matchesAdvancedQuery(sheet, tokens);
+        const query = rawQuery.toLowerCase().trim();
+        const folderName = (getFolderNameForSheet(sheet.id)||'').toLowerCase();
+        const textMatch = !query || sheet.title.toLowerCase().includes(query)||sheet.desc.toLowerCase().includes(query)||sheet.owner.toLowerCase().includes(query)||sheet.tags.some(t=>t.toLowerCase().includes(query))||folderName.includes(query);
+        const quickMatch = currentFilter==='all'?true:currentFilter==='favorite'?sheet.isFavorite:currentFilter==='archived'?sheet.status==='archived':sheet.owner===currentUser;
+        return textMatch && quickMatch;
+    });
+    renderSheets(filtered);
 }
 function startCardRename(sheetId) { cardEditingId = sheetId; applyFilters(); }
 function commitCardRename() {
@@ -2540,6 +2705,29 @@ function deleteSheetCard(sheetId) {
 // ══════════════════════════════════════
 let _dragSheetId = null;
 
+function reorderSheetInFolder(dragSheetId, targetSheetId, insertAfter) {
+    if (dragSheetId === targetSheetId) return;
+    const dragParent   = getParentFolderNode(dragSheetId);
+    const targetParent = getParentFolderNode(targetSheetId);
+    if (!dragParent || !targetParent || dragParent.id !== targetParent.id) return;
+    const undoFn  = saveUndoSnapshot();
+    const children = [...(dragParent.children || [])];
+    const dragIdx  = children.findIndex(n => n.type==='sheet' && n.sheetId===dragSheetId);
+    if (dragIdx < 0) return;
+    const [removed] = children.splice(dragIdx, 1);
+    const newTgtIdx  = children.findIndex(n => n.type==='sheet' && n.sheetId===targetSheetId);
+    if (newTgtIdx < 0) return;
+    children.splice(insertAfter ? newTgtIdx + 1 : newTgtIdx, 0, removed);
+    treeData = mapTree(treeData, n => n.id === dragParent.id ? {...n, children} : n);
+    currentSort = 'manual';
+    const sortEl = document.getElementById('sort-select');
+    if (sortEl) sortEl.value = 'manual';
+    const sheet = sheetsData.find(s => s.id === dragSheetId);
+    appLog('move', '카드 순서 변경', `"${sheet?.title || dragSheetId}"`, dragSheetId);
+    renderTree(); applyFilters();
+    showToast('순서가 변경되었습니다', '↕️', undoFn);
+}
+
 function moveSheetToFolder(sheetId, targetFolderId, { silent = false, noRender = false } = {}) {
     const sheet = sheetsData.find(s => s.id === sheetId); if (!sheet) return;
     const targetFolder = findNode(targetFolderId); if (!targetFolder) return;
@@ -2561,8 +2749,89 @@ function moveSheetToFolder(sheetId, targetFolderId, { silent = false, noRender =
 }
 
 // ══════════════════════════════════════
+// 일괄 폴더 이동
+// ══════════════════════════════════════
+function bulkMoveToFolder() {
+    if (!selectedCards.size) return;
+    const folders = [];
+    function collectFolders(nodes, depth) {
+        for (const n of nodes) {
+            if (n.type==='folder') { folders.push({id:n.id, name:'  '.repeat(depth)+n.name}); if(n.children) collectFolders(n.children, depth+1); }
+        }
+    }
+    collectFolders(treeData, 0);
+    if (!folders.length) { showToast('폴더가 없습니다. 먼저 폴더를 만들어 주세요.', '⚠️'); return; }
+    const folderListHtml = folders.map(f => `<button onclick="executeBulkMove('${f.id}')" style="display:block;width:100%;text-align:left;padding:10px 14px;border:none;background:none;cursor:pointer;font-size:13.5px;font-family:inherit;border-radius:8px;color:var(--text)" onmouseover="this.style.background='var(--hover-bg)'" onmouseout="this.style.background='none'">${esc(f.name)}</button>`).join('');
+    document.getElementById('bulk-move-folder-list').innerHTML = folderListHtml;
+    document.getElementById('bulk-move-modal').classList.add('open');
+}
+function executeBulkMove(folderId) {
+    const undoFn = saveUndoSnapshot();
+    const ids = [...selectedCards];
+    ids.forEach(id => moveSheetToFolder(id, folderId, { silent: true, noRender: true }));
+    document.getElementById('bulk-move-modal').classList.remove('open');
+    selectedCards.clear(); updateBulkBar();
+    appLog('move', '일괄 폴더 이동', `${ids.length}개 시트 → 폴더`);
+    showToast(`${ids.length}개 시트를 이동했습니다`, '📂', undoFn);
+    renderTree(); applyFilters();
+}
+
+// ══════════════════════════════════════
 // 필터링
 // ══════════════════════════════════════
+// ══════════════════════════════════════
+// 온보딩
+// ══════════════════════════════════════
+function completeOnboarding() {
+    localStorage.setItem('smOnboardingDone','1');
+    document.getElementById('onboarding-modal').classList.remove('open');
+    const name = prompt('담당자 이름을 입력하세요 (내 문서 필터에 사용됩니다)', currentUser || '나');
+    if (name && name.trim()) { currentUser = name.trim(); localStorage.setItem('smCurrentUser', currentUser); updateUserChip(); }
+}
+function skipOnboarding() {
+    localStorage.setItem('smOnboardingDone','1');
+    document.getElementById('onboarding-modal').classList.remove('open');
+}
+
+function toggleMoreMenu() {
+    const dd = document.getElementById('more-menu-dropdown');
+    const btn = document.getElementById('btn-more-actions');
+    if (!dd) return;
+    const isOpen = dd.style.display !== 'none';
+    dd.style.display = isOpen ? 'none' : 'block';
+    if (btn) btn.setAttribute('aria-expanded', String(!isOpen));
+}
+function closeMoreMenu() {
+    const dd = document.getElementById('more-menu-dropdown');
+    const btn = document.getElementById('btn-more-actions');
+    if (dd) dd.style.display = 'none';
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+}
+document.addEventListener('click', e => {
+    const dd = document.getElementById('more-menu-dropdown');
+    if (dd && dd.style.display !== 'none') {
+        if (!e.target.closest('#btn-more-actions') && !e.target.closest('#more-menu-dropdown')) {
+            closeMoreMenu();
+        }
+    }
+});
+
+function updateUserChip() {
+    const el = document.getElementById('user-chip-name');
+    if (el) el.textContent = currentUser;
+}
+function changeUserName() {
+    const name = prompt('담당자 이름을 입력하세요 (내 문서 필터에 사용됩니다)', currentUser);
+    if (name && name.trim()) {
+        currentUser = name.trim();
+        localStorage.setItem('smCurrentUser', currentUser);
+        updateUserChip();
+        applyFilters();
+        showToast(`이름이 "${currentUser}"으로 변경되었습니다`, '👤');
+    }
+}
+updateUserChip();
+
 function applyFilters() {
     const rawQuery = document.getElementById('searchInput').value;
     const tokens = parseAdvancedQuery(rawQuery);
@@ -2579,13 +2848,14 @@ function applyFilters() {
         const query = rawQuery.toLowerCase().trim();
         const folderName = (getFolderNameForSheet(sheet.id)||'').toLowerCase();
         const textMatch = !query || sheet.title.toLowerCase().includes(query)||sheet.desc.toLowerCase().includes(query)||sheet.owner.toLowerCase().includes(query)||sheet.tags.some(t=>t.toLowerCase().includes(query))||folderName.includes(query);
-        const quickMatch = currentFilter==='all'?true:currentFilter==='favorite'?sheet.isFavorite:currentFilter==='archived'?sheet.status==='archived':sheet.owner==='나(PM)';
+        const quickMatch = currentFilter==='all'?true:currentFilter==='favorite'?sheet.isFavorite:currentFilter==='archived'?sheet.status==='archived':sheet.owner===currentUser;
         return textMatch && quickMatch;
     });
 
     const countEl = document.getElementById('result-count');
     if (countEl) countEl.innerHTML = filtered.length>0?`총 <strong>${filtered.length}</strong>개`:'';
 
+    cardPage = 1;
     if (currentView === 'group') {
         updateRecentSection();
         renderGroupView(filtered);
@@ -2594,6 +2864,8 @@ function applyFilters() {
     }
     updateStatsBar();
     updateSelectAllBtn();
+    const dropHint = document.getElementById('url-drop-hint');
+    if (dropHint) dropHint.style.display = sheetsData.length === 0 ? '' : 'none';
     saveStorage();
 }
 
@@ -2736,6 +3008,47 @@ document.getElementById('sheet-container').addEventListener('dragend', e => {
     const card = e.target.closest('.sheet-card');
     if (card) card.classList.remove('dragging');
     _dragSheetId = null;
+    _clearCardDropIndicators();
+});
+
+// ── 카드↔카드 순서 변경 ──
+let _cardDropTarget = null;
+function _clearCardDropIndicators() {
+    document.querySelectorAll('.sheet-card.card-drop-before,.sheet-card.card-drop-after')
+        .forEach(c => c.classList.remove('card-drop-before','card-drop-after'));
+}
+document.getElementById('sheet-container').addEventListener('dragover', e => {
+    if (_dragSheetId === null) return;
+    const targetCard = e.target.closest('.sheet-card');
+    if (!targetCard) return;
+    const targetId = Number(targetCard.dataset.id);
+    if (targetId === _dragSheetId) return;
+    const dragParent   = getParentFolderNode(_dragSheetId);
+    const targetParent = getParentFolderNode(targetId);
+    if (!dragParent || !targetParent || dragParent.id !== targetParent.id) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const rect  = targetCard.getBoundingClientRect();
+    const after = e.clientY > rect.top + rect.height / 2;
+    _clearCardDropIndicators();
+    targetCard.classList.add(after ? 'card-drop-after' : 'card-drop-before');
+    _cardDropTarget = { sheetId: targetId, after };
+});
+document.getElementById('sheet-container').addEventListener('dragleave', e => {
+    if (!e.relatedTarget || !document.getElementById('sheet-container').contains(e.relatedTarget)) {
+        _clearCardDropIndicators();
+        _cardDropTarget = null;
+    }
+});
+document.getElementById('sheet-container').addEventListener('drop', e => {
+    _clearCardDropIndicators();
+    if (!_cardDropTarget || _dragSheetId === null) return;
+    const targetCard = e.target.closest('.sheet-card');
+    if (!targetCard) return;
+    e.preventDefault();
+    e.stopPropagation();
+    reorderSheetInFolder(_dragSheetId, _cardDropTarget.sheetId, _cardDropTarget.after);
+    _cardDropTarget = null;
 });
 
 // 사이드바 폴더 dragover / dragleave / drop
@@ -3104,6 +3417,9 @@ document.getElementById('url-input').addEventListener('input', handleUrlInput);
 document.getElementById('modal-add-btn').addEventListener('click',()=>{
     const title=document.getElementById('title-input').value.trim()||'새 스프레드시트';
     if (!parsedSheetId) return;
+    // 중복 URL 체크
+    const existingSheet = sheetsData.find(s => s.link && s.link !== '#' && s.link === parsedSheetUrl);
+    if (existingSheet) { showToast('이미 등록된 시트입니다: ' + existingSheet.title, '⚠️'); return; }
     const newSheetId=nextId++;
     sheetsData.unshift({id:newSheetId,title,desc:`시트 ID: ${parsedSheetId}`,owner:'나(PM)',updated:today(),tags:[],isPinned:false,isFavorite:false,access:'public',status:'active',link:parsedSheetUrl});
     const targetFolderId = document.getElementById('add-folder-select').value;
@@ -3193,6 +3509,33 @@ document.addEventListener('keydown', e => {
                 if (s) { s.isFavorite = !s.isFavorite; appLog('fav', s.isFavorite?'즐겨찾기 추가 (F키)':'즐겨찾기 해제 (F키)', `"${s.title}"`, s.id); applyFilters(); showToast(s.isFavorite?`"${s.title}" 즐겨찾기 추가`:`"${s.title}" 즐겨찾기 해제`, s.isFavorite?'⭐':'☆'); }
             }
         }
+        // 카드 키보드 내비게이션
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            const allCards = Array.from(document.querySelectorAll('.sheet-card[data-id]'));
+            if (!allCards.length) return;
+            const curIdx = _focusedCardId !== null ? allCards.findIndex(c=>Number(c.dataset.id)===_focusedCardId) : -1;
+            const nextIdx = curIdx < allCards.length - 1 ? curIdx + 1 : 0;
+            setFocusedCard(Number(allCards[nextIdx].dataset.id));
+        }
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            const allCards = Array.from(document.querySelectorAll('.sheet-card[data-id]'));
+            if (!allCards.length) return;
+            const curIdx = _focusedCardId !== null ? allCards.findIndex(c=>Number(c.dataset.id)===_focusedCardId) : allCards.length;
+            const prevIdx = curIdx > 0 ? curIdx - 1 : allCards.length - 1;
+            setFocusedCard(Number(allCards[prevIdx].dataset.id));
+        }
+        if (e.key === 'Enter' && _focusedCardId !== null) {
+            const sheet = sheetsData.find(s=>s.id===_focusedCardId);
+            if (sheet && sheet.link && sheet.link !== '#') { window.open(sheet.link, '_blank', 'noopener'); }
+        }
+        if ((e.key === 'e' || e.key === 'E') && _focusedCardId !== null) {
+            e.preventDefault(); openEditModal(_focusedCardId);
+        }
+        if ((e.key === 'Delete' || e.key === 'Backspace') && _focusedCardId !== null) {
+            e.preventDefault(); deleteSheetCard(_focusedCardId);
+        }
     }
 });
 
@@ -3228,6 +3571,8 @@ function selectAllRoot() {
     selectedId = 'root'; treeEditingId = null; addMode = null;
     updateAllRowStyle(); updateBreadcrumb(); renderTree(); applyFilters();
     if (window.innerWidth < 768) closeSidebar();
+    updateManualSortOption();
+    try { history.replaceState(null,'', location.pathname); } catch(e){}
 }
 function updateAllRowStyle() {
     const row = document.getElementById('tree-all-row'); if (!row) return;
@@ -3408,7 +3753,7 @@ document.getElementById('bulk-folder-btn').addEventListener('click', e => {
     function addOpts(nodes, depth) {
         for (const n of nodes) {
             if (n.type === 'folder') {
-                opts += `<div data-bulk-folder-id="${n.id}" class="bulk-folder-opt" style="padding-left:${14+depth*14}px">${folderIcon(n.color||'yellow')}${esc(n.name)}</div>`;
+                opts += `<div data-bulk-folder-id="${n.id}" class="bulk-folder-opt" style="padding-left:${14+depth*14}px">${folderIcon(n.color||'yellow', n.icon)}${esc(n.name)}</div>`;
                 if (n.children) addOpts(n.children, depth+1);
             }
         }
@@ -3448,19 +3793,34 @@ function openColorPicker(folderId, btnEl) {
     const popup = document.getElementById('color-picker-popup');
     const node = findNode(folderId);
     const curColor = node?.color || 'yellow';
-    popup.innerHTML = FOLDER_COLORS.map(c =>
-        `<div class="color-dot${c.id===curColor?' active':''}" style="background:${c.fill};border-color:${c.stroke}" data-color-id="${c.id}" data-color-folder-target="${folderId}" role="radio" aria-checked="${c.id===curColor}" aria-label="${c.name} 색상" title="${c.name}"></div>`
+    const curIcon  = node?.icon  || 'default';
+    const colorDots = FOLDER_COLORS.map(c =>
+        `<div class="color-dot${c.id===curColor?' active':''}" style="background:${c.fill};border:2.5px solid ${c.id===curColor?'var(--text)':'transparent'}" data-color-id="${c.id}" data-color-folder-target="${folderId}" title="${c.name}"></div>`
     ).join('');
+    const iconDots = FOLDER_ICONS.map(i => {
+        const isActive = i.id === curIcon;
+        const innerHtml = i.emoji
+            ? i.emoji
+            : `<svg width="14" height="14" viewBox="0 0 24 24" fill="${FOLDER_COLORS.find(fc=>fc.id===curColor)?.fill||'#fde68a'}" stroke="${FOLDER_COLORS.find(fc=>fc.id===curColor)?.stroke||'#f59e0b'}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>`;
+        return `<div class="icon-dot${isActive?' active':''}" data-icon-id="${i.id}" data-icon-folder-target="${folderId}" title="${i.name}">${innerHtml}</div>`;
+    }).join('');
+    popup.innerHTML = `
+        <span class="picker-section-label">색상</span>
+        <div class="color-row">${colorDots}</div>
+        <hr class="picker-divider">
+        <span class="picker-section-label">아이콘</span>
+        <div class="icon-picker-grid">${iconDots}</div>`;
     const rect = btnEl.getBoundingClientRect();
     popup.style.top  = (rect.bottom + 6) + 'px';
-    popup.style.left = Math.min(rect.left, window.innerWidth - 130) + 'px';
-    popup.style.display = 'flex';
+    popup.style.left = Math.min(rect.left, window.innerWidth - 216) + 'px';
+    popup.style.display = 'block';
 }
-// 컬러 픽커 이벤트 위임
+// 컬러/아이콘 픽커 이벤트 위임
 document.getElementById('color-picker-popup').addEventListener('click', e => {
-    const dot = e.target.closest('[data-color-id]');
-    if (!dot) return;
-    setFolderColor(dot.dataset.colorFolderTarget, dot.dataset.colorId);
+    const colorDot = e.target.closest('[data-color-id]');
+    if (colorDot) { setFolderColor(colorDot.dataset.colorFolderTarget, colorDot.dataset.colorId); return; }
+    const iconDot = e.target.closest('[data-icon-id]');
+    if (iconDot) { setFolderIcon(iconDot.dataset.iconFolderTarget, iconDot.dataset.iconId); return; }
 });
 function closeColorPicker() {
     _colorPickerFolderId = null;
@@ -3471,7 +3831,22 @@ function setFolderColor(folderId, colorId) {
     const node = findNode(folderId);
     treeData = mapTree(treeData, n => n.id === folderId ? {...n, color: colorId} : n);
     appLog('edit', '폴더 색상 변경', `"${node?.name || folderId}" → ${colorId}`);
-    closeColorPicker(); renderTree(); applyFilters();
+    // 팝업 색상 점 active 갱신 (닫지 않고 바로 반영)
+    document.querySelectorAll('#color-picker-popup [data-color-id]').forEach(d => {
+        d.classList.toggle('active', d.dataset.colorId === colorId);
+        d.style.borderColor = d.dataset.colorId === colorId ? 'var(--text)' : 'transparent';
+    });
+    renderTree(); saveStorage();
+}
+function setFolderIcon(folderId, iconId) {
+    const node = findNode(folderId);
+    treeData = mapTree(treeData, n => n.id === folderId ? {...n, icon: iconId} : n);
+    appLog('edit', '폴더 아이콘 변경', `"${node?.name || folderId}" → ${iconId}`);
+    // 팝업 아이콘 점 active 갱신
+    document.querySelectorAll('#color-picker-popup [data-icon-id]').forEach(d => {
+        d.classList.toggle('active', d.dataset.iconId === iconId);
+    });
+    closeColorPicker(); renderTree(); saveStorage();
 }
 
 // ══════════════════════════════════════
@@ -3666,6 +4041,18 @@ function _renderAll() {
         }
     }
     _isInitializing = false; // 초기화 완료 — 이후부터 saveStorage() 정상 작동
+
+    // 온보딩 첫 방문 체크
+    if (!localStorage.getItem('smOnboardingDone')) {
+        setTimeout(() => { const om = document.getElementById('onboarding-modal'); if (om) om.classList.add('open'); }, 500);
+    }
+
+    // URL 라우팅: ?folder= 파라미터로 폴더 선택
+    const urlFolder = new URLSearchParams(location.search).get('folder');
+    if (urlFolder && findNode(urlFolder)) { setTimeout(() => selectNode(urlFolder), 0); }
+
+    // 마감일 브라우저 알림 체크
+    checkDueDateNotifications();
 })();
 
 // ══════════════════════════════════════
@@ -3807,7 +4194,7 @@ function renderGroupView(data) {
         function findGroup(nodes, depth=0) {
             for (const n of nodes) {
                 if (n.type==='folder' && (n.children||[]).some(c=>c.type==='sheet'&&c.sheetId===sheet.id)) {
-                    if (!groups.has(n.id)) groups.set(n.id,{name:n.name,color:n.color||'yellow',sheets:[]});
+                    if (!groups.has(n.id)) groups.set(n.id,{name:n.name,color:n.color||'yellow',icon:n.icon||null,sheets:[]});
                     groups.get(n.id).sheets.push(sheet);
                     placed=true; return;
                 }
@@ -3823,7 +4210,7 @@ function renderGroupView(data) {
         const cards = sortData(g.sheets).map(s => renderCardHtml(s, _q)).join('');
         html += `<div class="group-section${collapsed?' collapsed':''}" data-group-id="${fid}">
             <div class="group-header" onclick="toggleGroupSection('${fid}')">
-                <span class="group-header-icon">${folderIcon(g.color)}</span>
+                <span class="group-header-icon">${folderIcon(g.color, g.icon)}</span>
                 <span class="group-header-title">${esc(g.name)}</span>
                 <span class="group-header-count">${g.sheets.length}</span>
                 <span class="group-header-chev">${IC.chevDown}</span>
@@ -3864,7 +4251,8 @@ function renderCardHtml(sheet, _q='') {
     const tagsHtml = sheet.tags.map(t=>`<span class="tag" data-tag-filter="${esc(t)}" style="cursor:pointer" title="${esc(t)} 태그로 필터">#${highlight(t, _q)}</span>`).join('');
     const folderName = selectedId === 'root' ? getFolderNameForSheet(sheet.id) : null;
     const folderColor = selectedId === 'root' ? getFolderColorHex(sheet.id) : null;
-    const folderBadge = folderName && currentView !== 'group' ? `<span style="display:inline-flex;align-items:center;gap:4px;background:var(--hover-bg);color:var(--muted);padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;${folderColor?`border-left:3px solid ${folderColor}`:''}">${folderIcon((treeData.find(n=>n.name===folderName)||{}).color||'yellow')}${esc(folderName)}</span>` : '';
+    const _folderNode = folderName ? (function find(nodes){for(const n of nodes){if(n.type==='folder'&&n.name===folderName)return n;if(n.children){const f=find(n.children);if(f)return f;}}return null;})(treeData) : null;
+    const folderBadge = folderName && currentView !== 'group' ? `<span style="display:inline-flex;align-items:center;gap:4px;background:var(--hover-bg);color:var(--muted);padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;${folderColor?`border-left:3px solid ${folderColor}`:''}">${folderIcon(_folderNode?.color||'yellow', _folderNode?.icon)}${esc(folderName)}</span>` : '';
     const favIcon  = sheet.isFavorite ? '⭐' : '☆';
     const pinIcon  = sheet.isPinned ? '<span class="pin-icon">📌</span>' : '';
     const hasLink  = sheet.link && sheet.link !== '#';
@@ -4238,12 +4626,22 @@ document.getElementById('comment-overlay').addEventListener('click', closeCommen
 function openTemplateModal() {
     _selectedTemplate = null;
     const grid = document.getElementById('template-grid');
-    grid.innerHTML = TEMPLATES.map(t=>`
+    const customTemplates = JSON.parse(localStorage.getItem('smCustomTemplates') || '[]');
+    const builtinHtml = TEMPLATES.map(t=>`
         <div class="tpl-card" data-tpl-id="${t.id}">
             <div class="tpl-icon">${t.icon}</div>
             <div class="tpl-name">${esc(t.name)}</div>
             <div class="tpl-desc">${esc(t.desc)}</div>
         </div>`).join('');
+    const customHtml = customTemplates.length ? `<div style="grid-column:1/-1;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-top:4px;padding-top:10px;border-top:1px solid var(--border)">사용자 정의 템플릿</div>`
+        + customTemplates.map(t=>`
+        <div class="tpl-card" data-tpl-id="${t.id}" style="position:relative">
+            <div class="tpl-icon">📌</div>
+            <div class="tpl-name">${esc(t.name)}</div>
+            <div class="tpl-desc">사용자 정의</div>
+            <button onclick="event.stopPropagation();deleteCustomTemplate('${t.id}')" title="삭제" style="position:absolute;top:6px;right:6px;background:none;border:none;cursor:pointer;color:var(--muted);padding:2px;border-radius:4px;font-size:12px" onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--muted)'">×</button>
+        </div>`).join('') : '';
+    grid.innerHTML = builtinHtml + customHtml;
     grid.querySelectorAll('.tpl-card').forEach(card=>{
         card.addEventListener('click', ()=>{
             grid.querySelectorAll('.tpl-card').forEach(c=>c.classList.remove('selected'));
@@ -4255,13 +4653,38 @@ function openTemplateModal() {
     const modal = document.getElementById('template-modal');
     modal.classList.add('open'); document.body.style.overflow='hidden';
 }
+function saveCurrentAsTemplate() {
+    const name = prompt('템플릿 이름을 입력하세요');
+    if (!name || !name.trim()) return;
+    const saved = JSON.parse(localStorage.getItem('smCustomTemplates') || '[]');
+    saved.push({ id: 'custom-' + Date.now(), name: name.trim(), tree: JSON.parse(JSON.stringify(treeData)), isCustom: true });
+    localStorage.setItem('smCustomTemplates', JSON.stringify(saved));
+    openTemplateModal();
+    showToast(`"${name.trim()}" 템플릿이 저장되었습니다`, '✅');
+}
+function deleteCustomTemplate(id) {
+    const saved = JSON.parse(localStorage.getItem('smCustomTemplates') || '[]').filter(t => t.id !== id);
+    localStorage.setItem('smCustomTemplates', JSON.stringify(saved));
+    openTemplateModal();
+}
 function closeTemplateModal() {
     document.getElementById('template-modal').classList.remove('open');
     document.body.style.overflow='';
 }
 function applyTemplate() {
-    const tpl = TEMPLATES.find(t=>t.id===_selectedTemplate);
+    // 빌트인 + 커스텀 템플릿에서 찾기
+    const customTemplates = JSON.parse(localStorage.getItem('smCustomTemplates') || '[]');
+    let tpl = TEMPLATES.find(t=>t.id===_selectedTemplate) || customTemplates.find(t=>t.id===_selectedTemplate);
     if (!tpl) return;
+    // 커스텀 템플릿은 트리 구조를 적용
+    if (tpl.isCustom && tpl.tree) {
+        const undoFn = saveUndoSnapshot();
+        treeData = JSON.parse(JSON.stringify(tpl.tree));
+        appLog('add', '커스텀 템플릿 적용', `"${tpl.name}"`);
+        closeTemplateModal(); renderTree(); applyFilters();
+        showToast(`"${tpl.name}" 템플릿을 적용했습니다`, '📌', undoFn);
+        return;
+    }
     const undoFn = saveUndoSnapshot();
     const newId = nextId++;
     const newSheet = { id:newId, title:`[${tpl.name}] 새 시트`, desc:tpl.desc, owner:'나(PM)',
@@ -4295,6 +4718,8 @@ function closeAutomationModal() {
 }
 document.getElementById('automation-modal').addEventListener('click', e=>{ if(e.target===document.getElementById('automation-modal')) closeAutomationModal(); });
 document.getElementById('automation-modal').addEventListener('keydown', e=>{ if(e.key==='Escape') closeAutomationModal(); });
+document.getElementById('bulk-move-modal').addEventListener('click', e=>{ if(e.target===document.getElementById('bulk-move-modal')) document.getElementById('bulk-move-modal').classList.remove('open'); });
+document.getElementById('bulk-move-modal').addEventListener('keydown', e=>{ if(e.key==='Escape') document.getElementById('bulk-move-modal').classList.remove('open'); });
 
 function renderAutomationRules() {
     const list = document.getElementById('automation-rules-list');
@@ -4754,7 +5179,107 @@ function quickAddByUrl(url) {
     document.getElementById('sheet-container').addEventListener('mousedown', () => { clearTimeout(_tipTimeout); tip.classList.remove('show'); });
     document.addEventListener('scroll', () => { clearTimeout(_tipTimeout); tip.classList.remove('show'); }, { passive: true });
 })();
+
+// ══════════════════════════════════════
+// 카드 호버 상세정보 팝업 (800ms 딜레이)
+// ══════════════════════════════════════
+(function initCardHoverPopup() {
+    let _hoverPopupTimer = null;
+    document.getElementById('sheet-container').addEventListener('mouseover', e => {
+        const card = e.target.closest('.sheet-card[data-id]');
+        if (!card) return;
+        const id = Number(card.dataset.id);
+        clearTimeout(_hoverPopupTimer);
+        _hoverPopupTimer = setTimeout(() => {
+            const sheet = sheetsData.find(s=>s.id===id);
+            if (!sheet) return;
+            const popup = document.getElementById('card-hover-popup');
+            if (!popup) return;
+            const folderName = getFolderNameForSheet(sheet.id);
+            const st = STATUS_CONFIG[sheet.status] || STATUS_CONFIG.active;
+            popup.innerHTML = `
+                <div style="font-weight:700;font-size:14px;margin-bottom:8px;color:var(--text)">${esc(sheet.title)}</div>
+                ${folderName ? `<div style="font-size:11.5px;color:var(--muted);margin-bottom:6px">📁 ${esc(folderName)}</div>` : ''}
+                ${sheet.desc ? `<div style="font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:8px;border-bottom:1px solid var(--border);padding-bottom:8px">${esc(sheet.desc)}</div>` : ''}
+                <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px">
+                  <span class="badge ${sheet.access==='public'?'public':'restricted'}" style="font-size:11px">${sheet.access==='public'?'팀 공개':'제한됨'}</span>
+                  <span class="badge ${st.cls}" style="font-size:11px">${st.label}</span>
+                  ${sheet.isPinned ? '<span style="font-size:11px">📌 고정</span>' : ''}
+                  ${sheet.isFavorite ? '<span style="font-size:11px">⭐ 즐겨찾기</span>' : ''}
+                </div>
+                ${sheet.tags&&sheet.tags.length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px">${sheet.tags.map(t=>`<span class="tag" style="font-size:11px">#${esc(t)}</span>`).join('')}</div>` : ''}
+                <div style="font-size:11.5px;color:var(--muted)">담당자: <strong style="color:var(--text)">${esc(sheet.owner)}</strong></div>
+                ${sheet.dueDate ? `<div style="font-size:11.5px;color:var(--muted);margin-top:3px">마감일: <strong style="color:var(--text)">${esc(sheet.dueDate)}</strong></div>` : ''}
+                <div style="font-size:11.5px;color:var(--muted);margin-top:3px">업데이트: ${esc(relativeDate(sheet.updated))}</div>
+            `;
+            const rect = card.getBoundingClientRect();
+            const pw = 300, ph = 200;
+            let left = rect.right + 8;
+            let top = rect.top;
+            if (left + pw > window.innerWidth - 12) left = rect.left - pw - 8;
+            if (top + ph > window.innerHeight - 12) top = window.innerHeight - ph - 12;
+            popup.style.left = left + 'px';
+            popup.style.top = Math.max(8, top) + 'px';
+            popup.style.opacity = '1';
+        }, 800);
+    });
+    document.getElementById('sheet-container').addEventListener('mouseout', e => {
+        const card = e.target.closest('.sheet-card[data-id]');
+        if (!card) return;
+        clearTimeout(_hoverPopupTimer);
+        const popup = document.getElementById('card-hover-popup');
+        if (popup) popup.style.opacity = '0';
+    });
+    document.getElementById('sheet-container').addEventListener('mousedown', () => {
+        clearTimeout(_hoverPopupTimer);
+        const popup = document.getElementById('card-hover-popup');
+        if (popup) popup.style.opacity = '0';
+    });
+})();
+
+// ══════════════════════════════════════
+// 브라우저 알림 — 마감일 D-3
+// ══════════════════════════════════════
+function checkDueDateNotifications() {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const lastKey = 'smLastNotif';
+    const todayStr = today.toISOString().slice(0,10);
+    if (localStorage.getItem(lastKey) === todayStr) return;
+    const upcoming = sheetsData.filter(s => {
+        if (!s.dueDate || s.status === 'archived') return false;
+        const d = new Date(s.dueDate); d.setHours(0,0,0,0);
+        const diff = Math.floor((d - today) / 86400000);
+        return diff >= 0 && diff <= 3;
+    });
+    if (!upcoming.length) return;
+    const doNotify = () => {
+        localStorage.setItem(lastKey, todayStr);
+        upcoming.forEach(s => {
+            const d = new Date(s.dueDate); d.setHours(0,0,0,0);
+            const diff = Math.floor((d - today) / 86400000);
+            const msg = diff === 0 ? '오늘 마감입니다!' : `마감일이 ${diff}일 남았습니다`;
+            new Notification(`📊 ${s.title}`, { body: msg, icon: '/favicon.ico' });
+        });
+    };
+    if (Notification.permission === 'granted') doNotify();
+    else if (Notification.permission !== 'denied') {
+        Notification.requestPermission().then(p => { if (p === 'granted') doNotify(); });
+    }
+}
+
+// ══════════════════════════════════════
+// 키보드 내비게이션 — 카드 포커스
+// ══════════════════════════════════════
+let _focusedCardId = null;
+function setFocusedCard(id) {
+    document.querySelectorAll('.sheet-card.kb-focused').forEach(c=>c.classList.remove('kb-focused'));
+    _focusedCardId = id;
+    if (id === null) return;
+    const card = document.querySelector(`.sheet-card[data-id="${id}"]`);
+    if (card) { card.classList.add('kb-focused'); card.scrollIntoView({block:'nearest',behavior:'smooth'}); }
+}
 </script>
 <div id="card-hover-tooltip" role="tooltip" aria-hidden="true"></div>
+<div id="card-hover-popup" style="position:fixed;z-index:500;pointer-events:none;opacity:0;transition:opacity .15s;background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:16px 18px;min-width:240px;max-width:300px;box-shadow:0 12px 40px rgba(0,0,0,.14);font-size:13px"></div>
 </body>
 </html>
