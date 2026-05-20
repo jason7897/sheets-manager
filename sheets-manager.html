@@ -401,6 +401,17 @@
         .sheet-card:hover .card-menu-btn { opacity: 1; }
         .card-menu-btn:hover { background: var(--hover-bg); color: var(--text); }
 
+        /* ── 카드 폴더 이동 버튼 ── */
+        .card-move-btn {
+            background: none; border: none; cursor: pointer;
+            color: #d1d6db; padding: 3px 5px; border-radius: 6px;
+            display: flex; align-items: center;
+            opacity: 0; transition: opacity .15s, background .12s, color .12s;
+            flex-shrink: 0;
+        }
+        .sheet-card:hover .card-move-btn { opacity: 1; }
+        .card-move-btn:hover { background: #ebf3fe; color: var(--primary); }
+
         /* ── 카드 삭제 버튼 ── */
         .card-trash-btn {
             background: none; border: none; cursor: pointer;
@@ -819,7 +830,7 @@
 
         /* ══ 모바일 개선 ══ */
         @media (max-width: 640px) {
-            .tree-icon-btn, .fav-btn, .lt-fav-btn, .card-trash-btn, .card-menu-btn, .card-pencil-btn {
+            .tree-icon-btn, .fav-btn, .lt-fav-btn, .card-trash-btn, .card-move-btn, .card-menu-btn, .card-pencil-btn {
                 min-width: 36px;
                 min-height: 36px;
                 display: inline-flex;
@@ -1644,7 +1655,7 @@
     <div class="modal-box" style="max-width:360px">
       <div class="modal-header">
         <div class="modal-title">폴더 선택</div>
-        <button class="modal-close" onclick="document.getElementById('bulk-move-modal').classList.remove('open')">×</button>
+        <button class="modal-close" onclick="document.getElementById('bulk-move-modal').classList.remove('open');_singleMoveSheetId=null;this.closest('.modal-box').querySelector('.modal-title').textContent='폴더 선택';this.closest('.modal-box').querySelector('p').textContent='선택한 시트를 이동할 폴더를 선택하세요.'">×</button>
       </div>
       <p style="font-size:13px;color:var(--muted);margin:0 0 12px">선택한 시트를 이동할 폴더를 선택하세요.</p>
       <div id="bulk-move-folder-list" style="max-height:300px;overflow-y:auto"></div>
@@ -1792,6 +1803,7 @@ const IC = {
     palette:   `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>`,
     grip:      `<svg width="8" height="12" viewBox="0 0 8 12" fill="currentColor"><circle cx="2" cy="2" r="1.1"/><circle cx="6" cy="2" r="1.1"/><circle cx="2" cy="6" r="1.1"/><circle cx="6" cy="6" r="1.1"/><circle cx="2" cy="10" r="1.1"/><circle cx="6" cy="10" r="1.1"/></svg>`,
     recent:    `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+    moveFolder:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><path d="M9 14h6"/><path d="m12 11 3 3-3 3"/></svg>`,
 };
 
 // ── 폴더 컬러 팔레트 ──
@@ -1874,9 +1886,11 @@ let _gasSaveTimer = null;
 let _isInitializing = true; // 초기화 중엔 GAS 저장 차단
 
 function saveStorage() {
-    if (_isInitializing) return; // 페이지 로드 중 샘플 데이터가 GAS를 덮어쓰는 것 방지
+    if (_isInitializing || _isSyncingFromRemote) return; // 초기화 중 또는 원격 수신 중엔 스킵
     const searchQuery = document.getElementById('searchInput')?.value || '';
-    const payload = { sheetsData, treeData, nextId, currentFilter, currentView, currentSort, searchQuery, recentIds, updatedAt: Date.now() };
+    const ts = Date.now();
+    const payload = { sheetsData, treeData, nextId, currentFilter, currentView, currentSort, searchQuery, recentIds, updatedAt: ts };
+    _lastKnownGasTs = ts; // 내가 저장한 데이터는 폴링에서 다시 적용 안 되도록
     // 1) localStorage 즉시 저장 (빠른 캐시)
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(payload)); } catch(e) {
         console.warn('localStorage 저장 실패:', e);
@@ -2471,7 +2485,15 @@ document.getElementById('tree-root').addEventListener('click', e => {
     if (t.closest('#tree-add-ok'))    { commitAdd(); return; }
     if (t.closest('#tree-add-no'))    { cancelAdd(); return; }
     const btn = t.closest('[data-toggle-id],[data-select-id],[data-rename-id],[data-delete-id],[data-add-folder-id],[data-add-sheet-id],[data-color-folder-id],[data-move-up-id],[data-move-down-id]');
-    if (!btn) return;
+    if (!btn) {
+        // 폴더 아이콘·여백 등 행의 빈 공간 클릭 시 해당 노드 선택
+        // (button, input, a 제외 — 전용 버튼은 각자 처리)
+        if (!t.closest('button, input, a')) {
+            const row = t.closest('.tree-row[data-drag-id]');
+            if (row) selectNode(row.dataset.dragId);
+        }
+        return;
+    }
     if (btn.dataset.moveUpId)      { moveTreeNodeUpDown(btn.dataset.moveUpId, 'up');   return; }
     if (btn.dataset.moveDownId)    { moveTreeNodeUpDown(btn.dataset.moveDownId, 'down'); return; }
     if (btn.dataset.toggleId)      { toggleExpand(btn.dataset.toggleId); return; }
@@ -2749,6 +2771,35 @@ function moveSheetToFolder(sheetId, targetFolderId, { silent = false, noRender =
 }
 
 // ══════════════════════════════════════
+// 단일 카드 폴더 이동
+// ══════════════════════════════════════
+let _singleMoveSheetId = null;
+function openSingleMoveModal(sheetId) {
+    _singleMoveSheetId = sheetId;
+    const folders = [];
+    function collectFolders(nodes, depth) {
+        for (const n of nodes) {
+            if (n.type==='folder') { folders.push({id:n.id, name:'  '.repeat(depth)+n.name}); if(n.children) collectFolders(n.children, depth+1); }
+        }
+    }
+    collectFolders(treeData, 0);
+    if (!folders.length) { showToast('폴더가 없습니다. 먼저 폴더를 만들어 주세요.', '⚠️'); return; }
+    const sheet = sheetsData.find(s => s.id === sheetId);
+    const modal = document.getElementById('bulk-move-modal');
+    modal.querySelector('.modal-title').textContent = sheet ? `"${sheet.title}" 이동` : '폴더로 이동';
+    modal.querySelector('p').textContent = '이동할 폴더를 선택하세요.';
+    const folderListHtml = folders.map(f => `<button onclick="executeSingleMove('${f.id}')" style="display:block;width:100%;text-align:left;padding:10px 14px;border:none;background:none;cursor:pointer;font-size:13.5px;font-family:inherit;border-radius:8px;color:var(--text)" onmouseover="this.style.background='var(--hover-bg)'" onmouseout="this.style.background='none'">${esc(f.name)}</button>`).join('');
+    document.getElementById('bulk-move-folder-list').innerHTML = folderListHtml;
+    modal.classList.add('open');
+}
+function executeSingleMove(folderId) {
+    if (_singleMoveSheetId == null) return;
+    const undoFn = saveUndoSnapshot();
+    moveSheetToFolder(_singleMoveSheetId, folderId);
+    document.getElementById('bulk-move-modal').classList.remove('open');
+    _singleMoveSheetId = null;
+}
+
 // 일괄 폴더 이동
 // ══════════════════════════════════════
 function bulkMoveToFolder() {
@@ -2912,6 +2963,8 @@ document.getElementById('sheet-container').addEventListener('click', e => {
     if (pencilBtn) { startCardRename(Number(pencilBtn.dataset.cardRenameId)); return; }
     const menuBtn = e.target.closest('[data-card-edit-id]');
     if (menuBtn) { openEditModal(Number(menuBtn.dataset.cardEditId)); return; }
+    const moveBtn = e.target.closest('[data-card-move-id]');
+    if (moveBtn) { openSingleMoveModal(Number(moveBtn.dataset.cardMoveId)); return; }
     const trashBtn = e.target.closest('[data-card-trash-id]');
     if (trashBtn) { deleteSheetCard(Number(trashBtn.dataset.cardTrashId)); return; }
     const tagEl = e.target.closest('[data-tag-filter]');
@@ -4031,6 +4084,7 @@ function _renderAll() {
             // GAS에 데이터가 있으면 무조건 GAS가 정답
             _applyStoredData(remote); _renderAll();
             try { localStorage.setItem(STORAGE_KEY, JSON.stringify(remote)); } catch(e) {}
+            _lastKnownGasTs = remote.updatedAt || 0; // 폴링 기준점 초기화
             console.log('[SM] GAS 데이터 적용 완료 (' + (remote.sheetsData||[]).length + '개)');
         } else if (local) {
             // GAS가 비어 있을 때만 로컬 데이터를 GAS에 최초 업로드
@@ -4276,7 +4330,7 @@ function renderCardHtml(sheet, _q='') {
     const accentStyle = accentColor ? `border-left:4px solid ${accentColor};padding-left:22px;` : '';
     return `<div class="sheet-card${isSelected?' selected':''}" draggable="true" data-id="${sheet.id}" data-tooltip-id="${sheet.id}" style="${accentStyle}">
         <div class="card-checkbox-wrap"><input type="checkbox" class="card-checkbox" data-card-select-id="${sheet.id}" ${isSelected?'checked':''}></div>
-        <div class="card-body"><div class="card-header"><div class="badges"><span class="badge ${accessClass}">${esc(accessLabel)}</span>${statusBadge}${recentBadge}</div><div style="display:flex;align-items:center;gap:4px">${pinIcon}<button class="fav-btn" data-id="${sheet.id}" title="즐겨찾기 토글 (F)" aria-label="${sheet.isFavorite?'즐겨찾기 해제':'즐겨찾기 추가'}" aria-pressed="${sheet.isFavorite}">${favIcon}</button><button class="card-trash-btn" data-card-trash-id="${sheet.id}" title="시트 삭제" aria-label="${esc(sheet.title)} 삭제">${IC.trashMd}</button><button class="card-menu-btn" data-card-edit-id="${sheet.id}" title="시트 편집" aria-label="${esc(sheet.title)} 편집">···</button></div></div>${titleHtml}<p class="card-desc">${highlight(sheet.desc, _q)}</p><div class="tags">${folderBadge}${tagsHtml}${dueBadge}${commentBadge}</div></div><div class="meta-info"><span>담당자: <strong>${highlight(sheet.owner, _q)}</strong></span><span title="${sheet.updated}">업데이트: ${esc(relDate)}</span></div>
+        <div class="card-body"><div class="card-header"><div class="badges"><span class="badge ${accessClass}">${esc(accessLabel)}</span>${statusBadge}${recentBadge}</div><div style="display:flex;align-items:center;gap:4px">${pinIcon}<button class="fav-btn" data-id="${sheet.id}" title="즐겨찾기 토글 (F)" aria-label="${sheet.isFavorite?'즐겨찾기 해제':'즐겨찾기 추가'}" aria-pressed="${sheet.isFavorite}">${favIcon}</button><button class="card-move-btn" data-card-move-id="${sheet.id}" title="폴더로 이동" aria-label="${esc(sheet.title)} 폴더 이동">${IC.moveFolder}</button><button class="card-trash-btn" data-card-trash-id="${sheet.id}" title="시트 삭제" aria-label="${esc(sheet.title)} 삭제">${IC.trashMd}</button><button class="card-menu-btn" data-card-edit-id="${sheet.id}" title="시트 편집" aria-label="${esc(sheet.title)} 편집">···</button></div></div>${titleHtml}<p class="card-desc">${highlight(sheet.desc, _q)}</p><div class="tags">${folderBadge}${tagsHtml}${dueBadge}${commentBadge}</div></div><div class="meta-info"><span>담당자: <strong>${highlight(sheet.owner, _q)}</strong></span><span title="${sheet.updated}">업데이트: ${esc(relDate)}</span></div>
     </div>`;
 }
 function wireCardEvents() {
@@ -4718,8 +4772,23 @@ function closeAutomationModal() {
 }
 document.getElementById('automation-modal').addEventListener('click', e=>{ if(e.target===document.getElementById('automation-modal')) closeAutomationModal(); });
 document.getElementById('automation-modal').addEventListener('keydown', e=>{ if(e.key==='Escape') closeAutomationModal(); });
-document.getElementById('bulk-move-modal').addEventListener('click', e=>{ if(e.target===document.getElementById('bulk-move-modal')) document.getElementById('bulk-move-modal').classList.remove('open'); });
-document.getElementById('bulk-move-modal').addEventListener('keydown', e=>{ if(e.key==='Escape') document.getElementById('bulk-move-modal').classList.remove('open'); });
+document.getElementById('bulk-move-modal').addEventListener('click', e=>{
+    if(e.target===document.getElementById('bulk-move-modal')) {
+        document.getElementById('bulk-move-modal').classList.remove('open');
+        _singleMoveSheetId = null;
+        // 타이틀 원복
+        document.getElementById('bulk-move-modal').querySelector('.modal-title').textContent = '폴더 선택';
+        document.getElementById('bulk-move-modal').querySelector('p').textContent = '선택한 시트를 이동할 폴더를 선택하세요.';
+    }
+});
+document.getElementById('bulk-move-modal').addEventListener('keydown', e=>{
+    if(e.key==='Escape') {
+        document.getElementById('bulk-move-modal').classList.remove('open');
+        _singleMoveSheetId = null;
+        document.getElementById('bulk-move-modal').querySelector('.modal-title').textContent = '폴더 선택';
+        document.getElementById('bulk-move-modal').querySelector('p').textContent = '선택한 시트를 이동할 폴더를 선택하세요.';
+    }
+});
 
 function renderAutomationRules() {
     const list = document.getElementById('automation-rules-list');
@@ -4882,24 +4951,66 @@ function setKbFocus(target, nodes) {
 // BroadcastChannel 멀티탭 동기화
 // ══════════════════════════════════════
 const _bc = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('sm-sync') : null;
+let _isSyncingFromRemote = false; // 외부 수신 중 재방송 차단 (핑퐁 방지)
+
 function broadcastChange() {
-    if (!_bc) return;
+    if (!_bc || _isSyncingFromRemote) return; // 동기화 수신 중엔 재방송 차단
     try { _bc.postMessage({ type:'update', ts:Date.now() }); } catch(e){}
 }
+
+// 데이터를 UI에 적용만 하고 저장/방송은 하지 않는 함수
+function _applyRemoteData(saved) {
+    _isSyncingFromRemote = true;
+    try {
+        sheetsData.length = 0;
+        saved.sheetsData.forEach(s => sheetsData.push(s));
+        treeData  = saved.treeData;
+        nextId    = saved.nextId ?? nextId;
+        if (saved.recentIds) recentIds = saved.recentIds;
+        renderTree();
+        applyFilters();
+    } finally {
+        _isSyncingFromRemote = false;
+    }
+}
+
 if (_bc) {
     _bc.onmessage = e => {
-        if (e.data?.type==='update') {
+        if (e.data?.type === 'update') {
             const saved = loadStorage();
-            if (saved) {
-                sheetsData.length=0; saved.sheetsData.forEach(s=>sheetsData.push(s));
-                treeData=saved.treeData; nextId=saved.nextId??nextId;
-                if(saved.recentIds) recentIds=saved.recentIds;
-                renderTree(); applyFilters();
-                showToast('다른 탭에서 변경사항이 동기화됐습니다','🔄');
-            }
+            if (!saved) return;
+            // 현재 로컬 데이터보다 새로운 경우만 반영
+            const localTs = (() => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY))?.updatedAt || 0; } catch(e){ return 0; } })();
+            if ((saved.updatedAt || 0) <= localTs && e.data.ts !== undefined) return; // 이미 최신
+            _applyRemoteData(saved);
+            showToast('다른 탭에서 변경사항이 동기화됐습니다', '🔄');
         }
     };
 }
+
+// ── GAS 폴링: 다른 브라우저/기기에서의 변경 감지 (15초 간격) ──
+let _lastKnownGasTs = 0;
+async function _pollGASForChanges() {
+    if (!GAS_URL || _isSyncingFromRemote || document.hidden) return;
+    try {
+        const res  = await fetch(GAS_URL + '?t=' + Date.now());
+        const json = await res.json();
+        if (!json.ok || !json.data) return;
+        const remoteTs = json.data.updatedAt || 0;
+        if (remoteTs <= _lastKnownGasTs) return; // 변경 없음
+        const localTs  = (() => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY))?.updatedAt || 0; } catch(e){ return 0; } })();
+        if (remoteTs <= localTs) return; // 로컬이 이미 최신
+        // GAS 데이터가 더 최신 → 적용
+        _lastKnownGasTs = remoteTs;
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(json.data)); } catch(e) {}
+        _applyRemoteData(json.data);
+        showToast('다른 창에서 변경사항이 동기화됐습니다', '🔄');
+    } catch(e) { /* 네트워크 오류 무시 */ }
+}
+// 페이지 로드 후 폴링 시작 (initApp 완료 후 실행되도록 setTimeout)
+setTimeout(() => {
+    if (GAS_URL) setInterval(_pollGASForChanges, 15000);
+}, 5000);
 // ══════════════════════════════════════
 // 템플릿 버튼 — 헤더 "시트 추가" 옆 드롭다운
 // ══════════════════════════════════════
