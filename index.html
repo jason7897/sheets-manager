@@ -4423,6 +4423,7 @@ document.addEventListener('contextmenu', e => {
 document.getElementById('ctx-menu').addEventListener('click', e => {
     const item = e.target.closest('[data-ctx]');
     if (!item || !_ctxTarget) return;
+    e.stopPropagation(); // document 버블링 차단 — 색상 픽커가 즉시 닫히는 버그 방지
     const action = item.dataset.ctx;
     const { type, id } = _ctxTarget;
     hideCtxMenu();
