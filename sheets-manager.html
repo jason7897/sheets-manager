@@ -983,6 +983,77 @@
         .tree-node.drag-after-item > .tree-row { border-bottom:2px solid var(--primary);border-radius:0; }
         .tree-node.kb-focus > .tree-row { outline:2px solid var(--primary);outline-offset:-2px;border-radius:10px; }
 
+        /* ══ 사이드바 고정(Pin) 섹션 ══ */
+        .sidebar-pin-section {
+            flex-shrink: 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .sidebar-pin-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 8px 12px 4px;
+            font-size: 10px; font-weight: 800; color: var(--muted);
+            text-transform: uppercase; letter-spacing: .8px;
+            cursor: pointer; user-select: none;
+        }
+        .sidebar-pin-header:hover { color: var(--text); }
+        .sidebar-pin-chev { transition: transform .2s; }
+        .sidebar-pin-section.collapsed .sidebar-pin-chev { transform: rotate(-90deg); }
+        .sidebar-pin-list { padding: 0 8px 6px; }
+        .sidebar-pin-section.collapsed .sidebar-pin-list { display: none; }
+        .sidebar-pin-item {
+            display: flex; align-items: center; gap: 7px;
+            padding: 5px 8px; border-radius: 8px; cursor: pointer;
+            font-size: 12.5px; font-weight: 500; color: var(--text);
+            text-decoration: none; transition: background .1s; min-width: 0;
+            position: relative;
+        }
+        .sidebar-pin-item:hover { background: var(--hover-bg); }
+        .sidebar-pin-item:hover .sidebar-pin-unpin { opacity: 1; }
+        .sidebar-pin-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .sidebar-pin-unpin {
+            opacity: 0; background: none; border: none; cursor: pointer;
+            color: var(--muted); padding: 2px; border-radius: 4px; line-height: 1;
+            transition: opacity .12s, color .12s; flex-shrink: 0;
+        }
+        .sidebar-pin-unpin:hover { color: var(--danger); }
+        [data-theme="dark"] .sidebar-pin-section { background: var(--card-bg); }
+
+        /* ══ 활동 배지 (Activity Dot) ══ */
+        .tree-activity-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #22c55e; flex-shrink: 0;
+            box-shadow: 0 0 4px rgba(34,197,94,.5);
+        }
+
+        /* ══ 사이드바 검색 경로 ══ */
+        .tree-result-path {
+            display: block; font-size: 10.5px; color: var(--muted);
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            font-weight: 400; line-height: 1.3; margin-top: 1px;
+        }
+
+        /* ══ 트리 자식 노드 진입 애니메이션 ══ */
+        @keyframes tree-slide-in {
+            from { opacity: 0; transform: translateY(-4px); }
+            to   { opacity: 1; transform: none; }
+        }
+        .tree-node > .tree-node { animation: tree-slide-in .14s ease-out; }
+
+        /* ══ Hover 툴팁 ══ */
+        #tree-hover-tip {
+            position: fixed; z-index: 3000;
+            background: var(--card-bg); border: 1px solid var(--border);
+            border-radius: 10px; padding: 10px 13px;
+            box-shadow: 0 6px 24px rgba(0,0,0,.14);
+            min-width: 180px; max-width: 240px;
+            pointer-events: none;
+            animation: ctx-in .12s ease-out;
+        }
+        #tree-hover-tip .tip-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #tree-hover-tip .tip-row   { font-size: 11.5px; color: var(--muted); display: flex; align-items: center; gap: 5px; margin-top: 3px; }
+        #tree-hover-tip .tip-link  { font-size: 11.5px; color: var(--primary); margin-top: 5px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        [data-theme="dark"] #tree-hover-tip { background: var(--card-bg); border-color: var(--border); }
+
         /* ══ 사이드바 검색 ══ */
         .sidebar-search-wrap {
             padding: 8px 10px;
@@ -1338,6 +1409,17 @@
                 <button class="sidebar-search-clear" id="sidebar-search-clear" aria-label="검색 지우기">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
+            </div>
+            <!-- 사이드바 고정 섹션 -->
+            <div class="sidebar-pin-section" id="sidebar-pin-section" style="display:none">
+                <div class="sidebar-pin-header" onclick="toggleSidebarPin()">
+                    <span style="display:flex;align-items:center;gap:5px">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M16 1a1 1 0 0 1 .707 1.707L13.414 6l3.293 3.293a1 1 0 0 1-1.414 1.414L12 7.414l-4.293 4.293a1 1 0 0 1-1.414-1.414L9.586 6 6.293 2.707A1 1 0 0 1 8 1h8zM12 9v13a1 1 0 0 1-2 0V9h2z"/></svg>
+                        고정됨
+                    </span>
+                    <svg class="sidebar-pin-chev" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                </div>
+                <div class="sidebar-pin-list" id="sidebar-pin-list"></div>
             </div>
             <!-- 사이드바 최근 열람 -->
             <div class="sidebar-recent-section" id="sidebar-recent-section" style="display:none">
@@ -1784,6 +1866,7 @@
 
 <!-- 컨텍스트 메뉴 -->
 <div id="ctx-menu" class="ctx-menu" style="display:none"></div>
+<div id="tree-hover-tip" style="display:none"></div>
 
 <!-- 대시보드 모달 -->
 <div id="dashboard-modal" class="dashboard-backdrop" role="dialog" aria-modal="true" aria-label="대시보드">
@@ -1987,7 +2070,7 @@ function saveStorage() {
     if (_isInitializing || _isSyncingFromRemote) return; // 초기화 중 또는 원격 수신 중엔 스킵
     const searchQuery = document.getElementById('searchInput')?.value || '';
     const ts = Date.now();
-    const payload = { sheetsData, treeData, nextId, currentFilter, currentView, currentSort, searchQuery, recentIds, updatedAt: ts };
+    const payload = { sheetsData, treeData, nextId, currentFilter, currentView, currentSort, searchQuery, recentIds, pinnedNodeIds, updatedAt: ts };
     _lastKnownGasTs = ts; // 내가 저장한 데이터는 폴링에서 다시 적용 안 되도록
     // 1) localStorage 즉시 저장 (빠른 캐시)
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(payload)); } catch(e) {
@@ -2270,6 +2353,9 @@ let cardPage      = 1;
 // 사이드바 검색
 let sidebarQuery = '';
 let _sidebarRecentCollapsed = false;
+let pinnedNodeIds = [];           // 사이드바 고정된 노드 ID 목록
+let _sidebarPinCollapsed = false;
+let _pathCache = {};              // 트리 경로 캐시 (검색 결과 경로 표시용)
 
 // 새 기능 상태
 let recentIds      = [];         // 최근 열람 (max 5)
@@ -2461,6 +2547,9 @@ function renderTreeNode(node, depth) {
         // 시트 수 배지: 항상 표시 (검색 중엔 일치 수)
         const matchCount = (sidebarQuery && node.type === 'folder')
             ? _countMatchingSheets(node, sidebarQuery) : sheetCount;
+        // 활동 배지: 최근 7일 내 수정된 시트가 있는 폴더
+        const hasActivity = node.type === 'folder' && _folderHasRecentActivity(node);
+        const activityDot = hasActivity ? `<span class="tree-activity-dot" title="최근 7일 내 활동 있음"></span>` : '';
         const countBadge = (node.type === 'folder' && sheetCount > 0)
             ? `<span style="font-size:10px;font-weight:700;color:var(--muted);background:var(--hover-bg);border-radius:10px;padding:1px 7px;flex-shrink:0;margin-left:2px;min-width:20px;text-align:center">${sidebarQuery ? matchCount : sheetCount}</span>`
             : '';
@@ -2468,16 +2557,29 @@ function renderTreeNode(node, depth) {
         const nameText = sidebarQuery
             ? _highlightMatch(esc(node.name), sidebarQuery)
             : esc(node.name);
+        // 검색 중 경로 표시
+        const pathText = (sidebarQuery && _pathCache[node.id])
+            ? `<span class="tree-result-path">${esc(_pathCache[node.id])}</span>` : '';
         if (node.type === 'sheet') {
             const _treeSheet = sheetsData.find(s => s.id === node.sheetId);
             const _treeLink  = _treeSheet && _treeSheet.link && _treeSheet.link !== '#' ? _treeSheet.link : null;
+            const nameWrap = sidebarQuery
+                ? `<span style="flex:1;min-width:0;overflow:hidden"><span class="tree-name" data-select-id="${node.id}" style="display:block">${nameText}</span>${pathText}</span>`
+                : ``;
             if (_treeLink) {
-                rowInner += `<a class="tree-name" href="${esc(_treeLink)}" target="_blank" rel="noopener noreferrer" data-select-id="${node.id}" onclick="selectNode('${node.id}');addRecentId(${node.sheetId});event.stopPropagation()">${nameText}</a>`;
+                rowInner += sidebarQuery
+                    ? nameWrap.replace('data-select-id', `href="${esc(_treeLink)}" target="_blank" rel="noopener noreferrer" onclick="selectNode('${node.id}');addRecentId(${node.sheetId});event.stopPropagation()" data-select-id`)
+                    : `<a class="tree-name" href="${esc(_treeLink)}" target="_blank" rel="noopener noreferrer" data-select-id="${node.id}" onclick="selectNode('${node.id}');addRecentId(${node.sheetId});event.stopPropagation()" data-sheet-hover-id="${node.sheetId}">${nameText}</a>`;
             } else {
-                rowInner += `<span class="tree-name" data-select-id="${node.id}">${nameText}</span>`;
+                rowInner += sidebarQuery
+                    ? nameWrap
+                    : `<span class="tree-name" data-select-id="${node.id}" data-sheet-hover-id="${node.sheetId}">${nameText}</span>`;
             }
         } else {
-            rowInner += `<span class="tree-name" data-select-id="${node.id}">${nameText}</span>${countBadge}`;
+            rowInner += sidebarQuery
+                ? `<span style="flex:1;min-width:0;overflow:hidden"><span class="tree-name" data-select-id="${node.id}" style="display:block">${nameText}</span>${pathText}</span>`
+                : `<span class="tree-name" data-select-id="${node.id}">${nameText}</span>`;
+            rowInner += activityDot + countBadge;
         }
         // ── 액션 버튼: ⋯ 하나로 통합 + 폴더는 + 버튼 유지 ──
         let actions = '';
@@ -2499,6 +2601,16 @@ function renderTreeNode(node, depth) {
     }
     html += `</div>`;
     return html;
+}
+
+// ── 활동 배지 헬퍼 ──
+function _folderHasRecentActivity(node, days = 7) {
+    const cutoff = Date.now() - days * 86400000;
+    const ids = collectSheetIds([node]);
+    return ids.some(sid => {
+        const s = sheetsData.find(s => s.id === sid);
+        return s && new Date(s.updated).getTime() > cutoff;
+    });
 }
 
 // ── 사이드바 검색 헬퍼 ──
@@ -2527,12 +2639,16 @@ function openTreeMoreMenu(e, nodeId) {
     _ctxTarget = { type:'tree', id: nodeId };
     const btn = e.currentTarget;
     const rect = btn.getBoundingClientRect();
+    const isPinned = pinnedNodeIds.includes(nodeId);
+    const pinLabel = isPinned ? '고정 해제' : '사이드바에 고정';
+    const pinIcon  = isPinned ? '📌' : '📍';
     const items = node.type === 'folder' ? [
         { label:'새 시트 추가', icon:'➕', action:'addsheet' },
         { label:'새 서브폴더', icon:'📁', action:'addfolder' },
         'sep',
         { label:'이름 변경', icon:'📝', action:'rename' },
         { label:'색상 변경', icon:'🎨', action:'color' },
+        { label: pinLabel, icon: pinIcon, action:'pin' },
         'sep',
         { label:'위로 이동', icon:'⬆️', action:'moveup' },
         { label:'아래로 이동', icon:'⬇️', action:'movedown' },
@@ -2541,6 +2657,7 @@ function openTreeMoreMenu(e, nodeId) {
     ] : [
         { label:'편집', icon:'✏️', action:'edit' },
         { label:'이름 변경', icon:'📝', action:'rename' },
+        { label: pinLabel, icon: pinIcon, action:'pin' },
         'sep',
         { label:'위로 이동', icon:'⬆️', action:'moveup' },
         { label:'아래로 이동', icon:'⬇️', action:'movedown' },
@@ -2554,7 +2671,15 @@ function renderRootAddRow() {
     if (!addMode || addMode.parentId !== 'root') return '';
     return `<div class="tree-add-row" style="padding-left:8px"><span style="display:flex;align-items:center;flex-shrink:0">${addMode.type==='folder'?IC.folder:IC.sheet}</span><input class="tree-add-input" id="tree-add-input" placeholder="${addMode.type==='folder'?'폴더 이름...':'시트 이름...'}" maxlength="60" autocomplete="off"><button class="rename-confirm-btn ok" id="tree-add-ok" onmousedown="event.preventDefault()" title="추가">${IC.check}</button><button class="rename-confirm-btn no" id="tree-add-no" onmousedown="event.preventDefault()" title="취소">${IC.x}</button></div>`;
 }
+function _buildPathCache(nodes, path) {
+    for (const n of nodes) {
+        _pathCache[n.id] = path.length ? path.join(' › ') : '';
+        if (n.children) _buildPathCache(n.children, [...path, n.name]);
+    }
+}
 function renderTree() {
+    _pathCache = {};
+    _buildPathCache(treeData, []);
     const root = document.getElementById('tree-root');
     const rendered = treeData.map(n => renderTreeNode(n, 0)).join('') + (sidebarQuery ? '' : renderRootAddRow());
     if (sidebarQuery && !rendered.trim()) {
@@ -2565,6 +2690,7 @@ function renderTree() {
     if (treeEditingId) { const inp = document.getElementById('tree-rename-input'); if (inp) { inp.focus(); inp.select(); setupRenameInputListeners(inp, commitTreeRename, cancelTreeRename); } }
     if (addMode) { const inp = document.getElementById('tree-add-input'); if (inp) { inp.focus(); setupRenameInputListeners(inp, commitAdd, cancelAdd); } }
     renderSidebarRecent();
+    renderPinnedSection();
     saveStorage();
 }
 function setupRenameInputListeners(inp, onCommit, onCancel) {
@@ -3931,6 +4057,56 @@ function updateRecentSection() {
 function moveNodeUp(id)   { moveTreeNodeUpDown(id, 'up'); }
 function moveNodeDown(id) { moveTreeNodeUpDown(id, 'down'); }
 
+// ══════════════════════════════════════
+// 사이드바 고정(Pin) 섹션
+// ══════════════════════════════════════
+function togglePinNode(nodeId) {
+    if (pinnedNodeIds.includes(nodeId)) {
+        pinnedNodeIds = pinnedNodeIds.filter(id => id !== nodeId);
+        showToast('고정 해제됐습니다', '📌');
+    } else {
+        if (pinnedNodeIds.length >= 8) { showToast('최대 8개까지 고정할 수 있습니다', '⚠️'); return; }
+        pinnedNodeIds = [nodeId, ...pinnedNodeIds];
+        showToast('사이드바에 고정됐습니다', '📌');
+    }
+    renderTree(); saveStorage();
+}
+function toggleSidebarPin() {
+    _sidebarPinCollapsed = !_sidebarPinCollapsed;
+    renderPinnedSection();
+}
+function renderPinnedSection() {
+    const section = document.getElementById('sidebar-pin-section');
+    const list    = document.getElementById('sidebar-pin-list');
+    if (!section || !list) return;
+    // 존재하는 노드만 필터
+    const validIds = pinnedNodeIds.filter(id => !!findNode(id));
+    if (pinnedNodeIds.length !== validIds.length) pinnedNodeIds = validIds;
+    if (validIds.length === 0) { section.style.display = 'none'; return; }
+    section.style.display = '';
+    if (_sidebarPinCollapsed) section.classList.add('collapsed');
+    else section.classList.remove('collapsed');
+    list.innerHTML = validIds.map(id => {
+        const node = findNode(id);
+        if (!node) return '';
+        const icon = node.type === 'folder'
+            ? folderIcon(node.color || 'yellow', node.icon)
+            : IC.sheet;
+        let href = 'javascript:void(0)', extra = '';
+        if (node.type === 'sheet') {
+            const s = sheetsData.find(s => s.id === node.sheetId);
+            if (s && s.link && s.link !== '#') { href = esc(s.link); extra = 'target="_blank" rel="noopener"'; }
+        }
+        return `<a class="sidebar-pin-item" href="${href}" ${extra} onclick="if(event.target.closest('.sidebar-pin-unpin'))return;selectNode('${id}');${node.type==='sheet'?`addRecentId(${node.sheetId});`:''}" >
+            <span style="flex-shrink:0;display:flex;align-items:center">${icon}</span>
+            <span class="sidebar-pin-name">${esc(node.name)}</span>
+            <button class="sidebar-pin-unpin" onclick="event.preventDefault();event.stopPropagation();togglePinNode('${id}')" title="고정 해제">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </a>`;
+    }).join('');
+}
+
 // 사이드바 최근 열람 렌더
 function renderSidebarRecent() {
     const section = document.getElementById('sidebar-recent-section');
@@ -3975,6 +4151,50 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     inp.addEventListener('keydown', e => {
         if (e.key === 'Escape') { inp.value=''; sidebarQuery=''; clear.classList.remove('visible'); renderTree(); }
+    });
+
+    // ── '/' 단축키: 사이드바 검색에 포커스 ──
+    document.addEventListener('keydown', e => {
+        if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+            const active = document.activeElement;
+            if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) return;
+            e.preventDefault();
+            inp.focus();
+            inp.select();
+        }
+    });
+
+    // ── Hover 툴팁: 시트 노드 위에 마우스 올리면 메타 정보 표시 ──
+    const tip = document.getElementById('tree-hover-tip');
+    let _tipTimer = null;
+    document.getElementById('tree-root').addEventListener('mouseover', e => {
+        const el = e.target.closest('[data-sheet-hover-id]');
+        if (!el) return;
+        clearTimeout(_tipTimer);
+        _tipTimer = setTimeout(() => {
+            const sid = Number(el.dataset.sheetHoverId);
+            const s = sheetsData.find(s => s.id === sid);
+            if (!s || !tip) return;
+            const row = el.closest('.tree-row');
+            if (!row) return;
+            const rect = row.getBoundingClientRect();
+            tip.innerHTML = `
+                <div class="tip-title">${esc(s.title)}</div>
+                ${s.owner ? `<div class="tip-row"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>${esc(s.owner)}</div>` : ''}
+                <div class="tip-row"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>${esc(relativeDate(s.updated))}</div>
+                ${s.link && s.link !== '#' ? `<a class="tip-link" href="${esc(s.link)}" target="_blank" rel="noopener">${esc(s.link.replace(/^https?:\/\//, '').slice(0,38))}…</a>` : ''}
+            `;
+            tip.style.display = 'block';
+            const tipW = tip.offsetWidth, tipH = tip.offsetHeight;
+            const left = Math.min(rect.right + 8, window.innerWidth - tipW - 8);
+            const top  = Math.min(rect.top, window.innerHeight - tipH - 8);
+            tip.style.left = left + 'px';
+            tip.style.top  = top  + 'px';
+        }, 500);
+    });
+    document.getElementById('tree-root').addEventListener('mouseout', e => {
+        clearTimeout(_tipTimer);
+        if (tip) tip.style.display = 'none';
     });
 });
 
@@ -4272,6 +4492,7 @@ function _applyStoredData(saved) {
     if (saved.currentView)   currentView   = saved.currentView;
     if (saved.currentSort)   currentSort   = saved.currentSort;
     if (Array.isArray(saved.recentIds)) recentIds = saved.recentIds;
+    if (Array.isArray(saved.pinnedNodeIds)) pinnedNodeIds = saved.pinnedNodeIds;
     if (saved.searchQuery) {
         const si = document.getElementById('searchInput');
         if (si) { si.value = saved.searchQuery; document.getElementById('btn-search-clear').style.display = saved.searchQuery ? 'block' : 'none'; }
@@ -4397,12 +4618,14 @@ document.addEventListener('contextmenu', e => {
         const node = findNode(nid);
         if (!node) return;
         _ctxTarget = { type:'tree', id:nid };
+        const _isPinned = pinnedNodeIds.includes(nid);
         const items = node.type === 'folder' ? [
             { label:'새 시트 추가', icon:'➕', action:'addsheet' },
             { label:'새 서브폴더', icon:'📁', action:'addfolder' },
             'sep',
             { label:'이름 변경', icon:'📝', action:'rename' },
             { label:'색상 변경', icon:'🎨', action:'color' },
+            { label: _isPinned ? '고정 해제' : '사이드바에 고정', icon: _isPinned ? '📌' : '📍', action:'pin' },
             'sep',
             { label:'위로 이동', icon:'⬆️', action:'moveup' },
             { label:'아래로 이동', icon:'⬇️', action:'movedown' },
@@ -4411,6 +4634,7 @@ document.addEventListener('contextmenu', e => {
         ] : [
             { label:'편집', icon:'✏️', action:'edit' },
             { label:'이름 변경', icon:'📝', action:'rename' },
+            { label: _isPinned ? '고정 해제' : '사이드바에 고정', icon: _isPinned ? '📌' : '📍', action:'pin' },
             'sep',
             { label:'위로 이동', icon:'⬆️', action:'moveup' },
             { label:'아래로 이동', icon:'⬇️', action:'movedown' },
@@ -4446,6 +4670,7 @@ document.getElementById('ctx-menu').addEventListener('click', e => {
         if (action==='color')     { openColorPicker(id, document.querySelector(`.tree-row[data-drag-id="${id}"]`) || document.body); return; }
         if (action==='moveup')    { moveNodeUp(id); return; }
         if (action==='movedown')  { moveNodeDown(id); return; }
+        if (action==='pin')       { togglePinNode(id); return; }
     }
 });
 
@@ -5197,6 +5422,7 @@ function _applyRemoteData(saved) {
         treeData  = saved.treeData;
         nextId    = saved.nextId ?? nextId;
         if (saved.recentIds) recentIds = saved.recentIds;
+        if (Array.isArray(saved.pinnedNodeIds)) pinnedNodeIds = saved.pinnedNodeIds;
         renderTree();
         applyFilters();
     } finally {
