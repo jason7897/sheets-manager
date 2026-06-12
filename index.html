@@ -6839,6 +6839,41 @@ function _updateDriveNotificationBadge() {
     }
 }
 
+let _driveFolderCache = {}; // parentId → folderName 캐시
+let _driveClassifyMode = localStorage.getItem('sm-drive-classify') || 'drive'; // 'drive' | 'date'
+
+async function _fetchDriveParentNames(files) {
+    const parentIds = [...new Set(files.flatMap(f => f.parents || []))].filter(id => !_driveFolderCache[id]);
+    if (!parentIds.length) return;
+    await Promise.all(parentIds.map(async pid => {
+        try {
+            const r = await fetch(`https://www.googleapis.com/drive/v3/files/${pid}?fields=id,name&supportsAllDrives=true`, { headers: { Authorization: 'Bearer ' + _driveToken } });
+            if (r.ok) { const d = await r.json(); _driveFolderCache[pid] = d.name || '기타'; }
+            else _driveFolderCache[pid] = '기타';
+        } catch { _driveFolderCache[pid] = '기타'; }
+    }));
+}
+
+function _getOrCreateDriveSubFolder(parentFolderId, name) {
+    const parent = treeData.find ? null : null;
+    function findInNode(nodes) {
+        for (const n of nodes) {
+            if (n.id === parentFolderId) {
+                const existing = (n.children || []).find(c => c.type === 'folder' && c.name === name);
+                if (existing) return existing.id;
+                const newId = uid('f-drv-');
+                treeData = mapTree(treeData, node => node.id === parentFolderId
+                    ? {...node, expanded:true, children:[...(node.children||[]), {id:newId, type:'folder', name, color:'blue', expanded:true, isDrive:true, children:[]}]}
+                    : node);
+                return newId;
+            }
+            if (n.children) { const r = findInNode(n.children); if (r) return r; }
+        }
+        return null;
+    }
+    return findInNode(treeData);
+}
+
 async function _fetchDriveSheets() {
     _renderDriveLoading();
     try {
@@ -6846,7 +6881,7 @@ async function _fetchDriveSheets() {
             q: "mimeType='application/vnd.google-apps.spreadsheet' and trashed=false",
             orderBy: 'viewedByMeTime desc',
             pageSize: '50',
-            fields: 'files(id,name,webViewLink,viewedByMeTime,modifiedTime,owners,driveId,shared)'
+            fields: 'files(id,name,webViewLink,viewedByMeTime,modifiedTime,owners,driveId,shared,parents)'
         });
         // 공유 드라이브 포함 옵션
         if (_driveIncludeShared) {
@@ -6913,6 +6948,10 @@ function _renderDriveFileList() {
                 <input type="checkbox" id="drive-shared-toggle" style="accent-color:var(--primary)" ${_driveIncludeShared?'checked':''} onchange="_toggleDriveShared(this.checked)">
                 공유 드라이브 포함
             </label>
+            <label style="font-size:12px;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:5px;font-weight:600">
+                <input type="checkbox" id="drive-classify-toggle" style="accent-color:var(--primary)" ${_driveClassifyMode==='drive'?'checked':''} onchange="_toggleDriveClassify(this.checked)">
+                Drive 폴더 구조 유지
+            </label>
             <label style="font-size:12px;color:var(--primary);cursor:pointer;font-weight:700;display:flex;align-items:center;gap:4px">
                 자동 채집 기준:
                 <input type="number" id="drive-auto-threshold" value="${threshold}" min="2" max="30" style="width:44px;padding:2px 5px;border:1px solid var(--border);border-radius:6px;font-size:12px;text-align:center;background:var(--card-bg);color:var(--text)" onchange="_setDriveThreshold(this.value)">회
@@ -6955,6 +6994,10 @@ function _toggleDriveShared(checked) {
     _driveIncludeShared = checked;
     localStorage.setItem('sm-drive-shared', checked ? '1' : '0');
     _fetchDriveSheets();
+}
+function _toggleDriveClassify(checked) {
+    _driveClassifyMode = checked ? 'drive' : 'date';
+    localStorage.setItem('sm-drive-classify', _driveClassifyMode);
 }
 function _setDriveThreshold(val) {
     const n = Math.max(2, Math.min(30, parseInt(val) || 5));
@@ -7025,37 +7068,68 @@ function _getOrCreateDriveDateFolder() {
     return { rootId, dateFolderId: dateFid };
 }
 
-function _doDriveImport() {
+async function _doDriveImport() {
     if (!_driveSelectedIds.size) return;
     const toImport = _driveFiles.filter(f => _driveSelectedIds.has(f.id));
-    // Drive 전용 날짜 서브폴더에 가져오기 (현재 폴더가 선택된 경우에도 Drive 전용 폴더 사용)
-    const { rootId, dateFolderId } = _getOrCreateDriveDateFolder();
-    const targetFolderId = dateFolderId;
     const undoFn = saveUndoSnapshot();
     let addedCount = 0;
-    toImport.forEach(f => {
-        const sheetId = nextId++;
-        const newSheet = {
-            id: sheetId, title: f.name, link: f.webViewLink, desc: '',
-            owner: currentUser, tags: ['drive'], status: 'active',
-            isPinned: false, isFavorite: false,
-            updated: (f.modifiedTime||new Date().toISOString()).slice(0,10),
-            dueDate: '', driveFileId: f.id
-        };
-        sheetsData.push(newSheet);
-        const nodeId = uid('t-');
-        treeData = mapTree(treeData, n => n.id === targetFolderId
-            ? {...n, expanded:true, children:[...(n.children||[]), {id:nodeId, type:'sheet', name:f.name, sheetId, isDrive:true}]}
-            : n);
-        appLog('add', 'Drive 가져오기', `"${f.name}"`, sheetId);
-        addedCount++;
-    });
-    // 마지막 동기화 시각 기록
+
+    if (_driveClassifyMode === 'drive') {
+        // Drive 폴더 구조 유지 모드
+        await _fetchDriveParentNames(toImport);
+        // Drive 루트 폴더 확보
+        let driveRoot = treeData.find(n => n.id === DRIVE_ROOT_FOLDER_ID);
+        if (!driveRoot) {
+            treeData = [{id:DRIVE_ROOT_FOLDER_ID, type:'folder', name:'📥 Google Drive', color:'blue', expanded:true, isDrive:true, children:[]}, ...treeData];
+        }
+        // 각 파일을 Drive 원본 폴더명 서브폴더에 배치
+        toImport.forEach(f => {
+            const parentId = (f.parents || [])[0];
+            const parentName = parentId ? (_driveFolderCache[parentId] || '기타') : '기타';
+            const targetFolderId = _getOrCreateDriveSubFolder(DRIVE_ROOT_FOLDER_ID, parentName);
+            const sheetId = nextId++;
+            const newSheet = {
+                id: sheetId, title: f.name, link: f.webViewLink, desc: '',
+                owner: currentUser, tags: ['drive'], status: 'active',
+                isPinned: false, isFavorite: false,
+                updated: (f.modifiedTime||new Date().toISOString()).slice(0,10),
+                dueDate: '', driveFileId: f.id
+            };
+            sheetsData.push(newSheet);
+            const nodeId = uid('t-');
+            treeData = mapTree(treeData, n => n.id === targetFolderId
+                ? {...n, expanded:true, children:[...(n.children||[]), {id:nodeId, type:'sheet', name:f.name, sheetId, isDrive:true}]}
+                : n);
+            appLog('add', 'Drive 가져오기', `"${f.name}" → ${parentName}`, sheetId);
+            addedCount++;
+        });
+    } else {
+        // 날짜별 분류 모드
+        const { dateFolderId } = _getOrCreateDriveDateFolder();
+        toImport.forEach(f => {
+            const sheetId = nextId++;
+            const newSheet = {
+                id: sheetId, title: f.name, link: f.webViewLink, desc: '',
+                owner: currentUser, tags: ['drive'], status: 'active',
+                isPinned: false, isFavorite: false,
+                updated: (f.modifiedTime||new Date().toISOString()).slice(0,10),
+                dueDate: '', driveFileId: f.id
+            };
+            sheetsData.push(newSheet);
+            const nodeId = uid('t-');
+            treeData = mapTree(treeData, n => n.id === dateFolderId
+                ? {...n, expanded:true, children:[...(n.children||[]), {id:nodeId, type:'sheet', name:f.name, sheetId, isDrive:true}]}
+                : n);
+            appLog('add', 'Drive 가져오기(날짜)', `"${f.name}"`, sheetId);
+            addedCount++;
+        });
+    }
+
     localStorage.setItem('sm-drive-last-sync', new Date().toISOString());
     saveStorage();
     renderTree();
     applyFilters();
-    selectNode(rootId);
+    selectNode(DRIVE_ROOT_FOLDER_ID);
     closeDriveModal();
     showToast(`${addedCount}개 시트를 Google Drive에서 가져왔습니다`, '📥', undoFn);
     _renderDriveSyncSection();
