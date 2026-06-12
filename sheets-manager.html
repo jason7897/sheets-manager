@@ -4824,9 +4824,15 @@ function _renderDriveSyncSection() {
     section.style.display = '';
     if (_sidebarDriveCollapsed) section.classList.add('collapsed');
     else section.classList.remove('collapsed');
-    // 마지막 동기화 시각
+    // 마지막 동기화 시각 + 자동동기화 상태
     const lastSync = localStorage.getItem('sm-drive-last-sync');
-    if (badge) badge.textContent = lastSync ? relativeDate(lastSync.slice(0,10)) + ' 동기화' : '';
+    const autoOn = localStorage.getItem('sm-drive-autosync') !== '0';
+    if (badge) {
+        const syncText = lastSync ? relativeDate(lastSync.slice(0,10)) + ' 동기화' : '';
+        badge.innerHTML = autoOn
+            ? `<span style="color:#2e7d32;font-weight:800">🔄 자동</span>${syncText ? ' · ' + syncText : ''}`
+            : syncText;
+    }
     // 드라이브 시트 목록 (모든 날짜 서브폴더에서 최근 8개)
     const driveSheetIds = [];
     function collectDrive(nodes) { for (const n of nodes) { if (n.type==='sheet') driveSheetIds.push(n.sheetId); if (n.children) collectDrive(n.children); } }
@@ -6820,7 +6826,10 @@ function _doRequestToken(clientId, silent) {
                         return;
                     }
                     _saveDriveToken(resp.access_token);
-                    _fetchDriveSheets();
+                    // 모달이 열려 있으면 파일 목록 표시, 아니면 백그라운드 동기화
+                    const modalVisible = document.getElementById('drive-modal-overlay')?.style.opacity === '1';
+                    if (modalVisible) _fetchDriveSheets();
+                    else _driveBackgroundSync();
                 }
             });
         }
@@ -7076,6 +7085,10 @@ function _renderDriveFileList() {
                 <input type="checkbox" id="drive-classify-toggle" style="accent-color:var(--primary)" ${_driveClassifyMode==='drive'?'checked':''} onchange="_toggleDriveClassify(this.checked)">
                 Drive 폴더 구조 유지
             </label>
+            <label style="font-size:12px;color:#2e7d32;cursor:pointer;display:flex;align-items:center;gap:5px;font-weight:700">
+                <input type="checkbox" id="drive-autosync-toggle" style="accent-color:#2e7d32" ${localStorage.getItem('sm-drive-autosync')!=='0'?'checked':''} onchange="_toggleDriveAutoSync(this.checked)">
+                자동 동기화
+            </label>
             <label style="font-size:12px;color:var(--primary);cursor:pointer;font-weight:700;display:flex;align-items:center;gap:4px">
                 자동 채집 기준:
                 <input type="number" id="drive-auto-threshold" value="${threshold}" min="2" max="30" style="width:44px;padding:2px 5px;border:1px solid var(--border);border-radius:6px;font-size:12px;text-align:center;background:var(--card-bg);color:var(--text)" onchange="_setDriveThreshold(this.value)">회
@@ -7123,6 +7136,116 @@ function _toggleDriveClassify(checked) {
     _driveClassifyMode = checked ? 'drive' : 'date';
     localStorage.setItem('sm-drive-classify', _driveClassifyMode);
 }
+function _toggleDriveAutoSync(enabled) {
+    localStorage.setItem('sm-drive-autosync', enabled ? '1' : '0');
+    if (enabled) _scheduleDriveAutoSync();
+    else { clearTimeout(_driveAutoSyncTimer); clearInterval(_driveAutoSyncInterval); }
+    showToast(enabled ? '자동 동기화가 켜졌습니다 (30분마다)' : '자동 동기화가 꺼졌습니다', enabled ? '🔄' : '⏸️');
+}
+
+// ══════════════════════════════════════
+// Drive 백그라운드 자동 동기화
+// ══════════════════════════════════════
+let _driveAutoSyncTimer = null;
+let _driveAutoSyncInterval = null;
+const DRIVE_SYNC_INTERVAL_MS = 30 * 60 * 1000; // 30분
+
+async function _driveBackgroundSync() {
+    if (!_driveToken) return;
+    if (localStorage.getItem('sm-drive-autosync') === '0') return;
+    try {
+        const params = new URLSearchParams({
+            q: "mimeType='application/vnd.google-apps.spreadsheet' and trashed=false",
+            orderBy: 'viewedByMeTime desc',
+            pageSize: '50',
+            fields: 'files(id,name,webViewLink,viewedByMeTime,modifiedTime,owners,driveId,shared,parents)'
+        });
+        if (_driveIncludeShared) {
+            params.set('includeItemsFromAllDrives', 'true');
+            params.set('supportsAllDrives', 'true');
+            params.set('corpora', 'allDrives');
+        }
+        const resp = await fetch('https://www.googleapis.com/drive/v3/files?' + params, {
+            headers: { Authorization: 'Bearer ' + _driveToken }
+        });
+        if (resp.status === 401) {
+            _clearDriveToken();
+            const cid = localStorage.getItem(DRIVE_CLIENT_ID_KEY);
+            if (cid) _doRequestToken(cid, true); // silent 재인증 후 다음 사이클에서 재시도
+            return;
+        }
+        if (!resp.ok) return;
+        const data = await resp.json();
+        const allFiles = data.files || [];
+        _updateDriveTracking(allFiles);
+        localStorage.setItem('sm-drive-last-sync', new Date().toISOString());
+        _updateDriveNotificationBadge();
+        _renderDriveSyncSection();
+
+        // 임계값 초과 시트 자동 수집
+        const candidates = _getDriveAutoCollectCandidates();
+        if (candidates.length > 0) {
+            await _silentAutoCollect(candidates);
+        }
+    } catch(e) { /* 백그라운드 실패는 무시 */ }
+}
+
+async function _silentAutoCollect(candidates) {
+    if (!candidates.length) return;
+    const undoFn = saveUndoSnapshot();
+    let added = 0;
+
+    if (_driveClassifyMode === 'drive') {
+        const fakeFiles = candidates.map(c => ({ id: c.id, parents: c.parents || [] }));
+        await _fetchDriveParentNames(fakeFiles);
+    }
+
+    candidates.forEach(c => {
+        const sheetId = nextId++;
+        sheetsData.push({
+            id: sheetId, title: c.name, link: c.link, desc: '', owner: currentUser,
+            tags: ['drive', '자동채집'], status: 'active', isPinned: false, isFavorite: false,
+            updated: today(), dueDate: '', driveFileId: c.id
+        });
+        const nodeId = uid('t-');
+        let targetFolderId;
+        if (_driveClassifyMode === 'drive' && c.parents?.length) {
+            const parentName = _driveFolderCache[c.parents[0]] || '기타';
+            targetFolderId = _getOrCreateDriveSubFolder(DRIVE_ROOT_FOLDER_ID, parentName);
+        } else {
+            const { dateFolderId } = _getOrCreateDriveDateFolder();
+            targetFolderId = dateFolderId;
+        }
+        if (targetFolderId) {
+            treeData = mapTree(treeData, n => n.id === targetFolderId
+                ? { ...n, expanded: true, children: [...(n.children || []), { id: nodeId, type: 'sheet', name: c.name, sheetId, isDrive: true }] }
+                : n);
+        }
+        appLog('add', '자동채집', `"${c.name}"`, sheetId);
+        added++;
+    });
+
+    if (added > 0) {
+        saveStorage(); renderTree(); applyFilters();
+        _renderDriveSyncSection();
+        showToast(`${added}개 시트가 자동으로 수집됐습니다`, '⭐', undoFn);
+        _updateDriveNotificationBadge();
+    }
+}
+
+function _scheduleDriveAutoSync() {
+    clearTimeout(_driveAutoSyncTimer);
+    clearInterval(_driveAutoSyncInterval);
+    if (localStorage.getItem('sm-drive-autosync') === '0') return;
+    // 페이지 로드 후 5초 뒤 첫 동기화, 이후 30분마다
+    _driveAutoSyncTimer = setTimeout(() => {
+        _driveBackgroundSync();
+        _driveAutoSyncInterval = setInterval(_driveBackgroundSync, DRIVE_SYNC_INTERVAL_MS);
+    }, 5000);
+}
+
+// 페이지 로드 시 자동 동기화 스케줄
+_scheduleDriveAutoSync();
 function _setDriveThreshold(val) {
     const n = Math.max(2, Math.min(30, parseInt(val) || 5));
     localStorage.setItem(DRIVE_AUTO_TH_KEY, String(n));
