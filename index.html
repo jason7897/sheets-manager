@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -238,6 +238,9 @@
         .tree-icon-btn:hover { background: rgba(0,0,0,.07); color: var(--text); }
         .tree-icon-btn.danger:hover { background: var(--danger-light); color: var(--danger); }
         .tree-icon-btn.add:hover { background: var(--primary-light); color: var(--primary); }
+        .tree-folder-icon-wrap { cursor:pointer;border-radius:4px;padding:1px;flex-shrink:0;display:flex;align-items:center;transition:background .12s,opacity .12s; }
+        .tree-folder-icon-wrap:hover { background:rgba(0,0,0,.07);opacity:.8; }
+        [data-theme="dark"] .tree-folder-icon-wrap:hover { background:rgba(255,255,255,.1); }
 
         .tree-toggle {
             background: none; border: none; cursor: pointer;
@@ -395,7 +398,7 @@
             background: none; border: none; cursor: pointer;
             color: var(--muted); padding: 3px 5px; border-radius: 6px;
             display: flex; align-items: center; font-size: 15px; line-height: 1;
-            opacity: 0; transition: opacity .15s, background .12s;
+            opacity: 0.55; transition: opacity .15s, background .12s;
             flex-shrink: 0; letter-spacing: 1px;
         }
         .sheet-card:hover .card-menu-btn { opacity: 1; }
@@ -431,6 +434,8 @@
         /* 카드 내 순서 변경 드롭 인디케이터 */
         .sheet-card.card-drop-before { border-top: 3px solid var(--primary) !important; }
         .sheet-card.card-drop-after  { border-bottom: 3px solid var(--primary) !important; }
+        .sheet-card.card-drop-merge  { box-shadow: 0 0 0 3px var(--primary), 0 8px 30px rgba(49,130,246,.22) !important; background: var(--primary-light) !important; transform: scale(1.025); transition: transform .1s, box-shadow .1s; }
+        .sheet-card.card-drop-merge::after { content: '📁 폴더로 합치기'; position:absolute; bottom:8px; left:50%; transform:translateX(-50%); background:var(--primary); color:#fff; font-size:11px; font-weight:700; padding:3px 10px; border-radius:8px; white-space:nowrap; pointer-events:none; }
 
         .card-rename-input {
             flex: 1; border: 1.5px solid var(--primary); border-radius: 9px;
@@ -439,6 +444,15 @@
             font-family: inherit;
         }
         .card-rename-actions { display: flex; gap: 2px; }
+
+        .card-url {
+            display: block; font-size: 11px; color: var(--muted);
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            max-width: 100%; margin: 2px 0 5px; text-decoration: none;
+            opacity: 0.75;
+        }
+        .card-url:hover { color: var(--primary); opacity: 1; text-decoration: underline; }
+        #sheet-container.list-view .card-url { display: none; }
 
         .card-desc {
             font-size: 13.5px; color: var(--muted); margin: 0; line-height: 1.65;
@@ -981,6 +995,8 @@
         .tree-node.drag-into-folder > .tree-row { background:var(--primary-light) !important;outline:2px solid var(--primary);outline-offset:-2px;border-radius:10px; }
         /* 아이템 다음에 삽입 — 하단 구분선 */
         .tree-node.drag-after-item > .tree-row { border-bottom:2px solid var(--primary);border-radius:0; }
+        /* 아이템 앞에 삽입 — 상단 구분선 */
+        .tree-node.drag-before-item > .tree-row { border-top:2px solid var(--primary);border-radius:0; }
         .tree-node.kb-focus > .tree-row { outline:2px solid var(--primary);outline-offset:-2px;border-radius:10px; }
 
         /* ══ 사이드바 고정(Pin) 섹션 ══ */
@@ -1017,6 +1033,26 @@
         }
         .sidebar-pin-unpin:hover { color: var(--danger); }
         [data-theme="dark"] .sidebar-pin-section { background: var(--card-bg); }
+
+        /* ══ Drive 동기화 섹션 ══ */
+        .sidebar-drive-section { flex-shrink:0; border-bottom:1px solid var(--border); }
+        .sidebar-drive-header { display:flex;align-items:center;justify-content:space-between;padding:8px 12px 4px;font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;cursor:pointer;user-select:none; }
+        .sidebar-drive-header:hover { color:var(--text); }
+        .sidebar-drive-chev { transition:transform .2s;color:var(--muted); }
+        .sidebar-drive-section.collapsed .sidebar-drive-chev { transform:rotate(-90deg); }
+        .sidebar-drive-list { padding:0 8px 6px; }
+        .sidebar-drive-section.collapsed .sidebar-drive-list { display:none; }
+        .sidebar-drive-item { display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text);text-decoration:none;transition:background .1s; }
+        .sidebar-drive-item:hover { background:var(--hover-bg); }
+        .sidebar-drive-item-name { flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;min-width:0; }
+        .sidebar-drive-item-badge { font-size:9px;font-weight:800;background:#e8f0fe;color:#1a73e8;padding:1px 6px;border-radius:10px;flex-shrink:0; }
+        [data-theme="dark"] .sidebar-drive-item-badge { background:#1e3a5f;color:#4da3ff; }
+        [data-theme="dark"] .sidebar-drive-section { background:var(--card-bg); }
+
+        /* ══ Drive 트리 폴더 특수 스타일 ══ */
+        .tree-row.is-drive-root { background:rgba(26,115,232,.06);border-radius:8px; }
+        .tree-row.is-drive-root:hover { background:rgba(26,115,232,.12) !important; }
+        [data-theme="dark"] .tree-row.is-drive-root { background:rgba(77,163,255,.08); }
 
         /* ══ 활동 배지 (Activity Dot) ══ */
         .tree-activity-dot {
@@ -1296,6 +1332,108 @@
         .more-menu-item:hover { background:var(--hover-bg); }
         /* ══ 키보드 포커스 카드 ══ */
         .sheet-card.kb-focused { outline:2.5px solid var(--primary);outline-offset:2px; }
+
+        /* ══ Command Palette ══ */
+        #cmd-palette-overlay { position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);display:flex;align-items:flex-start;justify-content:center;padding-top:10vh;opacity:0;pointer-events:none;transition:opacity .18s; }
+        #cmd-palette-overlay.open { opacity:1;pointer-events:all; }
+        #cmd-palette-box { background:var(--card-bg);border:1px solid var(--border);border-radius:16px;width:100%;max-width:560px;box-shadow:0 24px 60px rgba(0,0,0,.25);overflow:hidden;margin:0 16px; }
+        #cmd-palette-input-wrap { display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border); }
+        #cmd-palette-input { flex:1;border:none;outline:none;font-size:15px;font-weight:500;background:transparent;color:var(--text);font-family:inherit; }
+        #cmd-palette-input::placeholder { color:var(--muted); }
+        #cmd-palette-results { max-height:380px;overflow-y:auto;padding:6px 0; }
+        .cmd-empty { text-align:center;padding:32px;color:var(--muted);font-size:13.5px; }
+        .cmd-result { display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;transition:background .1s; }
+        .cmd-result.focused,.cmd-result:hover { background:var(--primary-light); }
+        .cmd-result-icon { width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+        .cmd-result-icon.tp-folder { background:#fef9c3; }
+        .cmd-result-icon.tp-sheet { background:#eff6ff; }
+        .cmd-result-body { flex:1;min-width:0; }
+        .cmd-result-name { font-size:13.5px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+        .cmd-result-path { font-size:11.5px;color:var(--muted);margin-top:1px; }
+        .cmd-type-badge { font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:8px;flex-shrink:0; }
+        .cmd-type-badge.folder { background:#fef9c3;color:#a16207; }
+        .cmd-type-badge.sheet { background:#eff6ff;color:var(--primary); }
+        .cmd-palette-footer { display:flex;align-items:center;gap:14px;padding:8px 16px;border-top:1px solid var(--border);background:var(--surface-bg); }
+        .cmd-hint { font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px; }
+        .cmd-key { background:var(--hover-bg);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:10.5px;font-family:monospace;color:var(--text); }
+
+        /* ══ 단축키 도움말 모달 ══ */
+        #shortcut-modal-overlay { position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .18s;padding:16px; }
+        #shortcut-modal-overlay.open { opacity:1;pointer-events:all; }
+        #shortcut-modal-box { background:var(--card-bg);border:1px solid var(--border);border-radius:18px;width:100%;max-width:580px;box-shadow:0 24px 60px rgba(0,0,0,.22);overflow:hidden; }
+        .sc-modal-header { display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border);background:var(--surface-bg); }
+        .sc-modal-title { font-size:15px;font-weight:800;color:var(--text); }
+        .sc-modal-body { padding:16px 22px 20px;display:grid;grid-template-columns:1fr 1fr;gap:0 28px;max-height:68vh;overflow-y:auto; }
+        .sc-section { grid-column:1/-1;font-size:10.5px;font-weight:800;color:var(--primary);text-transform:uppercase;letter-spacing:.8px;padding:12px 0 6px;border-bottom:2px solid var(--primary-light);margin-top:8px; }
+        .sc-section:first-child { margin-top:0; }
+        .sc-row { display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border); }
+        .sc-row:last-child { border-bottom:none; }
+        .sc-desc { font-size:12.5px;color:var(--text); }
+        .sc-keys { display:flex;align-items:center;gap:3px; }
+        .sc-key { background:var(--hover-bg);border:1px solid var(--border);border-radius:5px;padding:2px 7px;font-size:11px;font-family:monospace;font-weight:700;color:var(--text); }
+
+        /* ══ 태그 관리 ══ */
+        #tag-manager-overlay { position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .18s;padding:16px; }
+        #tag-manager-overlay.open { opacity:1;pointer-events:all; }
+        #tag-manager-box { background:var(--card-bg);border:1px solid var(--border);border-radius:18px;width:100%;max-width:440px;box-shadow:0 24px 60px rgba(0,0,0,.22);overflow:hidden;display:flex;flex-direction:column;max-height:80vh; }
+        .tm-header { display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border);background:var(--surface-bg);flex-shrink:0; }
+        .tm-title { font-size:15px;font-weight:800;color:var(--text); }
+        .tm-body { flex:1;overflow-y:auto;padding:10px 12px; }
+        .tm-item { display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;transition:background .1s; }
+        .tm-item:hover { background:var(--hover-bg); }
+        .tm-chip { background:var(--primary-light);color:var(--primary);border-radius:20px;padding:3px 12px;font-size:12.5px;font-weight:700;border:1px solid rgba(49,130,246,.2);white-space:nowrap; }
+        .tm-count { font-size:12px;color:var(--muted);flex:1; }
+        .tm-btn { background:none;border:1.5px solid var(--border);border-radius:7px;padding:4px 10px;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);font-family:inherit;transition:all .12s; }
+        .tm-btn:hover { border-color:var(--primary);color:var(--primary);background:var(--primary-light); }
+        .tm-btn.del:hover { border-color:var(--danger);color:var(--danger);background:var(--danger-light); }
+        .tm-empty { text-align:center;padding:40px;color:var(--muted);font-size:13.5px; }
+
+        /* ══ Google Drive 연동 ══ */
+        .drive-file-item { display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;transition:background .1s;cursor:default; }
+        .drive-file-item:hover { background:var(--hover-bg); }
+        .drive-file-check { width:16px;height:16px;accent-color:var(--primary);cursor:pointer;flex-shrink:0; }
+        .drive-file-icon { width:28px;height:28px;flex-shrink:0; }
+        .drive-file-name { font-size:13px;font-weight:600;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+        .drive-file-date { font-size:11.5px;color:var(--muted);white-space:nowrap; }
+        .drive-setup-step { background:var(--surface-bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px; }
+        .drive-setup-num { width:24px;height:24px;border-radius:50%;background:var(--primary);color:white;font-size:12px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0; }
+        .drive-setup-input { width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:var(--card-bg);color:var(--text);outline:none;margin-top:8px;box-sizing:border-box; }
+        .drive-setup-input:focus { border-color:var(--primary); }
+        .drive-connect-btn { padding:10px 22px;background:#1a73e8;color:white;border:none;border-radius:10px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s; }
+        .drive-connect-btn:hover { background:#1557b0; }
+        .drive-connect-btn:disabled { opacity:.6;cursor:not-allowed; }
+        .drive-import-btn { padding:9px 20px;background:var(--primary);color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background .15s; }
+        .drive-import-btn:hover { background:#1557b0; }
+        .drive-import-btn:disabled { opacity:.6;cursor:not-allowed; }
+
+        /* ══ 칸반 뷰 ══ */
+        #sheet-container.kanban-view { display:flex;gap:14px;align-items:flex-start;overflow-x:auto;padding-bottom:16px; }
+        .kanban-col { flex:0 0 270px;background:var(--surface-bg);border-radius:14px;border:1px solid var(--border);display:flex;flex-direction:column;max-height:calc(100vh - 220px); }
+        .kanban-col-header { padding:12px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0; }
+        .kanban-col-title { font-size:13px;font-weight:800; }
+        .kanban-col-badge { font-size:11px;font-weight:700;padding:2px 8px;border-radius:8px; }
+        .kanban-cards { flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:8px; }
+        .kanban-cards::-webkit-scrollbar { width:3px; }
+        .kanban-card { background:var(--card-bg);border:1px solid var(--border);border-radius:10px;padding:12px 13px;cursor:pointer;transition:box-shadow .15s,transform .12s,border-color .15s;position:relative; }
+        .kanban-card:hover { box-shadow:0 4px 16px rgba(0,0,0,.1);transform:translateY(-2px);border-color:#bfdbfe; }
+        .kanban-card-title { font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden; }
+        .kanban-card-meta { display:flex;align-items:center;gap:6px;flex-wrap:wrap; }
+        .kanban-card-folder { background:var(--hover-bg);border-radius:6px;padding:2px 7px;font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px; }
+        .kanban-card-due { font-size:11px;font-weight:700; }
+        .kanban-card-btns { position:absolute;top:8px;right:8px;display:flex;gap:3px;opacity:0;transition:opacity .15s; }
+        .kanban-card:hover .kanban-card-btns { opacity:1; }
+        .kanban-card-btn { background:var(--card-bg);border:1px solid var(--border);border-radius:6px;width:23px;height:23px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:11px;transition:all .12s; }
+        .kanban-card-btn:hover { background:var(--primary-light);border-color:var(--primary); }
+        .kcol-active .kanban-col-title { color:#1d6bdb; }
+        .kcol-active .kanban-col-badge { background:#dbeafe;color:#1d6bdb; }
+        .kcol-review .kanban-col-title { color:#92400e; }
+        .kcol-review .kanban-col-badge { background:#fef3c7;color:#92400e; }
+        .kcol-done .kanban-col-title { color:#065f46; }
+        .kcol-done .kanban-col-badge { background:#d1fae5;color:#065f46; }
+        .kcol-archived .kanban-col-title { color:var(--muted); }
+        .kcol-archived .kanban-col-badge { background:var(--hover-bg);color:var(--muted); }
+        .kanban-col.drag-over { outline:2px dashed var(--primary);outline-offset:-2px; }
+        @media(max-width:767px) { #sheet-container.kanban-view { gap:10px; } .kanban-col { flex:0 0 240px; } }
     </style>
 </head>
 <body>
@@ -1335,6 +1473,10 @@
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="4" rx="1"/><rect x="3" y="10" width="18" height="4" rx="1"/><rect x="3" y="17" width="18" height="4" rx="1"/></svg>
                 <span class="btn-view-label">그룹 뷰</span>
             </button>
+            <button class="btn" id="btn-kanban" data-view="kanban" title="칸반 뷰 (상태별)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="5" height="18" rx="1"/><rect x="10" y="3" width="5" height="12" rx="1"/><rect x="17" y="3" width="5" height="8" rx="1"/></svg>
+                <span class="btn-view-label">칸반 뷰</span>
+            </button>
             <div class="w-px h-5 mx-1" style="background:var(--border)"></div>
             <button id="btn-dashboard" onclick="openDashboard()" title="대시보드" class="header-icon-btn">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
@@ -1360,12 +1502,33 @@
                         활동 로그
                         <span id="log-btn-count" style="display:none;background:var(--primary);color:white;border-radius:6px;padding:1px 5px;font-size:10px;min-width:16px;text-align:center;margin-left:auto"></span>
                     </button>
+                    <button class="more-menu-item" onclick="openTagManager();closeMoreMenu()">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                        태그 관리
+                    </button>
+                    <button class="more-menu-item" onclick="openShortcutModal();closeMoreMenu()">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h4M6 12h4M14 12h4M6 16h12"/></svg>
+                        단축키 도움말 <span style="margin-left:auto;font-size:10.5px;background:var(--hover-bg);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-family:monospace;color:var(--muted)">?</span>
+                    </button>
                 </div>
             </div>
             <button id="btn-dark-toggle" onclick="toggleTheme()" title="다크 모드 토글" class="header-icon-btn">
                 <svg id="dark-icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
                 <svg id="dark-icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
             </button>
+            <!-- GAS 동기화 인디케이터 -->
+            <span id="gas-sync-indicator" style="display:none;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--primary);background:var(--primary-light);padding:5px 11px;border-radius:20px;border:1px solid rgba(49,130,246,.2)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+                저장 중…
+            </span>
+            <span id="gas-error-indicator" style="display:none;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--danger);background:var(--danger-light);padding:5px 11px;border-radius:20px;border:1px solid rgba(240,68,82,.2);cursor:pointer" title="서버 저장 실패 — 로컬에는 저장됨. 클릭하여 재시도" onclick="_gasRetry()">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                서버 저장 실패
+            </span>
+            <span id="gas-offline-banner" style="display:none;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#d97706;background:#fef3c7;padding:5px 11px;border-radius:20px;border:1px solid rgba(217,119,6,.2)" title="서버에 연결할 수 없어 로컬 데이터를 사용 중입니다">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55"/><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39"/><path d="M10.71 5.05A16 16 0 0 1 22.56 9"/><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
+                오프라인 모드
+            </span>
             <button class="btn btn-primary" id="btn-add-sheet">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                 시트 추가
@@ -1421,6 +1584,17 @@
                 </div>
                 <div class="sidebar-pin-list" id="sidebar-pin-list"></div>
             </div>
+            <!-- 사이드바 최근 방문 폴더 -->
+            <div class="sidebar-recent-section" id="sidebar-recent-folders-section" style="display:none">
+                <div class="sidebar-recent-header" onclick="toggleSidebarRecentFolders()">
+                    <span style="display:flex;align-items:center;gap:5px">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+                        최근 폴더
+                    </span>
+                    <svg class="sidebar-recent-chev" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                </div>
+                <div class="sidebar-recent-list" id="sidebar-recent-folders-list"></div>
+            </div>
             <!-- 사이드바 최근 열람 -->
             <div class="sidebar-recent-section" id="sidebar-recent-section" style="display:none">
                 <div class="sidebar-recent-header" onclick="toggleSidebarRecent()" id="sidebar-recent-header">
@@ -1434,6 +1608,18 @@
             </div>
             <!-- 저장된 검색 -->
             <div id="saved-search-section" class="saved-search-section" style="display:none"></div>
+            <!-- Google Drive 동기화 섹션 -->
+            <div class="sidebar-drive-section" id="sidebar-drive-section" style="display:none">
+                <div class="sidebar-drive-header" onclick="toggleSidebarDrive()">
+                    <span style="display:flex;align-items:center;gap:5px">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                        Google Drive
+                    </span>
+                    <span id="sidebar-drive-sync-badge" style="font-size:9.5px;color:var(--muted)"></span>
+                    <svg class="sidebar-drive-chev" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                </div>
+                <div class="sidebar-drive-list" id="sidebar-drive-list"></div>
+            </div>
             <!-- 전체 보기 고정 항목 -->
             <div id="tree-root-all" style="padding:8px 8px 0;flex-shrink:0;border-bottom:1px solid var(--border)">
                 <div id="tree-all-row" class="tree-row" style="padding-left:8px;margin-bottom:4px" onclick="selectAllRoot()" role="button" tabindex="0">
@@ -1449,11 +1635,22 @@
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                     내보내기
                 </button>
+                <button class="sidebar-footer-btn" id="btn-restore-backup" title="자동 백업에서 복원">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+                    백업복원
+                </button>
                 <button class="sidebar-footer-btn" id="btn-import" title="JSON에서 가져오기">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                     가져오기
                 </button>
                 <input type="file" id="import-file-input" accept=".json" style="display:none">
+            </div>
+            <!-- Google Drive 연동 버튼 -->
+            <div style="padding:0 12px 10px">
+                <button class="sidebar-footer-btn" id="btn-drive-import" onclick="openDriveModal()" title="Google Drive에서 자주 쓰는 시트 자동 가져오기" style="width:100%;color:#1a73e8;border-color:#c2d7f8;gap:6px">
+                    <svg width="13" height="13" viewBox="0 0 87.3 78" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0"><path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3L27.5 52H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/><path d="M43.65 25L29.9 1.2C28.55.4 27 0 25.45 0c-1.55 0-3.1.4-4.5 1.2L6.6 26.2H34.1z" fill="#00ac47"/><path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25C86.9 56.1 87.3 54.55 87.3 53H59.8L73.55 76.8z" fill="#ea4335"/><path d="M43.65 25L57.4 1.2C56 .4 54.45 0 52.9 0H34.4c-1.55 0-3.1.4-4.5 1.2z" fill="#00832d"/><path d="M59.8 53H87.3L73.55 29.15l-9.2-15.95-13.7 23.8z" fill="#2684fc"/><path d="M27.5 52L13.75 75.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.55 0 3.1-.4 4.5-1.2L59.8 52z" fill="#ffba00"/></svg>
+                    Drive에서 가져오기
+                </button>
             </div>
             <!-- 세로 리사이즈 핸들 -->
             <div class="sidebar-resizer-y" id="sidebar-resizer-y" title="드래그하여 높이 조절">
@@ -1539,12 +1736,16 @@
                 </select>
                 <div class="result-count" id="result-count"></div>
                 <button id="btn-select-all" onclick="toggleSelectAll()" title="전체 선택 / 해제" class="btn-select-all-ctrl">전체 선택</button>
+                <button id="btn-add-folder-main" class="btn" onclick="addFolderFromMain()" title="새 폴더 추가">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+                    <span class="btn-view-label">새 폴더</span>
+                </button>
             </div>
             <div id="recent-wrap"></div>
             <!-- URL 드롭 힌트 (항상 표시) -->
-            <div id="url-drop-hint" title="구글 시트 URL을 여기에 드래그하거나 클릭해서 추가" onclick="openModal()">
+            <div id="url-drop-hint" title="URL을 여기에 드래그하거나 클릭해서 추가" onclick="openModal()">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                URL 드래그 또는 Ctrl+V로 시트 추가 &nbsp;·&nbsp; 클릭해서 직접 입력
+                URL 드래그 또는 Ctrl+V로 링크 추가 &nbsp;·&nbsp; 클릭해서 직접 입력
             </div>
             <div id="sheet-container" class="grid-view">
                 <div class="skeleton-card"><div class="skel-line" style="width:40%;height:10px"></div><div class="skel-line" style="width:75%;height:16px;margin-top:4px"></div><div class="skel-line" style="width:90%;height:12px;margin-top:8px"></div><div class="skel-line" style="width:60%;height:12px"></div></div>
@@ -1567,7 +1768,7 @@
                 <div class="modal-title-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                 </div>
-                <span id="modal-title-text">구글 시트 추가</span>
+                <span id="modal-title-text">링크 추가</span>
             </div>
             <button class="modal-close" id="modal-close-btn" aria-label="닫기">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
@@ -1576,9 +1777,9 @@
         <div>
             <div class="field-label">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                구글 시트 URL
+                URL
             </div>
-            <input type="url" class="url-input" id="url-input" placeholder="https://docs.google.com/spreadsheets/d/...">
+            <input type="url" class="url-input" id="url-input" placeholder="https://...">
             <div class="url-feedback" id="url-feedback" aria-live="polite"></div>
         </div>
         <div id="dropzone" class="dropzone" role="region" aria-label="URL 드래그 앤 드롭 영역">
@@ -1600,7 +1801,7 @@
             <span style="position:absolute;top:-9px;right:12px;background:var(--warning);color:white;font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;letter-spacing:.3px;pointer-events:none">Coming Soon</span>
         </button>
         <div>
-            <div class="field-label">시트 제목</div>
+            <div class="field-label">제목</div>
             <input type="text" class="title-input" id="title-input" placeholder="예) 2026 Q3 마케팅 예산안" maxlength="60">
         </div>
         <div>
@@ -1644,9 +1845,9 @@
         <div>
             <div class="field-label">
                 <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                구글 시트 URL
+                URL
             </div>
-            <input type="url" class="url-input" id="edit-link" placeholder="https://docs.google.com/spreadsheets/d/...">
+            <input type="url" class="url-input" id="edit-link" placeholder="https://...">
         </div>
         <div>
             <div class="field-label">설명</div>
@@ -1999,30 +2200,103 @@ const FOLDER_COLORS = [
     { id:'gray',   name:'회색', fill:'#e5e7eb', stroke:'#6b7280', hex:'#6b7280' },
 ];
 const FOLDER_ICONS = [
-    { id:'default', emoji:null,  name:'기본 폴더' },
-    { id:'open',    emoji:'📂',  name:'열린 폴더' },
-    { id:'card',    emoji:'🗂️',  name:'카드 정리' },
-    { id:'chart',   emoji:'📊',  name:'차트' },
-    { id:'trend',   emoji:'📈',  name:'트렌드' },
-    { id:'brief',   emoji:'💼',  name:'업무' },
-    { id:'clip',    emoji:'📋',  name:'클립보드' },
-    { id:'star',    emoji:'⭐',  name:'스타' },
-    { id:'pin',     emoji:'📌',  name:'핀' },
-    { id:'rocket',  emoji:'🚀',  name:'로켓' },
-    { id:'target',  emoji:'🎯',  name:'목표' },
-    { id:'bulb',    emoji:'💡',  name:'아이디어' },
-    { id:'money',   emoji:'💰',  name:'재무' },
-    { id:'team',    emoji:'👥',  name:'팀' },
-    { id:'lock',    emoji:'🔒',  name:'보안' },
-    { id:'book',    emoji:'📖',  name:'문서' },
-    { id:'mail',    emoji:'📧',  name:'메일' },
-    { id:'setting', emoji:'⚙️',  name:'설정' },
-    { id:'heart',   emoji:'❤️',  name:'즐겨찾기' },
-    { id:'flag',    emoji:'🚩',  name:'플래그' },
-    { id:'calendar',emoji:'📅',  name:'일정' },
-    { id:'bell',    emoji:'🔔',  name:'알림' },
-    { id:'fire',    emoji:'🔥',  name:'핫이슈' },
-    { id:'check',   emoji:'✅',  name:'완료' },
+    // 폴더
+    { id:'default',  emoji:null,  name:'기본 폴더' },
+    { id:'open',     emoji:'📂',  name:'열린 폴더' },
+    { id:'card',     emoji:'🗂️',  name:'카드 정리' },
+    // 업무·문서
+    { id:'brief',    emoji:'💼',  name:'업무' },
+    { id:'clip',     emoji:'📋',  name:'클립보드' },
+    { id:'book',     emoji:'📖',  name:'문서' },
+    { id:'books',    emoji:'📚',  name:'학습' },
+    { id:'note',     emoji:'📝',  name:'메모' },
+    { id:'memo',     emoji:'🗒️',  name:'노트' },
+    { id:'inbox',    emoji:'📥',  name:'수신함' },
+    { id:'outbox',   emoji:'📤',  name:'발신함' },
+    // 데이터·분석
+    { id:'chart',    emoji:'📊',  name:'차트' },
+    { id:'trend',    emoji:'📈',  name:'상승' },
+    { id:'downchart',emoji:'📉',  name:'하락' },
+    { id:'search',   emoji:'🔎',  name:'검색' },
+    { id:'ruler',    emoji:'📐',  name:'기획' },
+    // 커뮤니케이션
+    { id:'mail',     emoji:'📧',  name:'메일' },
+    { id:'bell',     emoji:'🔔',  name:'알림' },
+    { id:'chat',     emoji:'💬',  name:'채팅' },
+    { id:'phone',    emoji:'📞',  name:'전화' },
+    { id:'mobile',   emoji:'📱',  name:'모바일' },
+    { id:'mic',      emoji:'🎤',  name:'발표' },
+    { id:'speak',    emoji:'🗣️',  name:'소통' },
+    // 기술·개발
+    { id:'laptop',   emoji:'💻',  name:'노트북' },
+    { id:'monitor',  emoji:'🖥️',  name:'모니터' },
+    { id:'link',     emoji:'🔗',  name:'링크' },
+    { id:'robot',    emoji:'🤖',  name:'자동화' },
+    { id:'setting',  emoji:'⚙️',  name:'설정' },
+    { id:'tool',     emoji:'🛠️',  name:'도구' },
+    { id:'lab',      emoji:'🔬',  name:'연구' },
+    { id:'flask',    emoji:'🧪',  name:'테스트' },
+    // 재무
+    { id:'money',    emoji:'💰',  name:'재무' },
+    { id:'dollar',   emoji:'💵',  name:'달러' },
+    { id:'card2',    emoji:'💳',  name:'카드' },
+    { id:'bank',     emoji:'🏦',  name:'은행' },
+    { id:'gem',      emoji:'💎',  name:'프리미엄' },
+    // 사람·팀
+    { id:'team',     emoji:'👥',  name:'팀' },
+    { id:'person',   emoji:'👤',  name:'개인' },
+    { id:'handshake',emoji:'🤝',  name:'협업' },
+    { id:'crown',    emoji:'👑',  name:'VIP' },
+    { id:'grad',     emoji:'🎓',  name:'교육' },
+    // 목표·성과
+    { id:'star',     emoji:'⭐',  name:'스타' },
+    { id:'pin',      emoji:'📌',  name:'핀' },
+    { id:'target',   emoji:'🎯',  name:'목표' },
+    { id:'rocket',   emoji:'🚀',  name:'로켓' },
+    { id:'trophy',   emoji:'🏆',  name:'트로피' },
+    { id:'medal',    emoji:'🥇',  name:'1등' },
+    { id:'ribbon',   emoji:'🎗️',  name:'리본' },
+    { id:'fire',     emoji:'🔥',  name:'핫이슈' },
+    { id:'check',    emoji:'✅',  name:'완료' },
+    { id:'flag',     emoji:'🚩',  name:'플래그' },
+    // 위치·시간
+    { id:'calendar', emoji:'📅',  name:'일정' },
+    { id:'clock',    emoji:'⏰',  name:'시계' },
+    { id:'timer',    emoji:'⏱️',  name:'타이머' },
+    { id:'mappin',   emoji:'📍',  name:'위치' },
+    { id:'map',      emoji:'🗺️',  name:'지도' },
+    { id:'globe',    emoji:'🌍',  name:'글로벌' },
+    // 보안·상태
+    { id:'lock',     emoji:'🔒',  name:'보안' },
+    { id:'key',      emoji:'🔑',  name:'키' },
+    { id:'shield',   emoji:'🛡️',  name:'보호' },
+    { id:'warn',     emoji:'⚠️',  name:'주의' },
+    { id:'crystal',  emoji:'🔮',  name:'예측' },
+    // 창의·감성
+    { id:'bulb',     emoji:'💡',  name:'아이디어' },
+    { id:'palette',  emoji:'🎨',  name:'디자인' },
+    { id:'film',     emoji:'🎬',  name:'영상' },
+    { id:'game',     emoji:'🎮',  name:'게임' },
+    { id:'music',    emoji:'🎵',  name:'음악' },
+    { id:'heart',    emoji:'❤️',  name:'즐겨찾기' },
+    { id:'gift',     emoji:'🎁',  name:'선물' },
+    { id:'party',    emoji:'🎉',  name:'파티' },
+    // 자연·날씨
+    { id:'leaf',     emoji:'🌿',  name:'자연' },
+    { id:'flower',   emoji:'🌸',  name:'꽃' },
+    { id:'wave',     emoji:'🌊',  name:'물결' },
+    { id:'bolt',     emoji:'⚡',  name:'번개' },
+    { id:'rainbow',  emoji:'🌈',  name:'무지개' },
+    { id:'sun',      emoji:'☀️',  name:'밝음' },
+    { id:'snow',     emoji:'❄️',  name:'차가움' },
+    { id:'seedling', emoji:'🌱',  name:'성장' },
+    // 기타
+    { id:'home',     emoji:'🏠',  name:'홈' },
+    { id:'coffee',   emoji:'☕',  name:'커피' },
+    { id:'pizza',    emoji:'🍕',  name:'식사' },
+    { id:'bulleye',  emoji:'🎪',  name:'이벤트' },
+    { id:'hamster',  emoji:'🐹',  name:'마스코트' },
+    { id:'cat',      emoji:'🐱',  name:'고양이' },
 ];
 function folderIcon(colorId, icon) {
     if (icon && icon !== 'default') {
@@ -2057,12 +2331,20 @@ const STATUS_CONFIG = {
 // Google Apps Script 연동 설정
 // GAS Web App URL을 아래에 입력하세요
 // ══════════════════════════════════════
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbyZTbVby_nfOn52pQuAn8Anb418Mx_b5J-r4HRV4tx1CAK7EOpxfV101Ike4mTFNFQ0/exec'; // 예: 'https://script.google.com/macros/s/XXXXX/exec'
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyZTbVby_nfOn52pQuAn8Anb418Mx_b5J-r4HRV4tx1CAK7EOpxfV101Ike4mTFNFQ0/exec'; // 데이터 저장 전용 (원본)
+// ▼ 백업 GAS URL — SM_Host 배포 URL (백업 읽기/쓰기 전용)
+let BACKUP_GAS_URL = localStorage.getItem('sm-backup-gas-url') || 'https://script.google.com/macros/s/AKfycbx5qMDtBF1zUZXqftQQOYk3ARNWsOekvoHzIFAxCa48Aj37-4H-hFRlt-ACJjBpWndc/exec';
 
 // ══════════════════════════════════════
 // 영속성 (localStorage + GAS)
 // ══════════════════════════════════════
-const STORAGE_KEY = 'sm-data-v1';
+const STORAGE_KEY          = 'sm-data-v1';
+const BACKUP_KEY           = 'sm-backup-v1';  // localStorage 스냅샷 (3개)
+const LAST_FILE_BACKUP_KEY = 'sm-last-file-backup'; // 마지막 파일 자동 다운로드 시각
+const SAVE_COUNTER_KEY     = 'sm-save-counter';     // 마지막 파일 백업 이후 저장 횟수
+const FILE_BACKUP_INTERVAL = 7 * 24 * 60 * 60 * 1000; // 7일
+const FILE_BACKUP_SAVE_TH  = 50; // 50회 저장마다 자동 다운로드
+const GAS_BACKUP_SAVE_TH   = 10; // 10회 저장마다 GAS 백업 시트에 전송
 let _gasSaveTimer = null;
 let _isInitializing = true; // 초기화 중엔 GAS 저장 차단
 
@@ -2070,13 +2352,27 @@ function saveStorage() {
     if (_isInitializing || _isSyncingFromRemote) return; // 초기화 중 또는 원격 수신 중엔 스킵
     const searchQuery = document.getElementById('searchInput')?.value || '';
     const ts = Date.now();
-    const payload = { sheetsData, treeData, nextId, currentFilter, currentView, currentSort, searchQuery, recentIds, pinnedNodeIds, updatedAt: ts };
+    const payload = { sheetsData, treeData, nextId, currentFilter, currentView, currentSort, searchQuery, recentIds, recentFolderIds, pinnedNodeIds, selectedId, updatedAt: ts };
     _lastKnownGasTs = ts; // 내가 저장한 데이터는 폴링에서 다시 적용 안 되도록
     // 1) localStorage 즉시 저장 (빠른 캐시)
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(payload)); } catch(e) {
         console.warn('localStorage 저장 실패:', e);
         showToast('저장 공간이 부족합니다. 불필요한 데이터를 정리해주세요.', '⚠️');
     }
+    // 1-b) localStorage 스냅샷 (최근 3개)
+    try {
+        const prevBackups = JSON.parse(localStorage.getItem(BACKUP_KEY) || '[]');
+        prevBackups.unshift({ data: payload, savedAt: ts });
+        if (prevBackups.length > 3) prevBackups.length = 3;
+        localStorage.setItem(BACKUP_KEY, JSON.stringify(prevBackups));
+    } catch(e) { console.warn('백업 저장 실패:', e); }
+    // 1-c) 저장 횟수 카운터 → 임계치 도달 시 자동 파일 다운로드 & GAS 백업
+    try {
+        const cnt = (parseInt(localStorage.getItem(SAVE_COUNTER_KEY) || '0', 10)) + 1;
+        localStorage.setItem(SAVE_COUNTER_KEY, String(cnt));
+        if (cnt % GAS_BACKUP_SAVE_TH === 0 && BACKUP_GAS_URL) _sendToBackupGAS(payload);
+        if (cnt >= FILE_BACKUP_SAVE_TH) _triggerFileBackup(payload);
+    } catch(e) {}
     // 2) GAS 저장 (디바운스 1.5초 — 연속 변경 시 마지막 1회만 전송)
     if (GAS_URL) {
         clearTimeout(_gasSaveTimer);
@@ -2085,41 +2381,76 @@ function saveStorage() {
     broadcastChange();
 }
 
+let _lastGasPayload = null; // 재시도용
 async function _saveToGAS(payload) {
     if (!payload || !Array.isArray(payload.sheetsData) || payload.sheetsData.length === 0) {
         console.warn('[SM] GAS 저장 스킵: 시트가 0개인 데이터는 저장하지 않음');
         return;
     }
+    _lastGasPayload = payload;
+    const ctrl = new AbortController();
+    const tId = setTimeout(() => ctrl.abort(), 15000); // 15초 타임아웃
     try {
         showSyncIndicator(true);
-        await fetch(GAS_URL, {
+        showGasError(false);
+        const res = await fetch(GAS_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'data=' + encodeURIComponent(JSON.stringify(payload))
+            body: 'data=' + encodeURIComponent(JSON.stringify(payload)),
+            signal: ctrl.signal
         });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const json = await res.json().catch(() => ({}));
+        if (json.ok === false) throw new Error('GAS 응답 오류');
     } catch(e) {
-        console.warn('GAS 저장 실패 (오프라인?):', e);
+        console.warn('GAS 저장 실패:', e.message);
+        showGasError(true);
     } finally {
+        clearTimeout(tId);
         showSyncIndicator(false);
     }
 }
 
 async function _loadFromGAS() {
     if (!GAS_URL) return null;
+    const ctrl = new AbortController();
+    const tId = setTimeout(() => ctrl.abort(), 15000);
     try {
-        const res  = await fetch(GAS_URL + '?t=' + Date.now());
+        const res  = await fetch(GAS_URL + '?t=' + Date.now(), { signal: ctrl.signal });
+        clearTimeout(tId);
+        if (!res.ok) throw new Error('HTTP ' + res.status);
         const json = await res.json();
         if (json.ok && json.data) {
             try { localStorage.setItem(STORAGE_KEY, JSON.stringify(json.data)); } catch(e) {}
+            showGasError(false);
             return json.data;
         }
-    } catch(e) { console.warn('GAS 로드 실패, localStorage 폴백 사용:', e); }
+    } catch(e) {
+        clearTimeout(tId);
+        console.warn('GAS 로드 실패, localStorage 폴백 사용:', e.message);
+    }
     return null;
 }
 
 function showSyncIndicator(on) {
     const el = document.getElementById('gas-sync-indicator');
     if (el) el.style.display = on ? 'flex' : 'none';
+}
+
+function showGasError(on) {
+    const el = document.getElementById('gas-error-indicator');
+    if (el) el.style.display = on ? 'flex' : 'none';
+}
+function showOfflineBanner(on) {
+    const el = document.getElementById('gas-offline-banner');
+    if (el) el.style.display = on ? 'flex' : 'none';
+}
+
+function _gasRetry() {
+    if (_lastGasPayload) {
+        showGasError(false);
+        _saveToGAS(_lastGasPayload);
+    }
 }
 
 function loadStorage() {
@@ -2352,13 +2683,29 @@ let cardPage      = 1;
 
 // 사이드바 검색
 let sidebarQuery = '';
-let _sidebarRecentCollapsed = false;
+let _sidebarRecentCollapsed = localStorage.getItem('sm-sb-recent-col') === '1';
+let _sidebarRecentFoldersCollapsed = localStorage.getItem('sm-sb-rfol-col') === '1';
 let pinnedNodeIds = [];           // 사이드바 고정된 노드 ID 목록
-let _sidebarPinCollapsed = false;
+let _sidebarPinCollapsed = localStorage.getItem('sm-sb-pin-col') === '1';
 let _pathCache = {};              // 트리 경로 캐시 (검색 결과 경로 표시용)
+let _selectedAncestors = new Set(); // 현재 선택된 노드의 조상 ID 집합 (renderTree 시 계산, treeData 불변)
+function _updateSelectedAncestors() {
+    _selectedAncestors.clear();
+    if (selectedId === 'root') return;
+    function _findPath(nodes, targetId, path) {
+        for (const n of nodes) {
+            if (n.id === targetId) return path;
+            if (n.children) { const r = _findPath(n.children, targetId, [...path, n.id]); if (r) return r; }
+        }
+        return null;
+    }
+    const p = _findPath(treeData, selectedId, []);
+    if (p) p.forEach(id => _selectedAncestors.add(id));
+}
 
 // 새 기능 상태
 let recentIds      = [];         // 최근 열람 (max 5)
+let recentFolderIds = [];        // 최근 방문 폴더 (max 5)
 const selectedCards = new Set(); // 다중 선택
 let _colorPickerFolderId = null; // 폴더 컬러 픽커
 let _treeDragNodeId      = null; // 트리 순서 드래그
@@ -2482,8 +2829,21 @@ function insertAfterNode(afterId, newNode, nodes) {
     return result;
 }
 
-// 트리 노드 이동 (폴더 → 내부 / 시트·루트 → 다음에 삽입)
-function moveTreeNode(dragId, targetId) {
+// beforeId 앞에 newNode 삽입 (불변 — 새 배열 반환)
+function insertBeforeNode(beforeId, newNode, nodes) {
+    const result = [];
+    for (const n of nodes) {
+        if (n.id === beforeId) result.push(newNode);
+        const updated = n.children
+            ? {...n, children: insertBeforeNode(beforeId, newNode, n.children)}
+            : {...n};
+        result.push(updated);
+    }
+    return result;
+}
+
+// 트리 노드 이동 (mode: 'before'|'into'|'after')
+function moveTreeNode(dragId, targetId, mode) {
     // 순환 참조 차단: 상위 폴더를 하위로 넣으려는 경우
     if (isDescendantTree(dragId, targetId)) {
         showToast('상위 폴더를 하위 폴더로 이동할 수 없습니다', '⚠️');
@@ -2498,14 +2858,16 @@ function moveTreeNode(dragId, targetId) {
     // 원본 위치에서 제거 (불변)
     treeData = deleteFromTree(dragId, treeData);
 
-    if (tgtNode.type === 'folder') {
-        // 폴더 위에 드롭 → 해당 폴더 내부 맨 끝에 추가
+    const resolvedMode = mode || (tgtNode.type === 'folder' ? 'into' : 'after');
+    if (resolvedMode === 'into' && tgtNode.type === 'folder') {
         treeData = addToTree(targetId, srcNode, treeData);
         appLog('move', '폴더로 이동', `"${srcNode.name}" → "${tgtNode.name}" 내부`);
+    } else if (resolvedMode === 'before') {
+        treeData = insertBeforeNode(targetId, srcNode, treeData);
+        appLog('move', '순서 변경', `"${srcNode.name}" → "${tgtNode.name}" 앞`);
     } else {
-        // 파일·시트 위에 드롭 → 그 아이템 바로 다음(아래)에 삽입
         treeData = insertAfterNode(targetId, srcNode, treeData);
-        appLog('move', '순서 변경', `"${srcNode.name}" → "${tgtNode.name}" 다음`);
+        appLog('move', '순서 변경', `"${srcNode.name}" → "${tgtNode.name}" 뒤`);
     }
 
     showToast(`"${srcNode.name}" 이(가) 이동되었습니다`, '📁', undoFn);
@@ -2519,7 +2881,7 @@ function renderTreeNode(node, depth) {
     const isEditing  = treeEditingId === node.id;
     const isSelected = selectedId    === node.id;
     // 검색 중엔 모든 폴더를 강제 펼침
-    const isExpanded = node.type === 'folder' && (node.expanded || (sidebarQuery.length > 0));
+    const isExpanded = node.type === 'folder' && (node.expanded || sidebarQuery.length > 0 || _selectedAncestors.has(node.id));
     const indent     = depth * 14 + 8;
 
     // ── 사이드바 검색 필터: 이 노드(또는 자손)가 쿼리와 일치하지 않으면 렌더 스킵 ──
@@ -2539,7 +2901,11 @@ function renderTreeNode(node, depth) {
         rowInner += `<span class="tree-toggle invis">${IC.chevRight}</span>`;
     }
     const fIcon = node.type === 'folder' ? folderIcon(node.color || 'yellow', node.icon) : IC.sheet;
-    rowInner += `<span style="flex-shrink:0;display:flex;align-items:center">${fIcon}</span>`;
+    if (node.type === 'folder') {
+        rowInner += `<span class="tree-folder-icon-wrap" data-color-folder-id="${node.id}" title="클릭해서 아이콘·색상 변경">${fIcon}</span>`;
+    } else {
+        rowInner += `<span style="flex-shrink:0;display:flex;align-items:center">${fIcon}</span>`;
+    }
     if (isEditing) {
         rowInner += `<span class="tree-rename-wrap"><input class="tree-rename-input" id="tree-rename-input" value="${esc(node.name)}" maxlength="60" data-edit-id="${node.id}"><button class="rename-confirm-btn ok" id="tree-rename-ok" onmousedown="event.preventDefault()" title="확인">${IC.check}</button><button class="rename-confirm-btn no" id="tree-rename-no" onmousedown="event.preventDefault()" title="취소">${IC.x}</button></span>`;
     } else {
@@ -2584,6 +2950,7 @@ function renderTreeNode(node, depth) {
         // ── 액션 버튼: ⋯ 하나로 통합 + 폴더는 + 버튼 유지 ──
         let actions = '';
         if (node.type === 'folder') {
+            actions += `<button class="tree-icon-btn add" data-add-folder-id="${node.id}" title="이 폴더에 하위 폴더 추가">${IC.addFolder}</button>`;
             actions += `<button class="tree-icon-btn add" data-add-sheet-id="${node.id}" title="이 폴더에 시트 추가">${IC.addSheet}</button>`;
         }
         actions += `<button class="tree-icon-btn" data-tree-more-id="${node.id}" title="더 보기 (우클릭과 동일)" onmousedown="event.stopPropagation()" onclick="openTreeMoreMenu(event,'${node.id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.2" fill="currentColor"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/><circle cx="12" cy="19" r="1.2" fill="currentColor"/></svg></button>`;
@@ -2591,7 +2958,8 @@ function renderTreeNode(node, depth) {
     }
     const selectedClass = isSelected ? ' selected' : '';
     const dropAttr = node.type === 'folder' ? ` data-drop-folder-id="${node.id}"` : '';
-    let html = `<div class="tree-node${selectedClass}" data-node-id="${node.id}" data-node-type="${node.type}"><div class="tree-row" draggable="true" data-drag-id="${node.id}"${dropAttr} style="padding-left:${indent}px">${rowInner}</div>`;
+    const driveRootCls = (node.id === DRIVE_ROOT_FOLDER_ID) ? ' is-drive-root' : '';
+    let html = `<div class="tree-node${selectedClass}" data-node-id="${node.id}" data-node-type="${node.type}"><div class="tree-row${driveRootCls}" draggable="true" data-drag-id="${node.id}"${dropAttr} style="padding-left:${indent}px">${rowInner}</div>`;
     if (node.type === 'folder') {
         if (isExpanded && node.children?.length) html += node.children.map(c => renderTreeNode(c, depth+1)).join('');
         if (addMode && addMode.parentId === node.id) {
@@ -2680,8 +3048,13 @@ function _buildPathCache(nodes, path) {
 function renderTree() {
     _pathCache = {};
     _buildPathCache(treeData, []);
+    _updateSelectedAncestors();
     const root = document.getElementById('tree-root');
-    const rendered = treeData.map(n => renderTreeNode(n, 0)).join('') + (sidebarQuery ? '' : renderRootAddRow());
+    // Drive 루트 폴더는 항상 최상단에 표시
+    const sortedForRender = treeData[0]?.id === DRIVE_ROOT_FOLDER_ID
+        ? treeData
+        : [...treeData.filter(n => n.id === DRIVE_ROOT_FOLDER_ID), ...treeData.filter(n => n.id !== DRIVE_ROOT_FOLDER_ID)];
+    const rendered = sortedForRender.map(n => renderTreeNode(n, 0)).join('') + (sidebarQuery ? '' : renderRootAddRow());
     if (sidebarQuery && !rendered.trim()) {
         root.innerHTML = `<div class="sidebar-search-empty">일치하는 항목이 없습니다</div>`;
     } else {
@@ -2690,7 +3063,9 @@ function renderTree() {
     if (treeEditingId) { const inp = document.getElementById('tree-rename-input'); if (inp) { inp.focus(); inp.select(); setupRenameInputListeners(inp, commitTreeRename, cancelTreeRename); } }
     if (addMode) { const inp = document.getElementById('tree-add-input'); if (inp) { inp.focus(); setupRenameInputListeners(inp, commitAdd, cancelAdd); } }
     renderSidebarRecent();
+    renderSidebarRecentFolders();
     renderPinnedSection();
+    _renderDriveSyncSection();
     saveStorage();
 }
 function setupRenameInputListeners(inp, onCommit, onCancel) {
@@ -2759,7 +3134,7 @@ function _doDeleteNode(id, node) {
     appLog('delete', `${node.type==='folder'?'폴더':'시트'} 삭제`, childCount > 0 ? `"${node.name}" (하위 ${childCount}개 포함)` : `"${node.name}"`);
     showToast(`"${node.name}" 이(가) 삭제되었습니다`, '🗑️', undoFn); renderTree(); applyFilters();
 }
-function toggleExpand(id) { treeData = mapTree(treeData, n => n.id===id ? {...n, expanded:!n.expanded} : n); renderTree(); }
+function toggleExpand(id) { treeData = mapTree(treeData, n => n.id===id ? {...n, expanded:!n.expanded} : n); renderTree(); saveStorage(); }
 function updateManualSortOption() {
     const opt = document.querySelector('#sort-select option[value="manual"]');
     if (!opt) return;
@@ -2769,7 +3144,13 @@ function updateManualSortOption() {
     opt.title = enabled ? '' : '폴더를 선택하면 사용할 수 있습니다';
     if (!enabled && currentSort === 'manual') { currentSort = 'pinned'; const sel = document.getElementById('sort-select'); if (sel) sel.value = 'pinned'; }
 }
-function selectNode(id) { selectedCards.clear(); updateBulkBar(); selectedId = id; treeEditingId = null; addMode = null; renderTree(); applyFilters(); updateAllRowStyle(); updateBreadcrumb(); if (window.innerWidth < 768) closeSidebar(); updateManualSortOption(); try { history.replaceState(null,'', id === 'root' ? location.pathname : location.pathname + '?folder=' + encodeURIComponent(id)); } catch(e){} }
+function selectNode(id) {
+    selectedCards.clear(); updateBulkBar(); selectedId = id; treeEditingId = null; addMode = null;
+    const _selN = id !== 'root' ? findNode(id) : null;
+    if (_selN && _selN.type === 'folder') { recentFolderIds = [id, ...recentFolderIds.filter(x => x !== id)].slice(0, 5); }
+    renderTree(); applyFilters(); updateAllRowStyle(); updateBreadcrumb(); if (window.innerWidth < 768) closeSidebar(); updateManualSortOption();
+    try { history.replaceState(null,'', id === 'root' ? location.pathname : location.pathname + '?folder=' + encodeURIComponent(id)); } catch(e){}
+}
 
 // ══════════════════════════════════════
 // 트리 이벤트 위임
@@ -2891,6 +3272,10 @@ function renderSheets(data) {
     const sorted = sortData(data);
     const _q = document.getElementById('searchInput').value.trim();
 
+    if (currentView === 'kanban') {
+        renderKanbanView(sorted, _q);
+        return;
+    }
     if (currentView === 'list') {
         // ── 테이블 리스트 뷰 ──
         const sortIndicator = col => {
@@ -3277,12 +3662,16 @@ document.getElementById('sheet-container').addEventListener('click', e => {
 // 뷰 전환
 // ══════════════════════════════════════
 function setView(type) {
-    if (currentView !== type) appLog('view', '뷰 전환', `${type==='grid'?'카드 뷰':type==='list'?'리스트 뷰':'그룹 뷰'}`);
+    const labels = { grid:'카드 뷰', list:'리스트 뷰', group:'그룹 뷰', kanban:'칸반 뷰' };
+    if (currentView !== type) appLog('view', '뷰 전환', labels[type] || type);
     currentView = type;
     document.getElementById('sheet-container').className = type + '-view';
     document.querySelectorAll('[data-view]').forEach(b => b.classList.toggle('active', b.dataset.view===type));
     const ss = document.getElementById('sort-select');
-    if (ss) ss.style.display = type === 'list' ? 'none' : '';
+    if (ss) ss.style.display = (type === 'list' || type === 'kanban') ? 'none' : '';
+    document.querySelectorAll('.controls [data-filter]').forEach(b => b.style.display = '');
+    const countEl = document.getElementById('result-count');
+    if (countEl) countEl.style.display = type === 'kanban' ? 'none' : '';
     updateSelectAllBtn();
     const btnSelect = document.getElementById('btn-select-all');
     if (btnSelect) btnSelect.style.display = type === 'grid' ? '' : 'none';
@@ -3361,8 +3750,8 @@ document.getElementById('sheet-container').addEventListener('dragend', e => {
 // ── 카드↔카드 순서 변경 ──
 let _cardDropTarget = null;
 function _clearCardDropIndicators() {
-    document.querySelectorAll('.sheet-card.card-drop-before,.sheet-card.card-drop-after')
-        .forEach(c => c.classList.remove('card-drop-before','card-drop-after'));
+    document.querySelectorAll('.sheet-card.card-drop-before,.sheet-card.card-drop-after,.sheet-card.card-drop-merge')
+        .forEach(c => c.classList.remove('card-drop-before','card-drop-after','card-drop-merge'));
 }
 document.getElementById('sheet-container').addEventListener('dragover', e => {
     if (_dragSheetId === null) return;
@@ -3370,16 +3759,23 @@ document.getElementById('sheet-container').addEventListener('dragover', e => {
     if (!targetCard) return;
     const targetId = Number(targetCard.dataset.id);
     if (targetId === _dragSheetId) return;
-    const dragParent   = getParentFolderNode(_dragSheetId);
-    const targetParent = getParentFolderNode(targetId);
-    if (!dragParent || !targetParent || dragParent.id !== targetParent.id) return;
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
-    const rect  = targetCard.getBoundingClientRect();
-    const after = e.clientY > rect.top + rect.height / 2;
+    const rect = targetCard.getBoundingClientRect();
+    const pct  = (e.clientY - rect.top) / rect.height;
+    const dragParent   = getParentFolderNode(_dragSheetId);
+    const targetParent = getParentFolderNode(targetId);
+    const sameFolder   = dragParent && targetParent && dragParent.id === targetParent.id;
     _clearCardDropIndicators();
-    targetCard.classList.add(after ? 'card-drop-after' : 'card-drop-before');
-    _cardDropTarget = { sheetId: targetId, after };
+    // 중앙 40% 구간 → 폴더 합치기, 위/아래 30% → 순서 변경(같은 폴더만)
+    if (pct > 0.3 && pct < 0.7) {
+        targetCard.classList.add('card-drop-merge');
+        _cardDropTarget = { sheetId: targetId, merge: true };
+    } else if (sameFolder) {
+        const after = pct >= 0.7;
+        targetCard.classList.add(after ? 'card-drop-after' : 'card-drop-before');
+        _cardDropTarget = { sheetId: targetId, after, merge: false };
+    }
 });
 document.getElementById('sheet-container').addEventListener('dragleave', e => {
     if (!e.relatedTarget || !document.getElementById('sheet-container').contains(e.relatedTarget)) {
@@ -3394,7 +3790,38 @@ document.getElementById('sheet-container').addEventListener('drop', e => {
     if (!targetCard) return;
     e.preventDefault();
     e.stopPropagation();
-    reorderSheetInFolder(_dragSheetId, _cardDropTarget.sheetId, _cardDropTarget.after);
+
+    if (_cardDropTarget.merge) {
+        // 두 카드를 새 폴더로 합치기
+        const dragSheet   = sheetsData.find(s => s.id === _dragSheetId);
+        const targetSheet = sheetsData.find(s => s.id === _cardDropTarget.sheetId);
+        if (!dragSheet || !targetSheet) { _cardDropTarget = null; return; }
+
+        const defaultName = dragSheet.title.slice(0, 10) + ' 외';
+        const folderName  = prompt('새 폴더 이름을 입력하세요:', defaultName);
+        if (!folderName) { _cardDropTarget = null; return; }
+
+        const newFolderId = 'f-merge-' + Date.now();
+        const newFolder   = { id: newFolderId, type: 'folder', name: folderName.trim(), expanded: true, children: [] };
+
+        // 대상 카드의 부모 위치에 새 폴더 삽입
+        const targetParent = getParentFolderNode(_cardDropTarget.sheetId);
+        const siblings     = targetParent ? targetParent.children : treeData;
+        const tgtIdx       = siblings.findIndex(n => n.type === 'sheet' && n.sheetId === _cardDropTarget.sheetId);
+        if (tgtIdx !== -1) siblings.splice(tgtIdx, 0, newFolder);
+        else siblings.push(newFolder);
+
+        // 두 시트를 새 폴더로 이동
+        moveSheetToFolder(_cardDropTarget.sheetId, newFolderId, { silent: true, noRender: true });
+        moveSheetToFolder(_dragSheetId,            newFolderId, { silent: true, noRender: true });
+
+        renderTree();
+        applyFilters();
+        saveStorage();
+        showToast(`"${folderName}" 폴더가 만들어졌습니다`, '📁');
+    } else {
+        reorderSheetInFolder(_dragSheetId, _cardDropTarget.sheetId, _cardDropTarget.after);
+    }
     _cardDropTarget = null;
 });
 
@@ -3442,8 +3869,8 @@ document.getElementById('tree-root').addEventListener('dragstart', e => {
     }, 0);
 });
 function _clearTreeDragHighlight() {
-    document.querySelectorAll('.tree-node.drag-into-folder,.tree-node.drag-after-item,.tree-node.drag-over-tree')
-        .forEach(n => n.classList.remove('drag-into-folder','drag-after-item','drag-over-tree'));
+    document.querySelectorAll('.tree-node.drag-into-folder,.tree-node.drag-after-item,.tree-node.drag-before-item,.tree-node.drag-over-tree')
+        .forEach(n => n.classList.remove('drag-into-folder','drag-after-item','drag-before-item','drag-over-tree'));
 }
 document.getElementById('tree-root').addEventListener('dragover', e => {
     if (!_treeDragNodeId || _dragSheetId !== null) return;
@@ -3451,25 +3878,37 @@ document.getElementById('tree-root').addEventListener('dragover', e => {
     if (!node) return;
     const nid = node.dataset.nodeId;
     if (nid === _treeDragNodeId) return;
-    // 순환 참조가 될 대상은 hover 자체를 무시
     if (isDescendantTree(_treeDragNodeId, nid)) return;
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
-    // 이전 하이라이트 제거
     if (_treeDragOverNodeId && _treeDragOverNodeId !== nid) {
         const prev = document.querySelector(`.tree-node[data-node-id="${_treeDragOverNodeId}"]`);
-        prev?.classList.remove('drag-into-folder','drag-after-item');
+        prev?.classList.remove('drag-into-folder','drag-after-item','drag-before-item');
     }
     _treeDragOverNodeId = nid;
     const isFolder = node.dataset.nodeType === 'folder';
-    _treeDragOverMode  = isFolder ? 'into' : 'after';
-    node.classList.remove('drag-into-folder','drag-after-item');
-    node.classList.add(isFolder ? 'drag-into-folder' : 'drag-after-item');
+    // 마우스 Y 위치로 before / into / after 판단
+    const row = node.querySelector('.tree-row') || node;
+    const { top, height } = row.getBoundingClientRect();
+    const relY = e.clientY - top;
+    let mode;
+    if (relY < height * 0.35) {
+        mode = 'before';
+    } else if (isFolder && relY < height * 0.65) {
+        mode = 'into';
+    } else {
+        mode = 'after';
+    }
+    _treeDragOverMode = mode;
+    node.classList.remove('drag-into-folder','drag-after-item','drag-before-item');
+    if (mode === 'into')   node.classList.add('drag-into-folder');
+    else if (mode === 'before') node.classList.add('drag-before-item');
+    else                   node.classList.add('drag-after-item');
 });
 document.getElementById('tree-root').addEventListener('dragleave', e => {
     const node = e.target.closest('.tree-node[data-node-id]');
     if (node && !node.contains(e.relatedTarget))
-        node.classList.remove('drag-into-folder','drag-after-item');
+        node.classList.remove('drag-into-folder','drag-after-item','drag-before-item');
 });
 document.getElementById('tree-root').addEventListener('drop', e => {
     if (!_treeDragNodeId) return;
@@ -3479,7 +3918,7 @@ document.getElementById('tree-root').addEventListener('drop', e => {
     const node = e.target.closest('.tree-node[data-node-id]');
     _clearTreeDragHighlight();
     const targetId = node?.dataset.nodeId;
-    if (targetId && targetId !== _treeDragNodeId) moveTreeNode(_treeDragNodeId, targetId);
+    if (targetId && targetId !== _treeDragNodeId) moveTreeNode(_treeDragNodeId, targetId, _treeDragOverMode);
     _treeDragNodeId = null; _treeDragOverNodeId = null; _treeDragOverMode = null;
 });
 document.getElementById('tree-root').addEventListener('dragend', e => {
@@ -3701,8 +4140,9 @@ function showToast(msg, icon='✅', undoFn=null) {
 // 시트 추가 모달
 // ══════════════════════════════════════
 const SHEETS_ID_RE = /\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/;
-let parsedSheetId  = null;
-let parsedSheetUrl = '';
+let parsedSheetId      = null;
+let parsedSheetUrl     = '';
+let parsedIsGenericUrl = false;
 let _addFocusTrapRelease = null;
 function openModal() {
     resetModal();
@@ -3732,23 +4172,38 @@ function closeModal() {
     if (_addFocusTrapRelease) { _addFocusTrapRelease(); _addFocusTrapRelease = null; }
 }
 function resetModal() {
-    parsedSheetId=null; parsedSheetUrl='';
+    parsedSheetId=null; parsedSheetUrl=''; parsedIsGenericUrl=false;
     document.getElementById('url-input').value=''; document.getElementById('title-input').value='';
     setUrlFeedback(null); document.getElementById('modal-add-btn').disabled=true;
 }
 function setUrlFeedback(state, id) {
     const input=document.getElementById('url-input'); const feedback=document.getElementById('url-feedback'); const addBtn=document.getElementById('modal-add-btn');
     input.classList.remove('valid','invalid');
-    if (state==='success') { input.classList.add('valid'); feedback.className='url-feedback success'; feedback.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 15.01 9 12.01"/></svg><span>✅ 올바른 구글 시트입니다<br><span class="sheet-id-chip">시트 ID: ${esc(id)}</span></span>`; addBtn.disabled=false; }
-    else if (state==='error') { input.classList.add('invalid'); feedback.className='url-feedback error'; feedback.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>구글 시트 URL 형식이 맞지 않습니다`; addBtn.disabled=true; }
+    const checkSvg=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 15.01 9 12.01"/></svg>`;
+    const warnSvg=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+    if (state==='success') { input.classList.add('valid'); feedback.className='url-feedback success'; feedback.innerHTML=`${checkSvg}<span>✅ 올바른 구글 시트입니다<br><span class="sheet-id-chip">시트 ID: ${esc(id)}</span></span>`; addBtn.disabled=false; }
+    else if (state==='generic') { input.classList.add('valid'); feedback.className='url-feedback success'; feedback.innerHTML=`${checkSvg}<span>✅ URL이 유효합니다</span>`; addBtn.disabled=false; }
+    else if (state==='error') { input.classList.add('invalid'); feedback.className='url-feedback error'; feedback.innerHTML=`${warnSvg}올바른 URL 형식이 아닙니다 (https:// 로 시작해야 합니다)`; addBtn.disabled=true; }
     else { feedback.className='url-feedback'; feedback.innerHTML=''; addBtn.disabled=true; }
 }
 const handleUrlInput = debounce(()=>{
     const raw=document.getElementById('url-input').value.trim();
-    if (!raw) { setUrlFeedback(null); parsedSheetId=null; return; }
+    if (!raw) { setUrlFeedback(null); parsedSheetId=null; parsedIsGenericUrl=false; return; }
     const m=raw.match(SHEETS_ID_RE);
-    if (m) { parsedSheetId=m[1]; parsedSheetUrl=raw; setUrlFeedback('success',m[1]); const t=document.getElementById('title-input'); if (!t.value) t.value='새 스프레드시트'; }
-    else { parsedSheetId=null; setUrlFeedback('error'); }
+    if (m) {
+        parsedSheetId=m[1]; parsedIsGenericUrl=false; parsedSheetUrl=raw;
+        setUrlFeedback('success',m[1]);
+        const t=document.getElementById('title-input'); if (!t.value) t.value='새 스프레드시트';
+    } else {
+        parsedSheetId=null;
+        try {
+            const u=new URL(raw);
+            if (u.protocol!=='https:' && u.protocol!=='http:') throw new Error();
+            parsedIsGenericUrl=true; parsedSheetUrl=raw;
+            setUrlFeedback('generic');
+            const t=document.getElementById('title-input'); if (!t.value) t.value=u.hostname;
+        } catch { parsedIsGenericUrl=false; setUrlFeedback('error'); }
+    }
 },400);
 const dropzone=document.getElementById('dropzone');
 dropzone.addEventListener('dragover',e=>{e.preventDefault();dropzone.classList.add('dragging');});
@@ -3762,21 +4217,23 @@ dropzone.addEventListener('drop',e=>{
 document.getElementById('drive-btn').addEventListener('click',()=>{ showToast('구글 드라이브 연동은 추후 지원 예정입니다','🔔'); });
 document.getElementById('url-input').addEventListener('input', handleUrlInput);
 document.getElementById('modal-add-btn').addEventListener('click',()=>{
-    const title=document.getElementById('title-input').value.trim()||'새 스프레드시트';
-    if (!parsedSheetId) return;
+    if (!parsedSheetId && !parsedIsGenericUrl) return;
+    const defaultTitle = parsedSheetId ? '새 스프레드시트' : '새 링크';
+    const title=document.getElementById('title-input').value.trim()||defaultTitle;
     // 중복 URL 체크
     const existingSheet = sheetsData.find(s => s.link && s.link !== '#' && s.link === parsedSheetUrl);
-    if (existingSheet) { showToast('이미 등록된 시트입니다: ' + existingSheet.title, '⚠️'); return; }
+    if (existingSheet) { showToast('이미 등록된 링크입니다: ' + existingSheet.title, '⚠️'); return; }
     const newSheetId=nextId++;
-    sheetsData.unshift({id:newSheetId,title,desc:`시트 ID: ${parsedSheetId}`,owner:'나(PM)',updated:today(),tags:[],isPinned:false,isFavorite:false,access:'public',status:'active',link:parsedSheetUrl});
+    const desc = parsedSheetId ? `시트 ID: ${parsedSheetId}` : parsedSheetUrl;
+    sheetsData.unshift({id:newSheetId,title,desc,owner:'나(PM)',updated:today(),tags:[],isPinned:false,isFavorite:false,access:'public',status:'active',link:parsedSheetUrl});
     const targetFolderId = document.getElementById('add-folder-select').value;
     if (targetFolderId) {
         const newTreeNode = { id: uid('t-'), type:'sheet', name: title, sheetId: newSheetId };
         treeData = addToTree(targetFolderId, newTreeNode, treeData);
     }
     const folderNode = targetFolderId ? findNode(targetFolderId) : null;
-    appLog('add', '시트 추가 (모달)', folderNode ? `"${title}" → "${folderNode.name}"` : `"${title}"`, newSheetId);
-    closeModal(); renderTree(); applyFilters(); showToast(`"${title}" 시트가 추가되었습니다`);
+    appLog('add', '링크 추가 (모달)', folderNode ? `"${title}" → "${folderNode.name}"` : `"${title}"`, newSheetId);
+    closeModal(); renderTree(); applyFilters(); showToast(`"${title}" 항목이 추가되었습니다`);
 });
 document.getElementById('modal-close-btn').addEventListener('click',closeModal);
 document.getElementById('modal-cancel-btn').addEventListener('click',closeModal);
@@ -3830,11 +4287,10 @@ document.addEventListener('keydown', e => {
         if (!isInput && _undoStack.length) { e.preventDefault(); restoreUndo(); }
         return;
     }
-    // Ctrl+K / Cmd+K → 검색창 포커스
+    // Ctrl+K / Cmd+K → 커맨드 팔레트 열기
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
         e.preventDefault();
-        const si = document.getElementById('searchInput');
-        si.focus(); si.select();
+        openCmdPalette();
         return;
     }
     // Ctrl+N / Cmd+N → 시트 추가 모달
@@ -3846,6 +4302,8 @@ document.addEventListener('keydown', e => {
     // [ → 사이드바 접기  ] → 사이드바 펼치기  (입력 필드 제외)
     const isInput = document.activeElement && (document.activeElement.tagName==='INPUT'||document.activeElement.tagName==='TEXTAREA'||document.activeElement.isContentEditable);
     if (!isInput && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        // ? → 단축키 도움말
+        if (e.key === '?') { e.preventDefault(); openShortcutModal(); return; }
         const sidebar = document.querySelector('.sidebar');
         if (e.key === '[') { e.preventDefault(); const _sb = document.querySelector('.sidebar'); const _cb = document.getElementById('resizer-collapse-btn'); if (_sb && !_sb.classList.contains('collapsed')) { _sb.classList.add('collapsed'); localStorage.setItem('sm-sidebar-collapsed','1'); if (_cb) { _cb.innerHTML = '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>'; _cb.title='사이드바 펼치기'; } } }
         if (e.key === ']') { e.preventDefault(); const _sb = document.querySelector('.sidebar'); const _cb = document.getElementById('resizer-collapse-btn'); if (_sb && _sb.classList.contains('collapsed')) { _sb.classList.remove('collapsed'); localStorage.setItem('sm-sidebar-collapsed','0'); if (_cb) { _cb.innerHTML = '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>'; _cb.title='사이드바 접기'; } } }
@@ -3929,6 +4387,82 @@ function updateAllRowStyle() {
 document.getElementById('tree-all-row').addEventListener('keydown', e => { if (e.key==='Enter'||e.key===' ') { e.preventDefault(); selectAllRoot(); } });
 
 // ══════════════════════════════════════
+// ══════════════════════════════════════
+// 자동 백업 함수들
+// ══════════════════════════════════════
+
+// Layer 2: 파일 자동 다운로드
+function _triggerFileBackup(payload) {
+    try {
+        const data = { sheetsData: payload.sheetsData, treeData: payload.treeData, nextId: payload.nextId, exportedAt: new Date().toISOString() };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `sheets-auto-${new Date().toISOString().slice(0,10)}.json`;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
+        localStorage.setItem(LAST_FILE_BACKUP_KEY, String(Date.now()));
+        localStorage.setItem(SAVE_COUNTER_KEY, '0');
+        appLog('system', '자동 파일 백업', `${payload.sheetsData.length}개 시트`);
+        showToast('자동 백업 파일이 다운로드 폴더에 저장됐습니다', '💾');
+    } catch(e) { console.warn('파일 백업 실패:', e); }
+}
+
+// Layer 3: GAS 백업 시트 전송
+function _sendToBackupGAS(payload) {
+    if (!BACKUP_GAS_URL) return;
+    fetch(BACKUP_GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'data=' + encodeURIComponent(JSON.stringify(payload))
+    }).then(r => r.json()).then(r => {
+        if (r.ok) console.log('[BackupGAS] 저장 완료:', r.savedAt);
+        else console.warn('[BackupGAS] 오류:', r.error);
+    }).catch(e => console.warn('[BackupGAS] 전송 실패:', e));
+}
+
+// 앱 로드 시 7일 경과 여부 확인 → 자동 파일 백업
+function _checkFileBackupOnLoad() {
+    const last = parseInt(localStorage.getItem(LAST_FILE_BACKUP_KEY) || '0', 10);
+    if (Date.now() - last > FILE_BACKUP_INTERVAL && sheetsData.length > 0) {
+        setTimeout(() => {
+            const payload = { sheetsData, treeData, nextId, updatedAt: Date.now() };
+            _triggerFileBackup(payload);
+        }, 3000); // 로딩 완료 후 3초 뒤 다운로드
+    }
+}
+
+// GAS 백업에서 복원
+async function restoreFromBackupGAS() {
+    if (!BACKUP_GAS_URL) {
+        const url = prompt('백업 GAS URL을 입력하세요 (backup-gas.gs 배포 후 생성된 URL):');
+        if (!url) return;
+        BACKUP_GAS_URL = url.trim();
+        localStorage.setItem('sm-backup-gas-url', BACKUP_GAS_URL);
+    }
+    showToast('백업 목록을 불러오는 중…', '⏳');
+    try {
+        const res = await fetch(BACKUP_GAS_URL + '?action=smBackupList');
+        const json = await res.json();
+        if (!json.ok || !json.items.length) { showToast('백업 목록이 비어 있습니다. GAS에 backup-gas.gs 코드가 추가됐는지 확인하세요.', '⚠️'); return; }
+        const fmt = iso => new Date(iso).toLocaleString('ko-KR', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+        const lines = json.items.map((it, i) =>
+            `${i+1}. ${fmt(it.savedAt)}  시트 ${it.sheetCount}개 / URL ${it.urlCount}개`).join('\n');
+        const pick = prompt(`Google Sheets 백업 목록 (최신순)\n\n${lines}\n\n복원할 번호 입력 (1~${json.items.length}):`, '1');
+        if (!pick) return;
+        const idx = parseInt(pick, 10) - 1;
+        if (isNaN(idx) || idx < 0 || idx >= json.items.length) { showToast('잘못된 번호', '⚠️'); return; }
+        if (!confirm(`${fmt(json.items[idx].savedAt)} 스냅샷으로 복원하시겠습니까?`)) return;
+        showToast('데이터를 불러오는 중…', '⏳');
+        const dataRes = await fetch(`${BACKUP_GAS_URL}?action=smBackupGet&idx=${idx}`);
+        const snapData = await dataRes.json();
+        const restoreData = Object.assign({}, snapData, { updatedAt: Date.now() });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(restoreData));
+        showToast('복원 완료. 새로고침합니다…', '✅');
+        setTimeout(() => location.reload(), 1200);
+    } catch(e) { showToast('복원 실패: ' + e.message, '❌'); }
+}
+
 // JSON 백업 / 복원
 // ══════════════════════════════════════
 document.getElementById('btn-export').addEventListener('click', () => {
@@ -3940,6 +4474,35 @@ document.getElementById('btn-export').addEventListener('click', () => {
     a.click(); URL.revokeObjectURL(a.href);
     appLog('system', 'JSON 백업 다운로드', `${sheetsData.length}개 시트`);
     showToast('백업 파일이 다운로드되었습니다', '💾');
+});
+
+document.getElementById('btn-restore-backup').addEventListener('click', () => {
+    const hasBGAS = !!BACKUP_GAS_URL;
+    const choice = prompt(
+        `복원 방법을 선택하세요:\n\n` +
+        `1. 브라우저 자동 백업 (최근 3개 스냅샷)\n` +
+        `2. Google Sheets 백업${hasBGAS ? '' : ' (설정 필요)'}` +
+        `\n\n번호 입력:`, '1');
+    if (!choice) return;
+    if (choice.trim() === '2') { restoreFromBackupGAS(); return; }
+    // --- localStorage 복원 ---
+    let snapshots;
+    try { snapshots = JSON.parse(localStorage.getItem(BACKUP_KEY) || '[]'); } catch(e) { snapshots = []; }
+    if (!snapshots.length) { showToast('저장된 자동 백업이 없습니다', '⚠️'); return; }
+    const fmt = ts => new Date(ts).toLocaleString('ko-KR', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    const lines = snapshots.map((s, i) => `${i+1}. ${fmt(s.savedAt)} — ${s.data.sheetsData?.length||0}개 시트`).join('\n');
+    const pick = prompt(`브라우저 백업 복원\n\n${lines}\n\n번호 입력 (1~${snapshots.length}):`, '1');
+    if (!pick) return;
+    const idx = parseInt(pick, 10) - 1;
+    if (isNaN(idx) || idx < 0 || idx >= snapshots.length) { showToast('잘못된 번호입니다', '⚠️'); return; }
+    const snap = snapshots[idx];
+    if (!confirm(`${fmt(snap.savedAt)} 스냅샷으로 복원하시겠습니까?\n현재 데이터는 덮어쓰여집니다.`)) return;
+    try {
+        const restoreData = Object.assign({}, snap.data, { updatedAt: Date.now() });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(restoreData));
+        showToast('백업 복원 완료. 새로고침합니다…', '✅');
+        setTimeout(() => location.reload(), 1200);
+    } catch(e) { showToast('복원 실패: ' + e.message, '❌'); }
 });
 document.getElementById('btn-import').addEventListener('click', () => {
     document.getElementById('import-file-input').click();
@@ -4073,6 +4636,7 @@ function togglePinNode(nodeId) {
 }
 function toggleSidebarPin() {
     _sidebarPinCollapsed = !_sidebarPinCollapsed;
+    localStorage.setItem('sm-sb-pin-col', _sidebarPinCollapsed ? '1' : '0');
     renderPinnedSection();
 }
 function renderPinnedSection() {
@@ -4129,7 +4693,76 @@ function renderSidebarRecent() {
 }
 function toggleSidebarRecent() {
     _sidebarRecentCollapsed = !_sidebarRecentCollapsed;
+    localStorage.setItem('sm-sb-recent-col', _sidebarRecentCollapsed ? '1' : '0');
     renderSidebarRecent();
+}
+
+// 사이드바 최근 방문 폴더 렌더
+function renderSidebarRecentFolders() {
+    const section = document.getElementById('sidebar-recent-folders-section');
+    const list    = document.getElementById('sidebar-recent-folders-list');
+    if (!section || !list) return;
+    const items = recentFolderIds.map(id => findNode(id)).filter(Boolean).slice(0, 5);
+    if (items.length === 0) { section.style.display = 'none'; return; }
+    section.style.display = '';
+    if (_sidebarRecentFoldersCollapsed) section.classList.add('collapsed');
+    else section.classList.remove('collapsed');
+    list.innerHTML = items.map(node => {
+        const icon = folderIcon(node.color || 'yellow', node.icon);
+        return `<a class="sidebar-recent-item" href="javascript:void(0)" onclick="selectFolderInView('${node.id}')">
+            <span style="flex-shrink:0;display:flex;align-items:center">${icon}</span>
+            <span class="sidebar-recent-item-name">${esc(node.name)}</span>
+        </a>`;
+    }).join('');
+}
+function toggleSidebarRecentFolders() {
+    _sidebarRecentFoldersCollapsed = !_sidebarRecentFoldersCollapsed;
+    localStorage.setItem('sm-sb-rfol-col', _sidebarRecentFoldersCollapsed ? '1' : '0');
+    renderSidebarRecentFolders();
+}
+
+// ══ Drive 동기화 사이드바 섹션 ══
+let _sidebarDriveCollapsed = localStorage.getItem('sm-sb-drive-col') === '1';
+function _renderDriveSyncSection() {
+    const section = document.getElementById('sidebar-drive-section');
+    const list    = document.getElementById('sidebar-drive-list');
+    const badge   = document.getElementById('sidebar-drive-sync-badge');
+    if (!section || !list) return;
+    const driveRoot = treeData.find(n => n.id === DRIVE_ROOT_FOLDER_ID);
+    if (!driveRoot) { section.style.display = 'none'; return; }
+    section.style.display = '';
+    if (_sidebarDriveCollapsed) section.classList.add('collapsed');
+    else section.classList.remove('collapsed');
+    // 마지막 동기화 시각
+    const lastSync = localStorage.getItem('sm-drive-last-sync');
+    if (badge) badge.textContent = lastSync ? relativeDate(lastSync.slice(0,10)) + ' 동기화' : '';
+    // 드라이브 시트 목록 (모든 날짜 서브폴더에서 최근 8개)
+    const driveSheetIds = [];
+    function collectDrive(nodes) { for (const n of nodes) { if (n.type==='sheet') driveSheetIds.push(n.sheetId); if (n.children) collectDrive(n.children); } }
+    collectDrive(driveRoot.children || []);
+    const items = driveSheetIds.slice(-8).reverse().map(id => sheetsData.find(s => s.id === id)).filter(Boolean);
+    if (items.length === 0) {
+        list.innerHTML = `<div style="font-size:11.5px;color:var(--muted);padding:4px 8px 6px">아직 가져온 시트가 없습니다.</div>`;
+    } else {
+        list.innerHTML = items.map(s => {
+            const href  = (s.link && s.link !== '#') ? esc(s.link) : 'javascript:void(0)';
+            const extra = (s.link && s.link !== '#') ? 'target="_blank" rel="noopener"' : '';
+            return `<a class="sidebar-drive-item" href="${href}" ${extra} onclick="addRecentId(${s.id})">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                <span class="sidebar-drive-item-name">${esc(s.title)}</span>
+                <span class="sidebar-drive-item-badge">Drive</span>
+            </a>`;
+        }).join('');
+    }
+    // Drive 루트 폴더로 이동하는 버튼
+    list.innerHTML += `<div style="padding:4px 8px 2px">
+        <button onclick="selectNode('${DRIVE_ROOT_FOLDER_ID}')" style="background:none;border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;color:var(--primary);cursor:pointer;width:100%;transition:background .1s" onmouseover="this.style.background='var(--hover-bg)'" onmouseout="this.style.background='none'">Drive 폴더 보기 →</button>
+    </div>`;
+}
+function toggleSidebarDrive() {
+    _sidebarDriveCollapsed = !_sidebarDriveCollapsed;
+    localStorage.setItem('sm-sb-drive-col', _sidebarDriveCollapsed ? '1' : '0');
+    _renderDriveSyncSection();
 }
 
 // 사이드바 검색 이벤트 (DOM 로드 후 연결)
@@ -4303,11 +4936,18 @@ function openColorPicker(folderId, btnEl) {
         <div class="color-row">${colorDots}</div>
         <hr class="picker-divider">
         <span class="picker-section-label">아이콘</span>
-        <div class="icon-picker-grid">${iconDots}</div>`;
+        <div class="icon-picker-grid" style="max-height:186px;overflow-y:auto;padding-right:2px">${iconDots}</div>`;
     const rect = btnEl.getBoundingClientRect();
-    popup.style.top  = (rect.bottom + 6) + 'px';
-    popup.style.left = Math.min(rect.left, window.innerWidth - 216) + 'px';
+    popup.style.visibility = 'hidden';
     popup.style.display = 'block';
+    const popupH = popup.offsetHeight;
+    const spaceBelow = window.innerHeight - rect.bottom - 6;
+    const top = spaceBelow >= popupH
+        ? rect.bottom + 6
+        : Math.max(6, rect.top - popupH - 6);
+    popup.style.top  = top + 'px';
+    popup.style.left = Math.min(rect.left, window.innerWidth - 216) + 'px';
+    popup.style.visibility = 'visible';
 }
 // 컬러/아이콘 픽커 이벤트 위임
 document.getElementById('color-picker-popup').addEventListener('click', e => {
@@ -4484,14 +5124,26 @@ function toggleSidebar() { document.body.classList.contains('sidebar-open') ? cl
 // ══════════════════════════════════════
 // 초기화 (GAS → localStorage 복원)
 // ══════════════════════════════════════
+function _migrateDriveFolder() {
+    // 구형 "📥 Drive 가져오기" 폴더 → 고정 ID + 신규 이름으로 마이그레이션
+    const old = treeData.find(n => n.type==='folder' && (n.name==='📥 Drive 가져오기') && n.id !== DRIVE_ROOT_FOLDER_ID);
+    if (!old) return;
+    const oldId = old.id;
+    treeData = mapTree(treeData, n => n.id === oldId ? {...n, id:DRIVE_ROOT_FOLDER_ID, name:'📥 Google Drive', isDrive:true} : n);
+    pinnedNodeIds   = pinnedNodeIds.map(id   => id === oldId ? DRIVE_ROOT_FOLDER_ID : id);
+    recentFolderIds = recentFolderIds.map(id => id === oldId ? DRIVE_ROOT_FOLDER_ID : id);
+    if (selectedId === oldId) selectedId = DRIVE_ROOT_FOLDER_ID;
+}
 function _applyStoredData(saved) {
     if (!saved) return;
     sheetsData.length = 0; saved.sheetsData.forEach(s => sheetsData.push(s));
     treeData = saved.treeData; nextId = saved.nextId ?? nextId;
+    _migrateDriveFolder();
     if (saved.currentFilter) currentFilter = saved.currentFilter;
-    if (saved.currentView)   currentView   = saved.currentView;
+    if (saved.currentView && saved.currentView !== 'folder') currentView = saved.currentView;
     if (saved.currentSort)   currentSort   = saved.currentSort;
     if (Array.isArray(saved.recentIds)) recentIds = saved.recentIds;
+    if (Array.isArray(saved.recentFolderIds)) recentFolderIds = saved.recentFolderIds;
     if (Array.isArray(saved.pinnedNodeIds)) pinnedNodeIds = saved.pinnedNodeIds;
     if (saved.searchQuery) {
         const si = document.getElementById('searchInput');
@@ -4514,6 +5166,13 @@ function _renderAll() {
 
     // 1단계: localStorage 캐시로 즉시 렌더 (빠른 초기 표시)
     const local = loadStorage();
+    // 새로고침 깜빡임 방지: URL param > 로컬 저장값 순으로 selectedId 조기 설정
+    const _earlyUrlFolder = new URLSearchParams(location.search).get('folder');
+    if (_earlyUrlFolder) {
+        selectedId = _earlyUrlFolder;
+    } else if (local?.selectedId && local.selectedId !== 'root') {
+        selectedId = local.selectedId;
+    }
     _applyStoredData(local);
     _renderAll();
 
@@ -4523,32 +5182,103 @@ function _renderAll() {
         const remote = await _loadFromGAS();
         showSyncIndicator(false);
         if (remote) {
-            // GAS에 데이터가 있으면 무조건 GAS가 정답
-            _applyStoredData(remote); _renderAll();
-            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(remote)); } catch(e) {}
-            _lastKnownGasTs = remote.updatedAt || 0; // 폴링 기준점 초기화
-            console.log('[SM] GAS 데이터 적용 완료 (' + (remote.sheetsData||[]).length + '개)');
+            const remoteHasData = Array.isArray(remote.sheetsData) && remote.sheetsData.length > 0;
+            const localHasData  = local && Array.isArray(local.sheetsData) && local.sheetsData.length > 0;
+            if (!remoteHasData && localHasData) {
+                // GAS가 빈 데이터를 반환했지만 로컬에 데이터가 있으면 로컬 우선 + GAS에 복구 업로드
+                console.warn('[SM] GAS 데이터가 비어있음 — 로컬 데이터 유지 및 GAS 복구 시작');
+                const pushPayload = Object.assign({}, local, { updatedAt: Date.now() });
+                _saveToGAS(pushPayload);
+                showToast('서버 데이터가 비어있어 로컬 데이터로 복구합니다', '⚠️');
+            } else if (remoteHasData) {
+                const remoteTs    = remote.updatedAt || 0;
+                const localTs     = local ? (local.updatedAt || 0) : 0;
+                const remoteCount    = remote.sheetsData.length;
+                const localCount     = local ? (local.sheetsData || []).length : 0;
+                const remoteUrlCount = remote.sheetsData.filter(s => s.link && s.link !== '').length;
+                const localUrlCount  = local ? (local.sheetsData || []).filter(s => s.link && s.link !== '').length : 0;
+                // 로컬이 GAS보다 현저히 많은 시트를 보유하거나, URL이 더 많으면 GAS 손상으로 간주하고 로컬 우선
+                const gasSeemsCorrupted = localCount > remoteCount * 3 + 5 || localUrlCount > remoteUrlCount + 3;
+                if (remoteTs >= localTs && !gasSeemsCorrupted) {
+                    // GAS 데이터가 최신이고 신뢰 가능 → 적용
+                    _applyStoredData(remote); _renderAll();
+                    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(remote)); } catch(e) {}
+                    _lastKnownGasTs = remoteTs;
+                    showOfflineBanner(false);
+                    console.log('[SM] GAS 데이터 적용 완료 (' + remoteCount + '개, ts=' + remoteTs + ')');
+                } else {
+                    // 로컬이 더 최신이거나 GAS 데이터가 의심스러움 → 로컬 유지 + GAS 업로드
+                    _lastKnownGasTs = remoteTs;
+                    showOfflineBanner(false);
+                    const pushPayload = Object.assign({}, local, { updatedAt: Date.now() });
+                    _saveToGAS(pushPayload);
+                    if (gasSeemsCorrupted) {
+                        console.warn('[SM] GAS 시트 수 이상 (local=' + localCount + ' >> remote=' + remoteCount + ') — 로컬 데이터로 복구 중');
+                    } else {
+                        console.log('[SM] 로컬 데이터가 GAS보다 최신 (local=' + localTs + ' > remote=' + remoteTs + ') — GAS 업로드');
+                    }
+                }
+            }
         } else if (local) {
-            // GAS가 비어 있을 때만 로컬 데이터를 GAS에 최초 업로드
+            // GAS 로드 실패 시 로컬 데이터를 GAS에 업로드
+            showOfflineBanner(true);
             const pushPayload = Object.assign({}, local, { updatedAt: Date.now() });
-            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(pushPayload)); } catch(e) {}
             _saveToGAS(pushPayload);
-            console.log('[SM] GAS 비어 있음 → 로컬 최초 업로드');
+            console.log('[SM] GAS 로드 실패 → 로컬 데이터 GAS 업로드 시도');
+        } else {
+            showOfflineBanner(true);
         }
     }
     _isInitializing = false; // 초기화 완료 — 이후부터 saveStorage() 정상 작동
+
+    // 초기 로드 직후 즉시 백업 스냅샷 저장 (URL 포함 전체 데이터 보존)
+    try {
+        const ts0 = Date.now();
+        const initPayload = { sheetsData, treeData, nextId, currentFilter, currentView, currentSort,
+            searchQuery: document.getElementById('searchInput')?.value || '',
+            recentIds, recentFolderIds, pinnedNodeIds, updatedAt: ts0 };
+        const prevBackups = JSON.parse(localStorage.getItem(BACKUP_KEY) || '[]');
+        prevBackups.unshift({ data: initPayload, savedAt: ts0 });
+        if (prevBackups.length > 3) prevBackups.length = 3;
+        localStorage.setItem(BACKUP_KEY, JSON.stringify(prevBackups));
+        // 백업 GAS에만 초기 스냅샷 전송 (메인 GAS는 init 흐름에서 별도 처리)
+        const hasUrls = sheetsData.some(s => s.link && s.link !== '');
+        if (BACKUP_GAS_URL && hasUrls) { _sendToBackupGAS(initPayload); }
+    } catch(e) { console.warn('초기 백업 실패:', e); }
+    _checkFileBackupOnLoad();
 
     // 온보딩 첫 방문 체크
     if (!localStorage.getItem('smOnboardingDone')) {
         setTimeout(() => { const om = document.getElementById('onboarding-modal'); if (om) om.classList.add('open'); }, 500);
     }
 
-    // URL 라우팅: ?folder= 파라미터로 폴더 선택
+    // URL 라우팅: ?folder= 파라미터 최종 확정 (데이터 로드 완료 후 유효성 검증)
     const urlFolder = new URLSearchParams(location.search).get('folder');
-    if (urlFolder && findNode(urlFolder)) { setTimeout(() => selectNode(urlFolder), 0); }
+    if (urlFolder && findNode(urlFolder)) {
+        // selectNode → renderTree → _updateSelectedAncestors 로 조상 폴더는 시각적으로만 펼침 (treeData 불변)
+        setTimeout(() => { selectNode(urlFolder); }, 0);
+    } else if (urlFolder) {
+        // 조기 설정된 selectedId가 유효하지 않으면 루트로 복귀
+        selectedId = 'root';
+        renderTree(); applyFilters(); updateAllRowStyle(); updateBreadcrumb();
+        showToast('폴더를 찾을 수 없습니다', '⚠️');
+        try { history.replaceState(null, '', location.pathname); } catch(e) {}
+    }
 
     // 마감일 브라우저 알림 체크
     checkDueDateNotifications();
+
+    // 안전망: skeleton 카드가 남아있으면 강제 렌더
+    setTimeout(() => {
+        const c = document.getElementById('sheet-container');
+        if (c && c.querySelector('.skeleton-card')) {
+            console.warn('[SM] skeleton 카드 감지 — 강제 렌더 실행');
+            _renderAll();
+        }
+    }, 500);
+
+    // 사이드바 섹션 접힘 상태 최종 보장 (URL 라우팅 후 재확인)
+    setTimeout(() => { renderPinnedSection(); renderSidebarRecent(); renderSidebarRecentFolders(); _renderDriveSyncSection(); }, 0);
 })();
 
 // ══════════════════════════════════════
@@ -4556,11 +5286,11 @@ function _renderAll() {
 // ══════════════════════════════════════
 function collapseAllFolders() {
     treeData = mapTree(treeData, n => n.type==='folder' ? {...n, expanded:false} : n);
-    renderTree(); showToast('모든 폴더를 접었습니다', '📁');
+    renderTree(); saveStorage(); showToast('모든 폴더를 접었습니다', '📁');
 }
 function expandAllFolders() {
     treeData = mapTree(treeData, n => n.type==='folder' ? {...n, expanded:true} : n);
-    renderTree(); showToast('모든 폴더를 펼쳤습니다', '📂');
+    renderTree(); saveStorage(); showToast('모든 폴더를 펼쳤습니다', '📂');
 }
 
 // ══════════════════════════════════════
@@ -4596,17 +5326,33 @@ document.addEventListener('contextmenu', e => {
         if (!sheet) return;
         _ctxTarget = { type:'card', id };
         const commentCount = (comments[id]||[]).length;
+        const hasLink = sheet.link && sheet.link !== '#';
         showCtxMenu(e.clientX, e.clientY, [
-            { label:'편집', icon:'✏️', action:'edit' },
-            { label:'이름 변경', icon:'📝', action:'rename' },
+            { label:'편집',       icon:'✏️', action:'edit' },
+            { label:'이름 변경',  icon:'📝', action:'rename' },
+            { label: hasLink ? 'URL 수정' : 'URL 추가', icon:'🔗', action:'editurl' },
+            { label:'복제',       icon:'⧉',  action:'duplicate' },
+            { label:'폴더 이동',  icon:'📂', action:'move' },
+            'sep',
             { label:`코멘트 (${commentCount})`, icon:'💬', action:'comment' },
-            sheet.link && sheet.link !== '#' ? { label:'링크 복사', icon:'🔗', action:'copylink' } : null,
+            hasLink ? { label:'링크 복사', icon:'📋', action:'copylink' } : null,
             'sep',
             { label: sheet.isFavorite ? '즐겨찾기 해제' : '즐겨찾기 추가', icon:'⭐', action:'fav' },
             { label: sheet.isPinned ? '핀 해제' : '상단 고정', icon:'📌', action:'pin' },
             'sep',
             { label:'삭제', icon:'🗑️', action:'delete', danger:true },
         ].filter(Boolean));
+        return;
+    }
+    // 메인 영역 빈 공간 우클릭 → 새 시트/폴더 생성
+    const container = e.target.closest('#sheet-container, #main-content');
+    if (container && !e.target.closest('.sheet-card, .group-section, .folder-view-item')) {
+        e.preventDefault();
+        _ctxTarget = { type:'canvas' };
+        showCtxMenu(e.clientX, e.clientY, [
+            { label:'새 시트 추가',  icon:'➕', action:'canvas-addsheet' },
+            { label:'새 폴더 추가',  icon:'📁', action:'canvas-addfolder' },
+        ]);
         return;
     }
     // 트리 행 우클릭
@@ -4657,9 +5403,32 @@ document.getElementById('ctx-menu').addEventListener('click', e => {
         if (action==='rename')   { startCardRename(id); return; }
         if (action==='comment')  { openComments(id); return; }
         if (action==='copylink') { copySheetLink(sheet); return; }
-        if (action==='fav')      { if(sheet){sheet.isFavorite=!sheet.isFavorite;appLog('fav',sheet.isFavorite?'즐겨찾기 추가':'즐겨찾기 해제',`"${sheet.title}"`,sheet.id);applyFilters();} return; }
-        if (action==='pin')      { if(sheet){const undoFn=saveUndoSnapshot();sheet.isPinned=!sheet.isPinned;appLog('edit','핀 상태 변경',`"${sheet.title}" ${sheet.isPinned?'고정':'해제'}`,sheet.id);applyFilters();showToast(sheet.isPinned?'상단에 고정됐습니다':'고정이 해제됐습니다','📌',undoFn);} return; }
+        if (action==='move')     { openSingleMoveModal(id); return; }
+        if (action==='editurl')  {
+            const url = prompt('URL을 입력하세요:', sheet?.link || '');
+            if (url === null) return;
+            if (sheet) { sheet.link = url.trim(); saveStorage(); applyFilters(); showToast('URL이 저장됐습니다', '🔗'); }
+            return;
+        }
+        if (action==='fav')      { if(sheet){sheet.isFavorite=!sheet.isFavorite;appLog('fav',sheet.isFavorite?'즐겨찾기 추가':'즐겨찾기 해제',`"${sheet.title}"`,sheet.id);saveStorage();applyFilters();} return; }
+        if (action==='pin')      { if(sheet){const undoFn=saveUndoSnapshot();sheet.isPinned=!sheet.isPinned;appLog('edit','핀 상태 변경',`"${sheet.title}" ${sheet.isPinned?'고정':'해제'}`,sheet.id);saveStorage();applyFilters();showToast(sheet.isPinned?'상단에 고정됐습니다':'고정이 해제됐습니다','📌',undoFn);} return; }
+        if (action==='duplicate'){ duplicateSheet(id); return; }
         if (action==='delete')   { deleteSheetCard(id); return; }
+    }
+    if (type === 'canvas') {
+        if (action==='canvas-addsheet')  {
+            // 현재 선택된 폴더에 시트 추가, 없으면 루트에
+            const targetId = (selectedId && selectedId !== 'root') ? selectedId : (treeData.find(n=>n.type==='folder')?.id || null);
+            if (targetId) startAdd(targetId, 'sheet');
+            else { document.getElementById('btn-add-sheet')?.click(); }
+            return;
+        }
+        if (action==='canvas-addfolder') {
+            const targetId = (selectedId && selectedId !== 'root') ? selectedId : null;
+            if (targetId) startAdd(targetId, 'folder');
+            else addFolderFromMain();
+            return;
+        }
     }
     if (type === 'tree') {
         if (action==='edit')      { const n=findNode(id); if(n?.sheetId) openEditModal(n.sheetId); return; }
@@ -4686,6 +5455,51 @@ function getDueBadgeHtml(dueDate) {
     if (diff === 0) return `<span class="due-badge overdue">🔴 오늘 마감</span>`;
     if (diff <= 3) return `<span class="due-badge due-soon">🟡 D-${diff}</span>`;
     return `<span class="due-badge due-ok">🟢 D-${diff}</span>`;
+}
+
+// ══════════════════════════════════════
+// 폴더 뷰 (제거됨 — 카드뷰/리스트뷰/그룹뷰만 사용)
+// ══════════════════════════════════════
+
+
+
+
+// ══════════════════════════════════════
+// 메인 영역 폴더 추가
+// ══════════════════════════════════════
+function addFolderFromMain() {
+    const parentId = (selectedId !== 'root' && findNode(selectedId)?.type === 'folder') ? selectedId : 'root';
+    const parentName = parentId !== 'root' ? findNode(parentId)?.name || '' : '';
+    const dlg = document.createElement('div');
+    dlg.id = 'quick-folder-dlg';
+    dlg.style.cssText = 'position:fixed;inset:0;z-index:800;display:flex;align-items:center;justify-content:center;background:rgba(25,31,40,.45);backdrop-filter:blur(6px)';
+    dlg.innerHTML = `<div style="background:var(--card-bg);border-radius:20px;padding:24px 28px;width:360px;box-shadow:0 16px 40px rgba(0,0,0,.18);border:1px solid var(--border)">
+        <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:16px">새 폴더 추가${parentName ? ` — ${esc(parentName)} 내` : ''}</div>
+        <input id="quick-folder-input" style="width:100%;padding:11px 14px;border:1.5px solid var(--primary);border-radius:12px;font-size:14px;outline:none;font-family:inherit;color:var(--text);background:var(--card-bg);box-shadow:0 0 0 3px rgba(49,130,246,.12);box-sizing:border-box" placeholder="폴더 이름" maxlength="40">
+        <div style="display:flex;gap:8px;margin-top:16px">
+            <button onclick="document.getElementById('quick-folder-dlg').remove()" style="flex:1;padding:10px;border:1.5px solid var(--border);border-radius:12px;background:none;cursor:pointer;font-size:13.5px;font-weight:600;color:var(--muted);font-family:inherit">취소</button>
+            <button id="quick-folder-ok" style="flex:2;padding:10px;border:none;border-radius:12px;background:var(--primary);color:#fff;cursor:pointer;font-size:13.5px;font-weight:700;font-family:inherit;box-shadow:0 4px 14px rgba(49,130,246,.35)">폴더 추가</button>
+        </div>
+    </div>`;
+    document.body.appendChild(dlg);
+    const inp = document.getElementById('quick-folder-input');
+    inp.focus();
+    function commit() {
+        const name = inp.value.trim();
+        if (!name) { inp.style.borderColor = 'var(--danger)'; inp.focus(); return; }
+        dlg.remove();
+        const undoFn = saveUndoSnapshot();
+        const newId = uid('f-');
+        const newNode = { id: newId, type: 'folder', name, expanded: true, children: [] };
+        if (parentId === 'root') { treeData = [...treeData, newNode]; }
+        else { treeData = addToTree(parentId, newNode, treeData); }
+        appLog('add', '폴더 추가', name);
+        showToast(`"${name}" 폴더가 추가되었습니다`, '📁', undoFn);
+        renderTree(); saveStorage();
+    }
+    document.getElementById('quick-folder-ok').addEventListener('click', commit);
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); commit(); } if (e.key === 'Escape') dlg.remove(); });
+    dlg.addEventListener('click', e => { if (e.target === dlg) dlg.remove(); });
 }
 
 // ══════════════════════════════════════
@@ -4783,9 +5597,10 @@ function renderCardHtml(sheet, _q='') {
     const isSelected = selectedCards.has(sheet.id);
     const accentColor = getFolderColorHex(sheet.id);
     const accentStyle = accentColor ? `border-left:4px solid ${accentColor};padding-left:22px;` : '';
+    const urlLine = hasLink ? `<a href="${esc(sheet.link)}" target="_blank" rel="noopener" class="card-url" onclick="addRecentId(${sheet.id})" title="${esc(sheet.link)}">${esc(sheet.link)}</a>` : '';
     return `<div class="sheet-card${isSelected?' selected':''}" draggable="true" data-id="${sheet.id}" data-tooltip-id="${sheet.id}" style="${accentStyle}">
         <div class="card-checkbox-wrap"><input type="checkbox" class="card-checkbox" data-card-select-id="${sheet.id}" ${isSelected?'checked':''}></div>
-        <div class="card-body"><div class="card-header"><div class="badges"><span class="badge ${accessClass}">${esc(accessLabel)}</span>${statusBadge}${recentBadge}</div><div style="display:flex;align-items:center;gap:4px">${pinIcon}<button class="fav-btn" data-id="${sheet.id}" title="즐겨찾기 토글 (F)" aria-label="${sheet.isFavorite?'즐겨찾기 해제':'즐겨찾기 추가'}" aria-pressed="${sheet.isFavorite}">${favIcon}</button><button class="card-move-btn" data-card-move-id="${sheet.id}" title="폴더로 이동" aria-label="${esc(sheet.title)} 폴더 이동">${IC.moveFolder}</button><button class="card-trash-btn" data-card-trash-id="${sheet.id}" title="시트 삭제" aria-label="${esc(sheet.title)} 삭제">${IC.trashMd}</button><button class="card-menu-btn" data-card-edit-id="${sheet.id}" title="시트 편집" aria-label="${esc(sheet.title)} 편집">···</button></div></div>${titleHtml}<p class="card-desc">${highlight(sheet.desc, _q)}</p><div class="tags">${folderBadge}${tagsHtml}${dueBadge}${commentBadge}</div></div><div class="meta-info"><span>담당자: <strong>${highlight(sheet.owner, _q)}</strong></span><span title="${sheet.updated}">업데이트: ${esc(relDate)}</span></div>
+        <div class="card-body"><div class="card-header"><div class="badges"><span class="badge ${accessClass}">${esc(accessLabel)}</span>${statusBadge}${recentBadge}</div><div style="display:flex;align-items:center;gap:4px">${pinIcon}<button class="fav-btn" data-id="${sheet.id}" title="즐겨찾기 토글 (F)" aria-label="${sheet.isFavorite?'즐겨찾기 해제':'즐겨찾기 추가'}" aria-pressed="${sheet.isFavorite}">${favIcon}</button><button class="card-move-btn" data-card-move-id="${sheet.id}" title="폴더로 이동" aria-label="${esc(sheet.title)} 폴더 이동">${IC.moveFolder}</button><button class="card-trash-btn" data-card-trash-id="${sheet.id}" title="시트 삭제" aria-label="${esc(sheet.title)} 삭제">${IC.trashMd}</button><button class="card-menu-btn" data-card-edit-id="${sheet.id}" title="시트 편집" aria-label="${esc(sheet.title)} 편집">···</button></div></div>${titleHtml}${urlLine}<p class="card-desc">${highlight(sheet.desc, _q)}</p><div class="tags">${folderBadge}${tagsHtml}${dueBadge}${commentBadge}</div></div><div class="meta-info"><span>담당자: <strong>${highlight(sheet.owner, _q)}</strong></span><span title="${sheet.updated}">업데이트: ${esc(relDate)}</span></div>
     </div>`;
 }
 function wireCardEvents() {
@@ -5448,20 +6263,30 @@ if (_bc) {
 let _lastKnownGasTs = 0;
 async function _pollGASForChanges() {
     if (!GAS_URL || _isSyncingFromRemote || document.hidden) return;
+    const ctrl = new AbortController();
+    const tId = setTimeout(() => ctrl.abort(), 10000);
     try {
-        const res  = await fetch(GAS_URL + '?t=' + Date.now());
+        const res  = await fetch(GAS_URL + '?t=' + Date.now(), { signal: ctrl.signal });
+        clearTimeout(tId);
+        if (!res.ok) return;
         const json = await res.json();
         if (!json.ok || !json.data) return;
-        const remoteTs = json.data.updatedAt || 0;
+        const remoteTs    = json.data.updatedAt || 0;
         if (remoteTs <= _lastKnownGasTs) return; // 변경 없음
-        const localTs  = (() => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY))?.updatedAt || 0; } catch(e){ return 0; } })();
-        if (remoteTs <= localTs) return; // 로컬이 이미 최신
+        const localRaw    = (() => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch(e){ return null; } })();
+        const localTs     = localRaw?.updatedAt || 0;
+        const localCount  = Array.isArray(localRaw?.sheetsData) ? localRaw.sheetsData.length : 0;
+        const remoteCount = Array.isArray(json.data.sheetsData) ? json.data.sheetsData.length : 0;
+        // 로컬이 이미 최신이거나 GAS 시트 수가 의심스럽게 적으면 무시
+        if (remoteTs <= localTs) return;
+        if (localCount > remoteCount * 3 + 5) { console.warn('[SM] 폴링: GAS 시트 수 이상 무시'); return; }
         // GAS 데이터가 더 최신 → 적용
         _lastKnownGasTs = remoteTs;
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(json.data)); } catch(e) {}
         _applyRemoteData(json.data);
+        showGasError(false);
         showToast('다른 창에서 변경사항이 동기화됐습니다', '🔄');
-    } catch(e) { /* 네트워크 오류 무시 */ }
+    } catch(e) { clearTimeout(tId); /* 네트워크 오류 무시 */ }
 }
 // 페이지 로드 후 폴링 시작 (initApp 완료 후 실행되도록 setTimeout)
 setTimeout(() => {
@@ -5835,6 +6660,557 @@ function checkDueDateNotifications() {
 }
 
 // ══════════════════════════════════════
+// 트리 조상 펼치기 (URL 네비게이션용)
+// ══════════════════════════════════════
+function _expandAncestors(nodeId) {
+    function findAncestors(nodes, targetId, path=[]) {
+        for (const n of nodes) {
+            if (n.id === targetId) return path;
+            if (n.children) {
+                const found = findAncestors(n.children, targetId, [...path, n.id]);
+                if (found) return found;
+            }
+        }
+        return null;
+    }
+    const ancestors = findAncestors(treeData, nodeId);
+    if (ancestors && ancestors.length) {
+        treeData = mapTree(treeData, n => ancestors.includes(n.id) ? {...n, expanded:true} : n);
+    }
+}
+
+// ══════════════════════════════════════
+// Google Drive 연동
+// ══════════════════════════════════════
+const DRIVE_CLIENT_ID_KEY  = 'sm-google-client-id';
+const DRIVE_SCOPE          = 'https://www.googleapis.com/auth/drive.readonly';
+const DRIVE_ROOT_FOLDER_ID = 'f-drive-root'; // Drive 전용 루트 폴더 고정 ID
+let _driveToken = null;
+let _driveFiles = [];
+let _driveSelectedIds = new Set();
+let _driveTokenClient = null;
+let _gisLoaded = false;
+
+function openDriveModal() {
+    document.getElementById('drive-modal-overlay').style.opacity = '1';
+    document.getElementById('drive-modal-overlay').style.pointerEvents = 'all';
+    const savedClientId = localStorage.getItem(DRIVE_CLIENT_ID_KEY) || '';
+    if (!savedClientId) {
+        _renderDriveSetup();
+    } else if (_driveToken) {
+        _renderDriveFileList();
+    } else {
+        _renderDriveConnectPrompt(savedClientId);
+    }
+}
+function closeDriveModal() {
+    const overlay = document.getElementById('drive-modal-overlay');
+    overlay.style.opacity = '0';
+    overlay.style.pointerEvents = 'none';
+}
+
+function _renderDriveSetup() {
+    const savedId = localStorage.getItem(DRIVE_CLIENT_ID_KEY) || '';
+    document.getElementById('drive-modal-body').innerHTML = `
+        <p style="font-size:13.5px;color:var(--muted);margin-bottom:16px;line-height:1.6">
+            Google Drive에서 최근 사용한 스프레드시트를 자동으로 가져옵니다.<br>
+            최초 1회 Google OAuth Client ID 설정이 필요합니다.
+        </p>
+        <div class="drive-setup-step">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                <span class="drive-setup-num">1</span>
+                <span style="font-size:13px;font-weight:700">Google Cloud Console에서 OAuth 앱 만들기</span>
+            </div>
+            <ol style="font-size:12.5px;color:var(--muted);margin:0;padding-left:20px;line-height:1.9">
+                <li><a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener" style="color:var(--primary)">console.cloud.google.com/apis/credentials</a> 접속</li>
+                <li>상단 프로젝트 선택 → <strong>새 프로젝트</strong> 생성</li>
+                <li>왼쪽 메뉴 → <strong>OAuth 동의 화면</strong> → 외부 선택 후 저장</li>
+                <li><strong>사용자 인증 정보 만들기</strong> → <strong>OAuth 클라이언트 ID</strong></li>
+                <li>애플리케이션 유형: <strong>웹 애플리케이션</strong></li>
+                <li>승인된 JavaScript 원본에 <code style="background:var(--hover-bg);padding:1px 5px;border-radius:4px">${location.origin}</code> 추가</li>
+                <li>생성된 <strong>클라이언트 ID</strong> 복사</li>
+            </ol>
+        </div>
+        <div class="drive-setup-step">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+                <span class="drive-setup-num">2</span>
+                <span style="font-size:13px;font-weight:700">Client ID 입력</span>
+            </div>
+            <input class="drive-setup-input" id="drive-client-id-input" type="text" placeholder="123456789-abc....apps.googleusercontent.com" value="${esc(savedId)}">
+        </div>`;
+    document.getElementById('drive-modal-footer').innerHTML = `
+        <button class="drive-connect-btn" onclick="_saveDriveClientId()">저장 후 연결</button>
+        <button onclick="closeDriveModal()" style="padding:10px 18px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;background:var(--card-bg);color:var(--muted);font-family:inherit">취소</button>`;
+}
+
+function _renderDriveConnectPrompt(clientId) {
+    document.getElementById('drive-modal-body').innerHTML = `
+        <div style="text-align:center;padding:24px 0">
+            <div style="font-size:48px;margin-bottom:12px">🔑</div>
+            <p style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:6px">Google 계정 연결</p>
+            <p style="font-size:13px;color:var(--muted);line-height:1.6">Google Drive에서 최근 열람한 스프레드시트를<br>자동으로 가져옵니다.</p>
+            <p style="font-size:11.5px;color:var(--muted);margin-top:12px">Client ID: <code style="background:var(--hover-bg);padding:2px 6px;border-radius:4px;font-size:11px">${esc(clientId.substring(0,30))}...</code>
+            <a href="javascript:void(0)" onclick="_renderDriveSetup()" style="color:var(--primary);margin-left:8px;font-size:11.5px">변경</a></p>
+        </div>`;
+    document.getElementById('drive-modal-footer').innerHTML = `
+        <button class="drive-connect-btn" id="drive-auth-btn" onclick="_driveAuth('${esc(clientId)}')">
+            Google 계정으로 연결
+        </button>
+        <button onclick="closeDriveModal()" style="padding:10px 18px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;background:var(--card-bg);color:var(--muted);font-family:inherit">취소</button>`;
+}
+
+function _saveDriveClientId() {
+    const input = document.getElementById('drive-client-id-input');
+    const id = input?.value.trim();
+    if (!id) { showToast('Client ID를 입력하세요', '⚠️'); return; }
+    localStorage.setItem(DRIVE_CLIENT_ID_KEY, id);
+    _driveToken = null;
+    _driveTokenClient = null;
+    _renderDriveConnectPrompt(id);
+}
+
+function _loadGIS(callback) {
+    if (_gisLoaded && window.google?.accounts) { callback(); return; }
+    const s = document.createElement('script');
+    s.src = 'https://accounts.google.com/gsi/client';
+    s.onload = () => { _gisLoaded = true; callback(); };
+    s.onerror = () => showToast('Google 인증 라이브러리 로드 실패', '❌');
+    document.head.appendChild(s);
+}
+
+function _driveAuth(clientId) {
+    const btn = document.getElementById('drive-auth-btn');
+    if (btn) { btn.disabled = true; btn.textContent = '연결 중...'; }
+    _loadGIS(() => {
+        if (!_driveTokenClient) {
+            _driveTokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: clientId,
+                scope: DRIVE_SCOPE,
+                callback: (resp) => {
+                    if (resp.error) {
+                        showToast('Google 인증 실패: ' + resp.error, '❌');
+                        _renderDriveConnectPrompt(clientId);
+                        return;
+                    }
+                    _driveToken = resp.access_token;
+                    _fetchDriveSheets();
+                }
+            });
+        }
+        _driveTokenClient.requestAccessToken({ prompt: _driveToken ? '' : 'consent' });
+    });
+}
+
+async function _fetchDriveSheets() {
+    _renderDriveLoading();
+    try {
+        const params = new URLSearchParams({
+            q: "mimeType='application/vnd.google-apps.spreadsheet' and trashed=false",
+            orderBy: 'viewedByMeTime desc',
+            pageSize: '50',
+            fields: 'files(id,name,webViewLink,viewedByMeTime,modifiedTime,owners)'
+        });
+        const resp = await fetch('https://www.googleapis.com/drive/v3/files?' + params, {
+            headers: { Authorization: 'Bearer ' + _driveToken }
+        });
+        if (resp.status === 401) { _driveToken = null; _renderDriveConnectPrompt(localStorage.getItem(DRIVE_CLIENT_ID_KEY)||''); showToast('인증이 만료됐습니다. 다시 연결하세요', '⚠️'); return; }
+        const data = await resp.json();
+        _driveFiles = data.files || [];
+        _driveSelectedIds = new Set();
+        // 이미 앱에 있는 시트 제외
+        const existingLinks = new Set(sheetsData.map(s=>s.link).filter(Boolean));
+        _driveFiles = _driveFiles.filter(f => !existingLinks.has(f.webViewLink));
+        _renderDriveFileList();
+    } catch(e) {
+        document.getElementById('drive-modal-body').innerHTML = `<div style="text-align:center;padding:32px;color:var(--danger)">파일 목록 로드 실패: ${esc(e.message)}</div>`;
+        document.getElementById('drive-modal-footer').innerHTML = `<button class="drive-connect-btn" onclick="_fetchDriveSheets()">다시 시도</button>`;
+    }
+}
+
+function _renderDriveLoading() {
+    document.getElementById('drive-modal-body').innerHTML = `<div style="text-align:center;padding:40px;color:var(--muted)"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite;margin-bottom:12px"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg><p style="font-size:13.5px">Drive에서 파일 가져오는 중...</p></div>`;
+    document.getElementById('drive-modal-footer').innerHTML = '';
+}
+
+function _renderDriveFileList() {
+    const body = document.getElementById('drive-modal-body');
+    if (!_driveFiles.length) {
+        body.innerHTML = `<div style="text-align:center;padding:32px;color:var(--muted);font-size:13.5px">
+            <div style="font-size:36px;margin-bottom:10px">📂</div>
+            가져올 새 시트가 없습니다.<br>
+            <span style="font-size:12px">이미 앱에 등록된 시트들이거나 Drive에 스프레드시트가 없습니다.</span>
+        </div>`;
+        document.getElementById('drive-modal-footer').innerHTML = `<button onclick="closeDriveModal()" style="padding:10px 18px;border:1.5px solid var(--border);border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;background:var(--card-bg);color:var(--muted);font-family:inherit">닫기</button>`;
+        return;
+    }
+    const sheetIcon = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="4" fill="#0f9d58"/><path d="M7 8h10M7 12h10M7 16h6" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>`;
+    body.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:0 2px">
+            <span style="font-size:12.5px;color:var(--muted)">최근 열람 순 • 이미 등록된 시트 제외</span>
+            <label style="font-size:12px;color:var(--primary);cursor:pointer;font-weight:700">
+                <input type="checkbox" id="drive-check-all" style="accent-color:var(--primary);margin-right:4px" onchange="_driveToggleAll(this.checked)"> 전체 선택
+            </label>
+        </div>
+        ${_driveFiles.map(f => {
+            const d = f.viewedByMeTime ? new Date(f.viewedByMeTime).toLocaleDateString('ko-KR') : '';
+            return `<div class="drive-file-item">
+                <input type="checkbox" class="drive-file-check" data-drive-id="${esc(f.id)}" onchange="_driveToggleFile('${esc(f.id)}', this.checked)">
+                <span class="drive-file-icon">${sheetIcon}</span>
+                <span class="drive-file-name" title="${esc(f.name)}">${esc(f.name)}</span>
+                <span class="drive-file-date">${d}</span>
+                <a href="${esc(f.webViewLink)}" target="_blank" rel="noopener" title="Drive에서 열기" style="color:var(--muted);flex-shrink:0" onclick="event.stopPropagation()">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                </a>
+            </div>`;
+        }).join('')}`;
+    document.getElementById('drive-modal-footer').innerHTML = `
+        <button class="drive-import-btn" id="drive-do-import" onclick="_doDriveImport()" disabled>
+            선택한 시트 가져오기 (<span id="drive-sel-count">0</span>개)
+        </button>
+        <button onclick="_fetchDriveSheets()" title="목록 새로고침" style="padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:12px;cursor:pointer;background:var(--card-bg);color:var(--muted);font-family:inherit;font-weight:600">새로고침</button>
+        <button onclick="closeDriveModal()" style="padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:12px;cursor:pointer;background:var(--card-bg);color:var(--muted);font-family:inherit;font-weight:600">취소</button>`;
+}
+
+function _driveToggleFile(id, checked) {
+    if (checked) _driveSelectedIds.add(id); else _driveSelectedIds.delete(id);
+    _updateDriveImportBtn();
+}
+function _driveToggleAll(checked) {
+    _driveSelectedIds.clear();
+    if (checked) _driveFiles.forEach(f => _driveSelectedIds.add(f.id));
+    document.querySelectorAll('.drive-file-check').forEach(cb => { cb.checked = checked; });
+    _updateDriveImportBtn();
+}
+function _updateDriveImportBtn() {
+    const btn = document.getElementById('drive-do-import');
+    const cnt = _driveSelectedIds.size;
+    if (btn) { btn.disabled = cnt === 0; }
+    const span = document.getElementById('drive-sel-count');
+    if (span) span.textContent = cnt;
+    const allCb = document.getElementById('drive-check-all');
+    if (allCb) allCb.checked = cnt > 0 && cnt === _driveFiles.length;
+}
+
+function _findOrCreateDriveRootFolder() {
+    const existing = treeData.find(n => n.id === DRIVE_ROOT_FOLDER_ID);
+    if (existing) return existing.id;
+    // Drive 루트 폴더를 트리 맨 앞에 추가
+    const rootNode = { id: DRIVE_ROOT_FOLDER_ID, type: 'folder', name: '📥 Google Drive', color: 'blue', expanded: true, isDrive: true, children: [] };
+    treeData = [rootNode, ...treeData];
+    return DRIVE_ROOT_FOLDER_ID;
+}
+
+function _getOrCreateDriveDateFolder() {
+    const rootId = _findOrCreateDriveRootFolder();
+    const today  = new Date().toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' }).replace(/\.\s*/g, '-').replace(/-$/, '');
+    const rootNode = treeData.find(n => n.id === rootId);
+    const existing = rootNode?.children?.find(n => n.type==='folder' && n.name===today);
+    if (existing) return { rootId, dateFolderId: existing.id };
+    const dateFid = uid('f-drv-');
+    treeData = mapTree(treeData, n => n.id === rootId
+        ? {...n, expanded:true, children:[...(n.children||[]), { id:dateFid, type:'folder', name:today, color:'blue', expanded:true, isDrive:true, children:[] }]}
+        : n);
+    return { rootId, dateFolderId: dateFid };
+}
+
+function _doDriveImport() {
+    if (!_driveSelectedIds.size) return;
+    const toImport = _driveFiles.filter(f => _driveSelectedIds.has(f.id));
+    // Drive 전용 날짜 서브폴더에 가져오기 (현재 폴더가 선택된 경우에도 Drive 전용 폴더 사용)
+    const { rootId, dateFolderId } = _getOrCreateDriveDateFolder();
+    const targetFolderId = dateFolderId;
+    const undoFn = saveUndoSnapshot();
+    let addedCount = 0;
+    toImport.forEach(f => {
+        const sheetId = nextId++;
+        const newSheet = {
+            id: sheetId, title: f.name, link: f.webViewLink, desc: '',
+            owner: currentUser, tags: ['drive'], status: 'active',
+            isPinned: false, isFavorite: false,
+            updated: (f.modifiedTime||new Date().toISOString()).slice(0,10),
+            dueDate: '', driveFileId: f.id
+        };
+        sheetsData.push(newSheet);
+        const nodeId = uid('t-');
+        treeData = mapTree(treeData, n => n.id === targetFolderId
+            ? {...n, expanded:true, children:[...(n.children||[]), {id:nodeId, type:'sheet', name:f.name, sheetId, isDrive:true}]}
+            : n);
+        appLog('add', 'Drive 가져오기', `"${f.name}"`, sheetId);
+        addedCount++;
+    });
+    // 마지막 동기화 시각 기록
+    localStorage.setItem('sm-drive-last-sync', new Date().toISOString());
+    saveStorage();
+    renderTree();
+    applyFilters();
+    selectNode(rootId);
+    closeDriveModal();
+    showToast(`${addedCount}개 시트를 Google Drive에서 가져왔습니다`, '📥', undoFn);
+    _renderDriveSyncSection();
+}
+
+// ══════════════════════════════════════
+// 칸반 뷰
+// ══════════════════════════════════════
+function renderKanbanView(data, query) {
+    const container = document.getElementById('sheet-container');
+    const cols = [
+        { key:'active',   label:'진행중', cls:'kcol-active'   },
+        { key:'review',   label:'검토중', cls:'kcol-review'   },
+        { key:'done',     label:'완료',   cls:'kcol-done'     },
+        { key:'archived', label:'보관됨', cls:'kcol-archived' },
+    ];
+    const groups = {};
+    cols.forEach(c => { groups[c.key] = []; });
+    data.forEach(s => {
+        const k = s.status && groups[s.status] !== undefined ? s.status : 'active';
+        groups[k].push(s);
+    });
+    container.innerHTML = cols.map(col => {
+        const cards = groups[col.key];
+        const cardsHtml = cards.map(s => {
+            const hasLink = s.link && s.link !== '#';
+            const folderName = getFolderNameForSheet(s.id) || '';
+            const folderColor = getFolderColorHex(s.id);
+            const folderBadge = folderName ? `<span class="kanban-card-folder" style="${folderColor?`border-left:3px solid ${folderColor};padding-left:5px`:''}">${esc(folderName)}</span>` : '';
+            const dueBadge = getDueBadgeHtml(s.dueDate);
+            const titleHtml = query ? highlight(s.title, query) : esc(s.title);
+            return `<div class="kanban-card" data-kanban-id="${s.id}">
+                <div class="kanban-card-btns">
+                    ${hasLink ? `<button class="kanban-card-btn" title="열기" onclick="event.stopPropagation();window.open('${esc(s.link)}','_blank','noopener')">↗</button>` : ''}
+                    <button class="kanban-card-btn" title="편집" onclick="event.stopPropagation();openEditModal(${s.id})">✏️</button>
+                </div>
+                <div class="kanban-card-title">${titleHtml}</div>
+                <div class="kanban-card-meta">${folderBadge}${dueBadge}</div>
+            </div>`;
+        }).join('');
+        return `<div class="kanban-col ${col.cls}" data-kanban-status="${col.key}" ondragover="event.preventDefault();this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="_kanbanDrop(event,'${col.key}')">
+            <div class="kanban-col-header">
+                <span class="kanban-col-title">${col.label}</span>
+                <span class="kanban-col-badge">${cards.length}</span>
+            </div>
+            <div class="kanban-cards">${cardsHtml || '<div style="padding:16px;text-align:center;color:var(--muted);font-size:12px">비어있음</div>'}</div>
+        </div>`;
+    }).join('');
+    // 카드 드래그 설정
+    container.querySelectorAll('.kanban-card').forEach(card => {
+        card.draggable = true;
+        card.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', card.dataset.kanbanId); card.style.opacity = '.5'; });
+        card.addEventListener('dragend', () => { card.style.opacity = ''; document.querySelectorAll('.kanban-col').forEach(c => c.classList.remove('drag-over')); });
+        card.addEventListener('click', () => { const s = sheetsData.find(x => x.id === Number(card.dataset.kanbanId)); if (s?.link && s.link !== '#') { addRecentId(s.id); window.open(s.link, '_blank', 'noopener'); } });
+    });
+}
+function _kanbanDrop(e, newStatus) {
+    e.preventDefault();
+    document.querySelectorAll('.kanban-col').forEach(c => c.classList.remove('drag-over'));
+    const id = Number(e.dataTransfer.getData('text/plain'));
+    const sheet = sheetsData.find(s => s.id === id);
+    if (!sheet || sheet.status === newStatus) return;
+    const undoFn = saveUndoSnapshot();
+    const oldStatus = sheet.status;
+    sheet.status = newStatus;
+    sheet.updated = new Date().toISOString().slice(0, 10);
+    appLog('edit', '칸반 상태 변경', `"${sheet.title}" ${STATUS_CONFIG[oldStatus]?.label||oldStatus} → ${STATUS_CONFIG[newStatus]?.label||newStatus}`, id);
+    saveStorage();
+    applyFilters();
+    showToast(`"${sheet.title}" → ${STATUS_CONFIG[newStatus]?.label}`, '📋', undoFn);
+}
+
+// ══════════════════════════════════════
+// Command Palette
+// ══════════════════════════════════════
+let _cmdFocusIdx = -1;
+function openCmdPalette() {
+    const overlay = document.getElementById('cmd-palette-overlay');
+    overlay.classList.add('open');
+    const inp = document.getElementById('cmd-palette-input');
+    inp.value = '';
+    _cmdFocusIdx = -1;
+    _renderCmdResults('');
+    requestAnimationFrame(() => inp.focus());
+}
+function closeCmdPalette() {
+    document.getElementById('cmd-palette-overlay').classList.remove('open');
+    _cmdFocusIdx = -1;
+}
+function _buildCmdItems(q) {
+    const lq = q.toLowerCase();
+    const items = [];
+    // 폴더
+    function walkFolders(nodes, path) {
+        for (const n of nodes) {
+            if (n.type === 'folder') {
+                if (!lq || n.name.toLowerCase().includes(lq)) {
+                    items.push({ type:'folder', id:n.id, name:n.name, path, color:n.color, icon:n.icon });
+                }
+                walkFolders(n.children||[], path ? path+' / '+n.name : n.name);
+            }
+        }
+    }
+    walkFolders(treeData, '');
+    // 시트
+    sheetsData.forEach(s => {
+        if (!lq || s.title.toLowerCase().includes(lq) || (s.owner||'').toLowerCase().includes(lq) || (s.tags||[]).some(t=>t.toLowerCase().includes(lq))) {
+            const folderName = getFolderNameForSheet(s.id) || '';
+            items.push({ type:'sheet', id:s.id, name:s.title, path:folderName, link:s.link });
+        }
+    });
+    return items.slice(0, 40);
+}
+function _renderCmdResults(q) {
+    const box = document.getElementById('cmd-palette-results');
+    const items = _buildCmdItems(q);
+    _cmdFocusIdx = -1;
+    if (!items.length) {
+        box.innerHTML = `<div class="cmd-empty">${q ? '결과 없음' : '검색어를 입력하세요'}</div>`;
+        return;
+    }
+    box.innerHTML = items.map((it, i) => {
+        const icon = it.type === 'folder'
+            ? `<div class="cmd-result-icon tp-folder">${folderIcon(it.color||'yellow', it.icon)}</div>`
+            : `<div class="cmd-result-icon tp-sheet"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5z"/><polyline points="14 2 14 8 20 8"/></svg></div>`;
+        const badge = `<span class="cmd-type-badge ${it.type}">${it.type === 'folder' ? '폴더' : '시트'}</span>`;
+        const name = q ? highlight(esc(it.name), q) : esc(it.name);
+        return `<div class="cmd-result" data-cmd-idx="${i}" data-cmd-type="${it.type}" data-cmd-id="${it.id}">
+            ${icon}
+            <div class="cmd-result-body">
+                <div class="cmd-result-name">${name}</div>
+                ${it.path ? `<div class="cmd-result-path">${esc(it.path)}</div>` : ''}
+            </div>
+            ${badge}
+        </div>`;
+    }).join('');
+    box.querySelectorAll('.cmd-result').forEach(el => {
+        el.addEventListener('click', () => _execCmdItem(el));
+    });
+}
+function _execCmdItem(el) {
+    const type = el.dataset.cmdType;
+    const id   = el.dataset.cmdId;
+    closeCmdPalette();
+    if (type === 'folder') {
+        selectNode(id);
+        const node = findNode(id);
+        if (node && !node.expanded) toggleExpand(id);
+    } else {
+        const s = sheetsData.find(x => x.id === Number(id));
+        if (s) {
+            addRecentId(s.id);
+            if (s.link && s.link !== '#') window.open(s.link, '_blank', 'noopener');
+            else openEditModal(s.id);
+        }
+    }
+}
+function _cmdMoveFocus(dir) {
+    const items = document.querySelectorAll('#cmd-palette-results .cmd-result');
+    if (!items.length) return;
+    items.forEach(i => i.classList.remove('focused'));
+    _cmdFocusIdx = (_cmdFocusIdx + dir + items.length) % items.length;
+    const target = items[_cmdFocusIdx];
+    target.classList.add('focused');
+    target.scrollIntoView({ block:'nearest' });
+}
+// cmd-palette 이벤트 리스너 — 모달 HTML이 script 이후에 있으므로 DOMContentLoaded에서 연결
+document.addEventListener('DOMContentLoaded', () => {
+    const inp = document.getElementById('cmd-palette-input');
+    const overlay = document.getElementById('cmd-palette-overlay');
+    if (inp) {
+        inp.addEventListener('input', e => { _renderCmdResults(e.target.value.trim()); });
+        inp.addEventListener('keydown', e => {
+            if (e.key === 'ArrowDown') { e.preventDefault(); _cmdMoveFocus(1); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); _cmdMoveFocus(-1); }
+            else if (e.key === 'Enter') {
+                e.preventDefault();
+                const focused = document.querySelector('#cmd-palette-results .cmd-result.focused');
+                if (focused) _execCmdItem(focused);
+                else { const first = document.querySelector('#cmd-palette-results .cmd-result'); if (first) _execCmdItem(first); }
+            } else if (e.key === 'Escape') { closeCmdPalette(); }
+        });
+    }
+    if (overlay) overlay.addEventListener('click', e => { if (e.target === overlay) closeCmdPalette(); });
+});
+
+// ══════════════════════════════════════
+// 단축키 도움말 모달
+// ══════════════════════════════════════
+function openShortcutModal()  { document.getElementById('shortcut-modal-overlay').classList.add('open'); }
+function closeShortcutModal() { document.getElementById('shortcut-modal-overlay').classList.remove('open'); }
+
+// ══════════════════════════════════════
+// 태그 관리
+// ══════════════════════════════════════
+function openTagManager() {
+    _renderTagManager();
+    document.getElementById('tag-manager-overlay').classList.add('open');
+}
+function closeTagManager() { document.getElementById('tag-manager-overlay').classList.remove('open'); }
+function _renderTagManager() {
+    const tagMap = new Map();
+    sheetsData.forEach(s => (s.tags||[]).forEach(t => { tagMap.set(t, (tagMap.get(t)||0) + 1); }));
+    const body = document.getElementById('tag-manager-body');
+    if (!tagMap.size) { body.innerHTML = '<div class="tm-empty">등록된 태그가 없습니다</div>'; return; }
+    const sorted = [...tagMap.entries()].sort((a,b) => b[1]-a[1]);
+    body.innerHTML = sorted.map(([tag, cnt]) => `
+        <div class="tm-item">
+            <span class="tm-chip">${esc(tag)}</span>
+            <span class="tm-count">${cnt}개 시트</span>
+            <button class="tm-btn" onclick="_renameTag('${esc(tag).replace(/'/g,"\\'")}')">이름 변경</button>
+            <button class="tm-btn del" onclick="_deleteTag('${esc(tag).replace(/'/g,"\\'")}')">삭제</button>
+        </div>`).join('');
+}
+function _renameTag(oldTag) {
+    const newTag = prompt(`태그 이름 변경: "${oldTag}"`, oldTag);
+    if (!newTag || newTag.trim() === oldTag) return;
+    const nt = newTag.trim();
+    let changed = 0;
+    sheetsData.forEach(s => {
+        if (!s.tags) return;
+        const idx = s.tags.indexOf(oldTag);
+        if (idx !== -1) { if (!s.tags.includes(nt)) s.tags[idx] = nt; else s.tags.splice(idx, 1); changed++; }
+    });
+    if (changed) { saveStorage(); applyFilters(); showToast(`태그 "${oldTag}" → "${nt}" (${changed}개 시트)`, '🏷️'); }
+    _renderTagManager();
+}
+function _deleteTag(tag) {
+    const cnt = sheetsData.filter(s => (s.tags||[]).includes(tag)).length;
+    if (!confirm(`태그 "${tag}"를 ${cnt}개 시트에서 삭제합니다.`)) return;
+    sheetsData.forEach(s => { if (s.tags) s.tags = s.tags.filter(t => t !== tag); });
+    saveStorage(); applyFilters(); showToast(`태그 "${tag}" 삭제 완료`, '🗑️');
+    _renderTagManager();
+}
+
+// ══════════════════════════════════════
+// 시트 복제
+// ══════════════════════════════════════
+function duplicateSheet(sheetId) {
+    const src = sheetsData.find(s => s.id === sheetId);
+    if (!src) return;
+    const newId = nextId++;
+    const newSheet = { ...src, id:newId, title:src.title + ' (복사)', isPinned:false, isFavorite:false, updated:new Date().toISOString().slice(0,10) };
+    sheetsData.push(newSheet);
+    // 트리에서 원본 노드 찾아 같은 폴더에 삽입
+    const srcNodeId = findTreeNodeIdBySheetId(sheetId);
+    const newNodeId = 'n' + newId;
+    if (srcNodeId) {
+        treeData = _insertNodeAfter(treeData, srcNodeId, { id:newNodeId, type:'sheet', name:newSheet.title, sheetId:newId });
+    } else {
+        treeData = [...treeData, { id:newNodeId, type:'sheet', name:newSheet.title, sheetId:newId }];
+    }
+    appLog('add', '시트 복제', `"${src.title}" → "${newSheet.title}"`, newId);
+    saveStorage();
+    renderTree();
+    applyFilters();
+    showToast(`"${newSheet.title}" 복제 완료`, '⧉');
+}
+function _insertNodeAfter(nodes, afterId, newNode) {
+    return nodes.map(n => {
+        if (n.id === afterId) return [n, newNode];
+        if (n.children) return { ...n, children: _insertNodeAfter(n.children, afterId, newNode).flat() };
+        return n;
+    }).flat();
+}
+
+// ══════════════════════════════════════
 // 키보드 내비게이션 — 카드 포커스
 // ══════════════════════════════════════
 let _focusedCardId = null;
@@ -5848,5 +7224,79 @@ function setFocusedCard(id) {
 </script>
 <div id="card-hover-tooltip" role="tooltip" aria-hidden="true"></div>
 <div id="card-hover-popup" style="position:fixed;z-index:500;pointer-events:none;opacity:0;transition:opacity .15s;background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:16px 18px;min-width:240px;max-width:300px;box-shadow:0 12px 40px rgba(0,0,0,.14);font-size:13px"></div>
+<!-- ── Google Drive 가져오기 모달 ── -->
+<div id="drive-modal-overlay" style="position:fixed;inset:0;z-index:900;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .18s;padding:16px" onclick="if(event.target===this)closeDriveModal()">
+    <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:18px;width:100%;max-width:520px;box-shadow:0 24px 60px rgba(0,0,0,.22);overflow:hidden;display:flex;flex-direction:column;max-height:85vh">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border);background:var(--surface-bg);flex-shrink:0">
+            <div style="display:flex;align-items:center;gap:10px">
+                <svg width="20" height="18" viewBox="0 0 87.3 78" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3L27.5 52H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066da"/><path d="M43.65 25L29.9 1.2C28.55.4 27 0 25.45 0c-1.55 0-3.1.4-4.5 1.2L6.6 26.2H34.1z" fill="#00ac47"/><path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75 7.65-13.25C86.9 56.1 87.3 54.55 87.3 53H59.8L73.55 76.8z" fill="#ea4335"/><path d="M43.65 25L57.4 1.2C56 .4 54.45 0 52.9 0H34.4c-1.55 0-3.1.4-4.5 1.2z" fill="#00832d"/><path d="M59.8 53H87.3L73.55 29.15l-9.2-15.95-13.7 23.8z" fill="#2684fc"/><path d="M27.5 52L13.75 75.8c1.35.8 2.9 1.2 4.5 1.2h50.8c1.55 0 3.1-.4 4.5-1.2L59.8 52z" fill="#ffba00"/></svg>
+                <span style="font-size:15px;font-weight:800;color:var(--text)">Google Drive 연동</span>
+            </div>
+            <button onclick="closeDriveModal()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;line-height:1;padding:2px 6px">×</button>
+        </div>
+        <div id="drive-modal-body" style="flex:1;overflow-y:auto;padding:20px 22px"></div>
+        <div id="drive-modal-footer" style="padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;background:var(--surface-bg)"></div>
+    </div>
+</div>
+
+<!-- ── Command Palette ── -->
+<div id="cmd-palette-overlay" role="dialog" aria-modal="true" aria-label="커맨드 팔레트">
+    <div id="cmd-palette-box">
+        <div id="cmd-palette-input-wrap">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input id="cmd-palette-input" type="text" placeholder="폴더·시트 검색 또는 빠른 이동…" autocomplete="off" spellcheck="false">
+            <span style="font-size:11px;color:var(--muted);background:var(--hover-bg);border:1px solid var(--border);border-radius:5px;padding:2px 8px;font-family:monospace;cursor:pointer" onclick="closeCmdPalette()">ESC</span>
+        </div>
+        <div id="cmd-palette-results"></div>
+        <div class="cmd-palette-footer">
+            <span class="cmd-hint"><span class="cmd-key">↑↓</span> 탐색</span>
+            <span class="cmd-hint"><span class="cmd-key">Enter</span> 선택</span>
+            <span class="cmd-hint"><span class="cmd-key">Esc</span> 닫기</span>
+        </div>
+    </div>
+</div>
+
+<!-- ── 단축키 도움말 ── -->
+<div id="shortcut-modal-overlay" role="dialog" aria-modal="true" aria-label="단축키 도움말" onclick="if(event.target===this)closeShortcutModal()">
+    <div id="shortcut-modal-box">
+        <div class="sc-modal-header">
+            <span class="sc-modal-title">⌨️ 단축키 도움말</span>
+            <button onclick="closeShortcutModal()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;line-height:1;padding:2px 6px">×</button>
+        </div>
+        <div class="sc-modal-body">
+            <div class="sc-section">탐색 · 검색</div>
+            <div class="sc-row"><span class="sc-desc">커맨드 팔레트 열기</span><span class="sc-keys"><span class="sc-key">Ctrl</span><span class="sc-key">K</span></span></div>
+            <div class="sc-row"><span class="sc-desc">사이드바 접기</span><span class="sc-keys"><span class="sc-key">[</span></span></div>
+            <div class="sc-row"><span class="sc-desc">사이드바 펼치기</span><span class="sc-keys"><span class="sc-key">]</span></span></div>
+            <div class="sc-row"><span class="sc-desc">이전 카드</span><span class="sc-keys"><span class="sc-key">←</span> / <span class="sc-key">↑</span></span></div>
+            <div class="sc-row"><span class="sc-desc">다음 카드</span><span class="sc-keys"><span class="sc-key">→</span> / <span class="sc-key">↓</span></span></div>
+            <div class="sc-row"><span class="sc-desc">단축키 도움말</span><span class="sc-keys"><span class="sc-key">?</span></span></div>
+            <div class="sc-section">시트 작업</div>
+            <div class="sc-row"><span class="sc-desc">시트 추가</span><span class="sc-keys"><span class="sc-key">Ctrl</span><span class="sc-key">N</span></span></div>
+            <div class="sc-row"><span class="sc-desc">선택 시트 편집</span><span class="sc-keys"><span class="sc-key">E</span></span></div>
+            <div class="sc-row"><span class="sc-desc">선택 시트 삭제</span><span class="sc-keys"><span class="sc-key">Del</span></span></div>
+            <div class="sc-row"><span class="sc-desc">선택 시트 즐겨찾기</span><span class="sc-keys"><span class="sc-key">F</span></span></div>
+            <div class="sc-row"><span class="sc-desc">선택 시트 열기</span><span class="sc-keys"><span class="sc-key">Enter</span></span></div>
+            <div class="sc-section">기타</div>
+            <div class="sc-row"><span class="sc-desc">실행 취소</span><span class="sc-keys"><span class="sc-key">Ctrl</span><span class="sc-key">Z</span></span></div>
+            <div class="sc-row"><span class="sc-desc">모달 닫기</span><span class="sc-keys"><span class="sc-key">Esc</span></span></div>
+            <div class="sc-row"><span class="sc-desc">검색창 포커스</span><span class="sc-keys"><span class="sc-key">Ctrl</span><span class="sc-key">K</span></span></div>
+        </div>
+    </div>
+</div>
+
+<!-- ── 태그 관리 ── -->
+<div id="tag-manager-overlay" role="dialog" aria-modal="true" aria-label="태그 관리" onclick="if(event.target===this)closeTagManager()">
+    <div id="tag-manager-box">
+        <div class="tm-header">
+            <span class="tm-title">🏷️ 태그 관리</span>
+            <button onclick="closeTagManager()" style="background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;line-height:1;padding:2px 6px">×</button>
+        </div>
+        <div class="tm-body" id="tag-manager-body"></div>
+    </div>
+</div>
+
+<!-- AI 비서 임베드 위젯 (우하단 플로팅) -->
+<script src="http://localhost:8000/static/widget.js" defer></script>
 </body>
 </html>
