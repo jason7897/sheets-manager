@@ -6780,12 +6780,53 @@ const DRIVE_SCOPE          = 'https://www.googleapis.com/auth/drive.readonly';
 const DRIVE_ROOT_FOLDER_ID = 'f-drive-root'; // Drive 전용 루트 폴더 고정 ID
 const DRIVE_TRACK_KEY      = 'sm-drive-track';   // 자동 채집 추적 데이터
 const DRIVE_AUTO_TH_KEY    = 'sm-drive-auto-th'; // 자동 채집 임계값 (기본 5회)
-let _driveIncludeShared    = localStorage.getItem('sm-drive-shared') === '1'; // 공유 드라이브 포함 여부
+let _driveIncludeShared    = localStorage.getItem('sm-drive-shared') === '1';
+const DRIVE_TOKEN_CACHE_KEY = 'sm-drive-token-cache';
+
+// 페이지 로드 시 저장된 토큰 복원 (1시간 유효)
 let _driveToken = null;
+(function() {
+    try {
+        const c = JSON.parse(localStorage.getItem(DRIVE_TOKEN_CACHE_KEY) || 'null');
+        if (c && c.expiry > Date.now()) _driveToken = c.token;
+    } catch(e) {}
+})();
+
 let _driveFiles = [];
 let _driveSelectedIds = new Set();
 let _driveTokenClient = null;
 let _gisLoaded = false;
+
+function _saveDriveToken(token) {
+    _driveToken = token;
+    localStorage.setItem(DRIVE_TOKEN_CACHE_KEY, JSON.stringify({ token, expiry: Date.now() + 3500 * 1000 }));
+}
+function _clearDriveToken() {
+    _driveToken = null;
+    localStorage.removeItem(DRIVE_TOKEN_CACHE_KEY);
+}
+
+function _doRequestToken(clientId, silent) {
+    _loadGIS(() => {
+        if (!_driveTokenClient) {
+            _driveTokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: clientId,
+                scope: DRIVE_SCOPE,
+                callback: (resp) => {
+                    if (resp.error) {
+                        if (silent) { _renderDriveConnectPrompt(clientId); return; }
+                        showToast('Google 인증 실패: ' + resp.error, '❌');
+                        _renderDriveConnectPrompt(clientId);
+                        return;
+                    }
+                    _saveDriveToken(resp.access_token);
+                    _fetchDriveSheets();
+                }
+            });
+        }
+        _driveTokenClient.requestAccessToken({ prompt: silent ? '' : 'consent' });
+    });
+}
 
 function openDriveModal() {
     document.getElementById('drive-modal-overlay').style.opacity = '1';
@@ -6796,7 +6837,9 @@ function openDriveModal() {
     } else if (_driveToken) {
         _renderDriveFileList();
     } else {
-        _renderDriveConnectPrompt(savedClientId);
+        // 저장된 Client ID 있으면 자동으로 silent 재인증 시도
+        _renderDriveLoading();
+        _doRequestToken(savedClientId, true);
     }
 }
 function closeDriveModal() {
@@ -6860,7 +6903,7 @@ function _saveDriveClientId() {
     const id = input?.value.trim();
     if (!id) { showToast('Client ID를 입력하세요', '⚠️'); return; }
     localStorage.setItem(DRIVE_CLIENT_ID_KEY, id);
-    _driveToken = null;
+    _clearDriveToken();
     _driveTokenClient = null;
     _renderDriveConnectPrompt(id);
 }
@@ -6877,24 +6920,7 @@ function _loadGIS(callback) {
 function _driveAuth(clientId) {
     const btn = document.getElementById('drive-auth-btn');
     if (btn) { btn.disabled = true; btn.textContent = '연결 중...'; }
-    _loadGIS(() => {
-        if (!_driveTokenClient) {
-            _driveTokenClient = google.accounts.oauth2.initTokenClient({
-                client_id: clientId,
-                scope: DRIVE_SCOPE,
-                callback: (resp) => {
-                    if (resp.error) {
-                        showToast('Google 인증 실패: ' + resp.error, '❌');
-                        _renderDriveConnectPrompt(clientId);
-                        return;
-                    }
-                    _driveToken = resp.access_token;
-                    _fetchDriveSheets();
-                }
-            });
-        }
-        _driveTokenClient.requestAccessToken({ prompt: _driveToken ? '' : 'consent' });
-    });
+    _doRequestToken(clientId, false);
 }
 
 // ── Drive 자동 채집 추적 ──
@@ -6984,7 +7010,13 @@ async function _fetchDriveSheets() {
         const resp = await fetch('https://www.googleapis.com/drive/v3/files?' + params, {
             headers: { Authorization: 'Bearer ' + _driveToken }
         });
-        if (resp.status === 401) { _driveToken = null; _renderDriveConnectPrompt(localStorage.getItem(DRIVE_CLIENT_ID_KEY)||''); showToast('인증이 만료됐습니다. 다시 연결하세요', '⚠️'); return; }
+        if (resp.status === 401) {
+            _clearDriveToken();
+            const cid = localStorage.getItem(DRIVE_CLIENT_ID_KEY) || '';
+            if (cid) { _doRequestToken(cid, true); } // silent 재인증
+            else { _renderDriveConnectPrompt(cid); showToast('인증이 만료됐습니다. 다시 연결하세요', '⚠️'); }
+            return;
+        }
         const data = await resp.json();
         const allFiles = data.files || [];
         // 자동 채집 추적 업데이트
