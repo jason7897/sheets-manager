@@ -87,6 +87,16 @@
         }
         .sidebar.resizing { transition: none; }
         .sidebar.collapsed { width: 0 !important; min-width: 0 !important; overflow: hidden; border-width: 0; }
+        .sidebar-scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0; /* flex 자식이 콘텐츠 크기 이하로 줄어들 수 있게 */
+        }
+        .sidebar-scroll-area::-webkit-scrollbar { width: 4px; }
+        .sidebar-scroll-area::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-scroll-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+        .sidebar-scroll-area::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+        [data-theme="dark"] .sidebar-scroll-area::-webkit-scrollbar-thumb { background: var(--border); }
 
         /* 사이드바 리사이즈 핸들 */
         /* ── 사이드바 리사이즈 핸들 ── */
@@ -1646,6 +1656,8 @@
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                 </button>
             </div>
+            <!-- 스크롤 영역 시작 -->
+            <div class="sidebar-scroll-area" id="sidebar-scroll-area">
             <!-- 사이드바 고정 섹션 -->
             <div class="sidebar-pin-section" id="sidebar-pin-section" style="display:none">
                 <div class="sidebar-pin-header" onclick="toggleSidebarPin()">
@@ -1714,6 +1726,7 @@
                 </div>
             </div>
             <div id="tree-root"></div>
+            </div><!-- /.sidebar-scroll-area -->
             <div class="sidebar-footer">
                 <button class="sidebar-footer-btn" id="btn-export" title="JSON으로 내보내기">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
