@@ -1865,6 +1865,14 @@
                     <span class="stat-num green" id="stat-week">0</span><span class="stat-label">이번 주</span>
                 </div>
             </div>
+            <!-- D-3 마감 배너 -->
+            <div id="due-alert-banner" style="display:none"></div>
+            <!-- 즐겨찾기 빠른 접속 바 -->
+            <div id="quick-access-bar" style="display:none">
+                <span class="qa-bar-label">⚡ 빠른 접속</span>
+                <div id="quick-access-inner" style="display:flex;flex-wrap:wrap;gap:6px;flex:1"></div>
+                <button class="qa-toggle" id="qa-toggle-btn" onclick="toggleQuickAccessBar()" title="접기/펼치기">▲</button>
+            </div>
             <div class="controls">
                 <div class="search-wrap" style="position:relative">
                     <span class="search-icon">
