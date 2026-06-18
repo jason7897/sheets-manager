@@ -1517,6 +1517,23 @@
         /* ══ 통계 버튼 ══ */
         .btn-stats { display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border:1.5px solid var(--border);border-radius:9px;background:var(--card-bg);color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit; }
         .btn-stats:hover { background:var(--primary-light);color:var(--primary);border-color:#bfdbfe; }
+    /* ── AI 기능 스타일 ── */
+    #btn-ai-search.active { background: var(--primary-light) !important; color: var(--primary) !important; }
+    .ai-tag-chip { background: var(--primary-light); color: var(--primary); border: 1px solid rgba(49,130,246,.25); border-radius: 20px; padding: 3px 10px; font-size: 11.5px; font-weight: 700; cursor: pointer; font-family: inherit; transition: background .12s; }
+    .ai-tag-chip:hover { background: var(--primary); color: #fff; }
+    #ai-settings-overlay { position: fixed; inset: 0; z-index: 12000; background: rgba(0,0,0,.45); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity .18s; padding: 16px; }
+    #ai-settings-box { background: var(--card-bg); border: 1px solid var(--border); border-radius: 18px; width: 100%; max-width: 420px; box-shadow: 0 24px 60px rgba(0,0,0,.22); padding: 24px; }
+    .ai-modal-title { font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+    .ai-modal-sub { font-size: 12.5px; color: var(--muted); margin-bottom: 20px; line-height: 1.6; }
+    .ai-key-input { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px; font-size: 13px; font-family: monospace; outline: none; background: var(--card-bg); color: var(--text); box-sizing: border-box; }
+    .ai-key-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(49,130,246,.12); }
+    .ai-modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+    .ai-save-btn { background: var(--primary); color: #fff; border: none; border-radius: 10px; padding: 10px 22px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; }
+    .ai-save-btn:hover { background: var(--primary-dark); }
+    .ai-cancel-btn { background: var(--card-bg); color: var(--muted); border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 18px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .ai-summary-row { margin-top: 6px; min-height: 16px; }
+    [data-theme="dark"] .ai-key-input { background: var(--card-bg); color: var(--text); border-color: var(--border); }
+    [data-theme="dark"] #ai-settings-box { background: var(--card-bg); }
     </style>
 </head>
 <body>
@@ -1592,6 +1609,11 @@
                     <button class="more-menu-item" onclick="openShortcutModal();closeMoreMenu()">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h4M6 12h4M14 12h4M6 16h12"/></svg>
                         단축키 도움말 <span style="margin-left:auto;font-size:10.5px;background:var(--hover-bg);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-family:monospace;color:var(--muted)">?</span>
+                    </button>
+                    <div style="height:1px;background:var(--border);margin:4px 0"></div>
+                    <button class="more-menu-item" onclick="openAiSettings()" style="color:var(--primary)">
+                        <span style="font-size:13px">🤖</span>
+                        AI 설정 <span id="ai-status-badge" style="display:none;margin-left:auto;background:var(--primary);color:white;border-radius:6px;padding:1px 6px;font-size:10px">ON</span>
                     </button>
                 </div>
             </div>
@@ -1808,9 +1830,10 @@
                     <input type="text" class="search-bar" id="searchInput" placeholder="제목, 담당자, 태그, 폴더 검색..." autocomplete="off">
                     <div class="search-syntax-hint" id="search-syntax-hint"></div>
                     <div class="search-live-dropdown" id="search-live-dropdown"></div>
-                    <button id="btn-search-clear" aria-label="검색어 지우기" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);display:none;background:none;border:none;cursor:pointer;color:var(--muted);opacity:.6;padding:3px;border-radius:6px;line-height:1;transition:opacity .12s" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='.6'">
+                    <button id="btn-search-clear" aria-label="검색어 지우기" style="position:absolute;right:40px;top:50%;transform:translateY(-50%);display:none;background:none;border:none;cursor:pointer;color:var(--muted);opacity:.6;padding:3px;border-radius:6px;line-height:1;transition:opacity .12s" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='.6'">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6"/><path d="M9 9l6 6"/></svg>
                     </button>
+                    <button id="btn-ai-search" title="AI 자연어 검색 켜기" onclick="toggleAiSearch()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:14px;padding:3px 5px;border-radius:6px;line-height:1;transition:background .12s;color:var(--muted)" onmouseenter="this.style.background='var(--primary-light)'" onmouseleave="if(!_aiSearchMode)this.style.background='none'">✨</button>
                 </div>
                 <button class="btn" data-filter="all">전체</button>
                 <button class="btn" data-filter="favorite">
@@ -1832,6 +1855,7 @@
                     <option value="oldest">오래된순</option>
                     <option value="name">이름순</option>
                     <option value="manual">수동 정렬</option>
+                    <option value="smart">🤖 AI 추천순</option>
                 </select>
                 <div class="result-count" id="result-count"></div>
                 <button id="btn-select-all" onclick="toggleSelectAll()" title="전체 선택 / 해제" class="btn-select-all-ctrl">전체 선택</button>
@@ -1957,7 +1981,10 @@
             <textarea class="edit-textarea" id="edit-desc" placeholder="시트에 대한 간단한 설명을 입력하세요" maxlength="200"></textarea>
         </div>
         <div>
-            <div class="field-label">태그 <span style="font-weight:500;text-transform:none;letter-spacing:0;font-size:11px">(쉼표로 구분)</span></div>
+            <div class="field-label" style="display:flex;align-items:center;justify-content:space-between">
+                <span>태그 <span style="font-weight:500;text-transform:none;letter-spacing:0;font-size:11px">(쉼표로 구분)</span></span>
+                <button type="button" id="btn-ai-tags" onclick="aiSuggestTags()" style="background:var(--primary-light);color:var(--primary);border:none;border-radius:8px;padding:3px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">🤖 AI 태그 추천</button>
+            </div>
             <input type="text" class="title-input" id="edit-tags" placeholder="예) 마케팅, 예산, 2026">
         </div>
         <div class="edit-grid">
@@ -3343,6 +3370,7 @@ function sortData(data) {
             case 'owner-desc':   return b.owner.localeCompare(a.owner, 'ko');
             case 'status-asc':   return (STATUS_CONFIG[a.status]?.label||'').localeCompare(STATUS_CONFIG[b.status]?.label||'','ko');
             case 'status-desc':  return (STATUS_CONFIG[b.status]?.label||'').localeCompare(STATUS_CONFIG[a.status]?.label||'','ko');
+            case 'smart':        return (getSmartScore(b)||0) - (getSmartScore(a)||0);
             default:             return b.updated.localeCompare(a.updated);
         }
     });
@@ -6721,7 +6749,10 @@ function quickAddByUrl(url) {
                 <div style="font-size:11.5px;color:var(--muted);margin-top:3px">업데이트: ${esc(relativeDate(sheet.updated))}</div>
                 ${(typeof _accessStats !== 'undefined' && _accessStats[id]?.count) ? `<div style="font-size:11px;color:var(--muted);margin-top:3px">열어본 횟수: <strong style="color:var(--primary)">${_accessStats[id].count}회</strong></div>` : ''}
                 ${sheet.link && sheet.link !== '#' ? `<a href="${esc(sheet.link)}" target="_blank" rel="noopener" onclick="addRecentId(${id})" style="display:block;margin-top:10px;padding:6px 12px;background:var(--primary);color:#fff;border-radius:8px;font-size:12px;font-weight:700;text-align:center;text-decoration:none;pointer-events:auto">새 탭에서 열기 →</a>` : ''}
+                <div id="ai-summary-${id}" class="ai-summary-row"></div>
             `;
+            popup.dataset.sheetId = id;
+            if (typeof showAiSummary === 'function') showAiSummary(id);
             const rect = card.getBoundingClientRect();
             const pw = 300, ph = 200;
             let left = rect.right + 8;
@@ -8036,6 +8067,271 @@ function _renderStatsModal() {
 // 워크스페이스 초기 렌더
 // ══════════════════════════════════════
 _renderWorkspaceSection();
+</script>
+
+<!-- ════════════════════════════════════════
+     AI 설정 모달
+════════════════════════════════════════ -->
+<div id="ai-settings-overlay" onclick="if(event.target===this)closeAiSettings()">
+    <div id="ai-settings-box">
+        <div class="ai-modal-title">🤖 AI 기능 설정</div>
+        <div class="ai-modal-sub">
+            Groq API 키를 입력하면 자연어 검색, 자동 태그 추천, AI 카드 요약 기능이 활성화됩니다.<br>
+            Groq는 <strong>무료</strong>로 사용 가능합니다. <a href="https://console.groq.com/keys" target="_blank" rel="noopener" style="color:var(--primary)">console.groq.com/keys</a>에서 발급하세요.
+        </div>
+        <div style="margin-bottom:10px">
+            <div class="field-label" style="margin-bottom:6px">Groq API Key</div>
+            <input type="password" id="ai-key-input" class="ai-key-input" placeholder="gsk_...">
+        </div>
+        <div style="font-size:11.5px;color:var(--muted);line-height:1.7;background:var(--hover-bg);border-radius:8px;padding:10px 12px">
+            🔐 키는 이 브라우저의 localStorage에만 저장되며 외부로 전송되지 않습니다.<br>
+            🤖 <strong>자연어 검색</strong>: 검색창 ✨ 버튼 → Enter<br>
+            🏷️ <strong>AI 태그 추천</strong>: 시트 편집 → 태그 옆 버튼<br>
+            📊 <strong>AI 추천순</strong>: 정렬 선택 → "AI 추천순"<br>
+            👁️ <strong>AI 요약</strong>: 카드 호버 팝업에 자동 표시
+        </div>
+        <div class="ai-modal-footer">
+            <button class="ai-cancel-btn" onclick="closeAiSettings()">취소</button>
+            <button class="ai-save-btn" onclick="saveAiKey()">저장</button>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     AI 기능 JS
+════════════════════════════════════════ -->
+<script>
+// ══════════════════════════════════════
+// AI 핵심 — Groq API 연동
+// ══════════════════════════════════════
+const AI_GROQ_KEY_STORE = 'sm-groq-api-key';
+const AI_SUMMARY_STORE  = 'sm-ai-summaries-v1';
+
+let _groqApiKey  = localStorage.getItem(AI_GROQ_KEY_STORE) || '';
+let _aiSummaries = {};
+try { _aiSummaries = JSON.parse(localStorage.getItem(AI_SUMMARY_STORE) || '{}'); } catch(e) {}
+
+let _aiSearchMode    = false;
+let _aiSearchPending = false;
+
+// AI 설정 배지 초기화
+(function() {
+    const badge = document.getElementById('ai-status-badge');
+    if (badge && _groqApiKey) badge.style.display = '';
+})();
+
+async function callGroq(messages, opts = {}) {
+    if (!_groqApiKey) {
+        showToast('Groq API 키를 설정하세요 (더보기 → AI 설정)', '🔑');
+        return null;
+    }
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + _groqApiKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: 'llama-3.3-70b-versatile', temperature: 0, max_tokens: 512, ...opts, messages })
+    });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err?.error?.message || 'Groq 오류 ' + res.status);
+    }
+    const data = await res.json();
+    return data.choices[0].message.content.trim();
+}
+
+// ── 1. 자연어 검색 ──
+function toggleAiSearch() {
+    _aiSearchMode = !_aiSearchMode;
+    const btn   = document.getElementById('btn-ai-search');
+    const input = document.getElementById('searchInput');
+    if (_aiSearchMode) {
+        btn.style.background = 'var(--primary-light)';
+        btn.style.color = 'var(--primary)';
+        btn.title = 'AI 검색 ON — 설명 후 Enter';
+        input.placeholder = '🤖 자연어로 설명하세요: 예) "지난달 예산 관련 시트"';
+        input.focus();
+        showToast('AI 검색 모드 — 자유롭게 설명 후 Enter', '✨');
+    } else {
+        btn.style.background = 'none';
+        btn.style.color = 'var(--muted)';
+        btn.title = 'AI 자연어 검색 켜기';
+        input.placeholder = '제목, 담당자, 태그, 폴더 검색...';
+        applyFilters();
+    }
+}
+
+async function doAiSearch(query) {
+    if (!query.trim() || _aiSearchPending) return;
+    _aiSearchPending = true;
+    const btn = document.getElementById('btn-ai-search');
+    const origText = btn ? btn.textContent : '';
+    if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
+    try {
+        const sheetList = sheetsData.map(s => {
+            const folder = getFolderNameForSheet(s.id) || '';
+            return `ID:${s.id}|${s.title}|${s.desc||''}|${s.tags.join(',')}|${folder}`;
+        }).join('\n');
+        const result = await callGroq([
+            { role: 'system', content: '시트 목록에서 검색어와 관련된 시트 ID를 JSON 정수 배열로만 반환하세요. 관련도 높은 순서. 예: [3,7,12]. 반드시 배열만 출력.' },
+            { role: 'user', content: '검색어: "' + query + '"\n\n시트 목록:\n' + sheetList }
+        ]);
+        if (!result) return;
+        const matchStr = (result.match(/\[[\d,\s]*\]/) || ['[]'])[0];
+        const ids = JSON.parse(matchStr).map(Number).filter(n => !isNaN(n));
+        const ordered  = ids.map(id => sheetsData.find(s => s.id === id)).filter(Boolean);
+        const rest     = sheetsData.filter(s => !ids.includes(s.id));
+        renderSheets([...ordered, ...rest]);
+        const countEl = document.getElementById('result-count');
+        if (countEl) countEl.innerHTML = '🤖 AI 매칭 <strong>' + ordered.length + '</strong>개';
+        if (!ordered.length) showToast('관련 시트를 찾지 못했습니다', '🔍');
+    } catch(e) {
+        showToast('AI 검색 오류: ' + e.message, '❌');
+    } finally {
+        _aiSearchPending = false;
+        if (btn) { btn.textContent = origText || '✨'; btn.disabled = false; }
+    }
+}
+
+document.getElementById('searchInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && _aiSearchMode) { e.preventDefault(); doAiSearch(this.value); }
+});
+
+// ── 2. AI 태그 추천 ──
+async function aiSuggestTags() {
+    const titleEl = document.getElementById('edit-title');
+    const descEl  = document.getElementById('edit-desc');
+    const tagsEl  = document.getElementById('edit-tags');
+    if (!titleEl) return;
+    const btn = document.getElementById('btn-ai-tags');
+    if (btn) { btn.textContent = '생성 중...'; btn.disabled = true; }
+    try {
+        const result = await callGroq([
+            { role: 'system', content: '시트 정보를 보고 한국어 태그 3~5개를 JSON 문자열 배열로만 반환하세요. 다른 텍스트 없이 배열만. 예: ["월간보고","예산","팀공유"]' },
+            { role: 'user', content: '시트명: ' + titleEl.value + '\n설명: ' + (descEl?.value || '없음') }
+        ]);
+        if (!result) return;
+        const matchStr = (result.match(/\[.*?\]/s) || ['[]'])[0];
+        const suggested = JSON.parse(matchStr).map(t => String(t).trim()).filter(Boolean);
+        const existing  = tagsEl.value.split(',').map(t => t.trim()).filter(Boolean);
+        const newTags   = suggested.filter(t => !existing.includes(t));
+        if (!newTags.length) { showToast('새로운 태그 제안이 없습니다', '💡'); return; }
+        _renderAiTagChips(newTags, tagsEl);
+    } catch(e) {
+        showToast('태그 생성 오류: ' + e.message, '❌');
+    } finally {
+        if (btn) { btn.textContent = '🤖 AI 태그 추천'; btn.disabled = false; }
+    }
+}
+
+function _renderAiTagChips(newTags, tagsEl) {
+    let container = document.getElementById('ai-tag-chips');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'ai-tag-chips';
+        container.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;align-items:center';
+        tagsEl.parentNode.insertBefore(container, tagsEl.nextSibling);
+    }
+    container.innerHTML = '<span style="font-size:11px;color:var(--muted);flex-shrink:0">AI 추천:</span>' +
+        newTags.map(t => '<button type="button" class="ai-tag-chip" onclick="_addAiTag(this,\'' + esc(t) + '\')">' + esc(t) + ' +</button>').join('');
+}
+
+function _addAiTag(btn, tag) {
+    const tagsEl = document.getElementById('edit-tags');
+    if (!tagsEl) return;
+    const current = tagsEl.value.split(',').map(t => t.trim()).filter(Boolean);
+    if (!current.includes(tag)) tagsEl.value = [...current, tag].join(', ');
+    btn.remove();
+}
+
+// ── 3. AI 스마트 정렬 (알고리즘 기반, API 호출 없음) ──
+function getSmartScore(sheet) {
+    const stats = _accessStats[sheet.id] || { count: 0, lastAccess: null };
+    const now   = Date.now();
+
+    const freqScore    = Math.log1p(stats.count || 0) * 3;
+    let   recencyScore = 0;
+    if (stats.lastAccess) {
+        const daysSince = (now - new Date(stats.lastAccess).getTime()) / 86400000;
+        recencyScore = Math.max(0, (30 - daysSince) / 30) * 5;
+    }
+    const pinScore = sheet.isPinned ? 3 : 0;
+    const favScore = sheet.isFavorite ? 2 : 0;
+
+    // 시간대 패턴
+    const hour   = new Date().getHours();
+    let   hourPat = {};
+    try { hourPat = JSON.parse(localStorage.getItem('sm-hourly-' + sheet.id) || '{}'); } catch(e) {}
+    const hourScore = (hourPat[String(hour)] || 0) * 0.4;
+
+    return freqScore + recencyScore + pinScore + favScore + hourScore;
+}
+
+// addRecentId에 시간대 패턴 기록 추가 (기존 override 위에 한 번 더 패치)
+const _aiOrigAddRecent = addRecentId;
+addRecentId = function(id) {
+    _aiOrigAddRecent(id);
+    const hour   = String(new Date().getHours());
+    const patKey = 'sm-hourly-' + id;
+    let   pat    = {};
+    try { pat = JSON.parse(localStorage.getItem(patKey) || '{}'); } catch(e) {}
+    pat[hour] = (pat[hour] || 0) + 1;
+    try { localStorage.setItem(patKey, JSON.stringify(pat)); } catch(e) {}
+};
+
+// ── 4. AI 카드 요약 (hover 팝업 강화) ──
+async function showAiSummary(sheetId) {
+    if (!_groqApiKey) return;
+    const sheet = sheetsData.find(s => s.id === sheetId);
+    if (!sheet) return;
+    const container = document.getElementById('ai-summary-' + sheetId);
+    if (!container) return;
+    if (_aiSummaries[sheetId]) {
+        container.innerHTML = '<span style="color:var(--muted);font-size:11px;font-style:italic">🤖 ' + esc(_aiSummaries[sheetId]) + '</span>';
+        return;
+    }
+    container.innerHTML = '<span style="color:var(--muted);font-size:11px;opacity:.6">AI 요약 생성 중...</span>';
+    try {
+        const folder  = getFolderNameForSheet(sheetId) || '';
+        const summary = await callGroq([
+            { role: 'system', content: '시트 정보를 보고 용도를 20자 이내 한 문장으로 요약하세요. 한국어, 매우 짧게.' },
+            { role: 'user', content: '시트명: ' + sheet.title + '\n설명: ' + (sheet.desc || '없음') + '\n태그: ' + (sheet.tags.join(',') || '없음') + '\n폴더: ' + folder }
+        ]);
+        if (!summary) return;
+        _aiSummaries[sheetId] = summary;
+        try { localStorage.setItem(AI_SUMMARY_STORE, JSON.stringify(_aiSummaries)); } catch(e) {}
+        container.innerHTML = '<span style="color:var(--muted);font-size:11px;font-style:italic">🤖 ' + esc(summary) + '</span>';
+    } catch(e) {
+        container.innerHTML = '';
+    }
+}
+
+// AI 요약 슬롯은 initCardHoverPopup에서 직접 삽입됨 (별도 패치 불필요)
+
+// ── AI 설정 모달 제어 ──
+function openAiSettings() {
+    const overlay = document.getElementById('ai-settings-overlay');
+    if (!overlay) return;
+    document.getElementById('ai-key-input').value = _groqApiKey;
+    overlay.style.opacity = '1';
+    overlay.style.pointerEvents = 'all';
+    closeMoreMenu();
+}
+function closeAiSettings() {
+    const overlay = document.getElementById('ai-settings-overlay');
+    if (overlay) { overlay.style.opacity = '0'; overlay.style.pointerEvents = 'none'; }
+}
+function saveAiKey() {
+    const val = document.getElementById('ai-key-input').value.trim();
+    _groqApiKey = val;
+    localStorage.setItem(AI_GROQ_KEY_STORE, val);
+    closeAiSettings();
+    const badge = document.getElementById('ai-status-badge');
+    if (badge) badge.style.display = val ? '' : 'none';
+    showToast(val ? 'AI 기능 활성화 🤖' : 'API 키 삭제됨', val ? '✅' : '🗑️');
+}
+
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeAiSettings();
+});
 </script>
 </body>
 </html>
