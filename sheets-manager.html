@@ -3394,6 +3394,7 @@ document.getElementById('sidebar-root-add-btns').addEventListener('click', e => 
 // ══════════════════════════════════════
 // 시트 ID로 소속 폴더명 찾기
 function getFolderNameForSheet(sheetId, nodes=treeData) {
+    if (window._folderNameCache && sheetId in window._folderNameCache) return window._folderNameCache[sheetId] || null;
     for (const n of nodes) {
         if (n.type === 'folder') {
             if ((n.children||[]).some(c => c.type==='sheet' && c.sheetId===sheetId)) return n.name;
