@@ -1653,6 +1653,14 @@
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h4M6 12h4M14 12h4M6 16h12"/></svg>
                         단축키 도움말 <span style="margin-left:auto;font-size:10.5px;background:var(--hover-bg);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-family:monospace;color:var(--muted)">?</span>
                     </button>
+                    <button class="more-menu-item" onclick="openDupModal();closeMoreMenu()">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                        중복 시트 감지
+                    </button>
+                    <button class="more-menu-item" onclick="openAiAdvModal();closeMoreMenu()" style="color:var(--primary)">
+                        <span style="font-size:13px">🤖</span>
+                        AI 고급 기능
+                    </button>
                     <div style="height:1px;background:var(--border);margin:4px 0"></div>
                     <button class="more-menu-item" onclick="openAiSettings()" style="color:var(--primary)">
                         <span style="font-size:13px">🤖</span>
@@ -2230,6 +2238,7 @@
     <span id="bulk-count-label">0개 선택됨</span>
     <div class="bulk-sep"></div>
     <button class="bulk-bar-btn" id="bulk-fav-btn">⭐ 즐겨찾기</button>
+    <button class="bulk-bar-btn" onclick="openBulkEdit()">🏷️ 일괄 편집</button>
     <button class="bulk-bar-btn" id="bulk-folder-btn">
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
         폴더 이동
