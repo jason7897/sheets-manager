@@ -1830,11 +1830,13 @@
                     <input type="text" class="search-bar" id="searchInput" placeholder="제목, 담당자, 태그, 폴더 검색..." autocomplete="off">
                     <div class="search-syntax-hint" id="search-syntax-hint"></div>
                     <div class="search-live-dropdown" id="search-live-dropdown"></div>
-                    <button id="btn-search-clear" aria-label="검색어 지우기" style="position:absolute;right:40px;top:50%;transform:translateY(-50%);display:none;background:none;border:none;cursor:pointer;color:var(--muted);opacity:.6;padding:3px;border-radius:6px;line-height:1;transition:opacity .12s" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='.6'">
+                    <button id="btn-search-clear" aria-label="검색어 지우기" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);display:none;background:none;border:none;cursor:pointer;color:var(--muted);opacity:.6;padding:3px;border-radius:6px;line-height:1;transition:opacity .12s" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='.6'">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6"/><path d="M9 9l6 6"/></svg>
                     </button>
-                    <button id="btn-ai-search" title="AI 자연어 검색 켜기" onclick="toggleAiSearch()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:14px;padding:3px 5px;border-radius:6px;line-height:1;transition:background .12s;color:var(--muted)" onmouseenter="this.style.background='var(--primary-light)'" onmouseleave="if(!_aiSearchMode)this.style.background='none'">✨</button>
                 </div>
+                <button id="btn-ai-search" title="AI 자연어 검색 켜기" onclick="toggleAiSearch()" style="flex-shrink:0;display:flex;align-items:center;gap:5px;padding:8px 13px;border:1.5px solid var(--border);border-radius:10px;background:var(--card-bg);color:var(--muted);font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap">
+                    ✨ AI 검색
+                </button>
                 <button class="btn" data-filter="all">전체</button>
                 <button class="btn" data-filter="favorite">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
