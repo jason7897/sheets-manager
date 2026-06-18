@@ -8132,6 +8132,94 @@ _renderWorkspaceSection();
 </script>
 
 <!-- ════════════════════════════════════════
+     일괄 편집 모달
+════════════════════════════════════════ -->
+<div id="bulk-edit-modal" onclick="if(event.target===this)closeBulkEdit()">
+    <div id="bulk-edit-box">
+        <div class="ai-modal-title" style="margin-bottom:4px">🏷️ 일괄 편집</div>
+        <div class="ai-modal-sub" id="bulk-edit-sub">선택한 시트에 일괄 적용합니다.</div>
+        <div class="bulk-field-row">
+            <div class="bulk-field-label">태그</div>
+            <div class="bulk-tag-mode">
+                <button id="btm-add" class="active" onclick="setBulkTagMode('add')">추가</button>
+                <button id="btm-remove" onclick="setBulkTagMode('remove')">제거</button>
+                <button id="btm-replace" onclick="setBulkTagMode('replace')">교체</button>
+            </div>
+            <input type="text" id="bulk-tags-input" class="ai-key-input" placeholder="예) 마케팅, 예산, 2026 (쉼표로 구분)">
+        </div>
+        <div class="bulk-field-row">
+            <div class="bulk-field-label">담당자 변경 <span style="font-weight:500;text-transform:none">(비워두면 변경 안 함)</span></div>
+            <input type="text" id="bulk-owner-input" class="ai-key-input" placeholder="예) 김민수">
+        </div>
+        <div class="bulk-field-row">
+            <div class="bulk-field-label">상태 변경</div>
+            <select id="bulk-status-input" class="ai-key-input" style="font-family:inherit">
+                <option value="">변경 안 함</option>
+                <option value="active">진행중</option>
+                <option value="review">검토중</option>
+                <option value="done">완료</option>
+                <option value="archived">보관됨</option>
+            </select>
+        </div>
+        <div class="ai-modal-footer">
+            <button class="ai-cancel-btn" onclick="closeBulkEdit()">취소</button>
+            <button class="ai-save-btn" onclick="applyBulkEdit()">적용</button>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     중복 시트 감지 모달
+════════════════════════════════════════ -->
+<div id="dup-modal" onclick="if(event.target===this)closeDupModal()">
+    <div id="dup-box">
+        <div class="ai-modal-title" style="margin-bottom:4px">🔍 중복 시트 감지</div>
+        <div class="ai-modal-sub">이름이 비슷한 시트 쌍을 자동으로 찾아드립니다.</div>
+        <div id="dup-content"></div>
+        <div class="ai-modal-footer" style="margin-top:16px">
+            <button class="ai-cancel-btn" onclick="closeDupModal()">닫기</button>
+            <button class="ai-save-btn" id="dup-ai-btn" onclick="runAiDupDetect()">🤖 AI로 더 정확하게</button>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     AI 고급 기능 모달
+════════════════════════════════════════ -->
+<div id="ai-adv-modal" onclick="if(event.target===this)closeAiAdvModal()">
+    <div id="ai-adv-box">
+        <div class="ai-modal-title" style="margin-bottom:16px">🤖 AI 고급 기능</div>
+
+        <div class="adv-section">
+            <div class="adv-section-title">🏷️ 전체 일괄 태그 정리</div>
+            <div class="adv-section-desc">태그가 없는 시트를 AI가 자동으로 분석해 태그를 추천하고 적용합니다.</div>
+            <button class="adv-run-btn" id="btn-bulk-tag" onclick="runBulkAiTag()">태그 없는 시트 일괄 처리</button>
+            <div class="adv-result" id="bulk-tag-result" style="display:none"></div>
+        </div>
+
+        <div class="adv-section">
+            <div class="adv-section-title">📂 AI 폴더 구조 제안</div>
+            <div class="adv-section-desc">전체 시트 목록을 분석해 최적의 폴더 분류 체계를 제안합니다.</div>
+            <button class="adv-run-btn" id="btn-folder-suggest" onclick="runAiFolderSuggest()">폴더 구조 분석</button>
+            <div class="adv-result" id="folder-suggest-result" style="display:none"></div>
+        </div>
+
+        <div class="adv-section">
+            <div class="adv-section-title">🔗 AI 검색 매칭 이유</div>
+            <div class="adv-section-desc">AI 검색 시 각 결과가 왜 매칭됐는지 이유를 함께 표시합니다.</div>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:600">
+                <input type="checkbox" id="ai-search-reason-toggle" onchange="toggleAiSearchReason(this.checked)" style="accent-color:var(--primary)">
+                매칭 이유 표시 켜기
+            </label>
+        </div>
+
+        <div class="ai-modal-footer" style="margin-top:4px">
+            <button class="ai-cancel-btn" onclick="closeAiAdvModal()">닫기</button>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════════════════════════════════
      AI 설정 모달
 ════════════════════════════════════════ -->
 <div id="ai-settings-overlay" onclick="if(event.target===this)closeAiSettings()">
