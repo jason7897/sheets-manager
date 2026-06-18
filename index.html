@@ -8465,6 +8465,349 @@ async function showAiSummary(sheetId) {
 
 // AI 요약 슬롯은 initCardHoverPopup에서 직접 삽입됨 (별도 패치 불필요)
 
+// ══════════════════════════════════════
+// 고도화 기능 v2
+// ══════════════════════════════════════
+
+// ── 1. 즐겨찾기 빠른 접속 바 ──
+const QA_COL_KEY = 'sm-qa-col';
+let _qaCollapsed = localStorage.getItem(QA_COL_KEY) === '1';
+
+function _renderQuickAccessBar() {
+    const bar   = document.getElementById('quick-access-bar');
+    const inner = document.getElementById('quick-access-inner');
+    if (!bar || !inner) return;
+    const candidates = sheetsData
+        .filter(s => (s.isFavorite || s.isPinned) && s.link && s.link !== '#')
+        .map(s => ({ ...s, _sc: (_accessStats[s.id]?.count||0) + (s.isPinned?10:0) + (s.isFavorite?5:0) }))
+        .sort((a, b) => b._sc - a._sc)
+        .slice(0, 7);
+    if (!candidates.length) { bar.style.display = 'none'; return; }
+    bar.style.display = '';
+    const btn = document.getElementById('qa-toggle-btn');
+    if (_qaCollapsed) {
+        inner.style.display = 'none';
+        if (btn) btn.textContent = '▼';
+    } else {
+        inner.style.display = '';
+        if (btn) btn.textContent = '▲';
+        inner.innerHTML = candidates.map(s =>
+            `<button class="qa-chip" onclick="window.open('${esc(s.link)}','_blank');addRecentId(${s.id})" title="${esc(s.title)}">
+                <span class="qa-chip-icon">${s.isPinned?'📌':'⭐'}</span>
+                <span class="qa-chip-label">${esc(s.title)}</span>
+            </button>`
+        ).join('');
+    }
+}
+
+function toggleQuickAccessBar() {
+    _qaCollapsed = !_qaCollapsed;
+    localStorage.setItem(QA_COL_KEY, _qaCollapsed ? '1' : '0');
+    _renderQuickAccessBar();
+}
+
+// applyFilters 후 빠른 접속 바 갱신 패치
+const _origApplyFilters = applyFilters;
+applyFilters = function() { _origApplyFilters(); _renderQuickAccessBar(); _checkDueBanner(); };
+
+// ── 2. D-3 마감 배너 ──
+const DUE_DISMISS_KEY = 'sm-due-dismiss';
+function _checkDueBanner() {
+    const banner = document.getElementById('due-alert-banner');
+    if (!banner) return;
+    const dismissed = sessionStorage.getItem(DUE_DISMISS_KEY);
+    if (dismissed) { banner.style.display = 'none'; return; }
+    const today = new Date(); today.setHours(0,0,0,0);
+    const soon = sheetsData.filter(s => {
+        if (!s.dueDate || s.status === 'archived') return false;
+        const d = new Date(s.dueDate); d.setHours(0,0,0,0);
+        const diff = Math.ceil((d - today) / 86400000);
+        return diff >= 0 && diff <= 3;
+    }).sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+    if (!soon.length) { banner.style.display = 'none'; return; }
+    banner.style.display = 'flex';
+    banner.innerHTML = `<span style="font-size:13px;font-weight:800;color:#92400e;flex-shrink:0">⏰ 마감 임박</span>` +
+        soon.map(s => {
+            const d = new Date(s.dueDate); d.setHours(0,0,0,0);
+            const diff = Math.ceil((d - today) / 86400000);
+            const label = diff === 0 ? '오늘' : `D-${diff}`;
+            return `<button class="due-banner-item" onclick="highlightSheet(${s.id})" title="${esc(s.title)}">${label} ${esc(s.title)}</button>`;
+        }).join('') +
+        `<button class="due-banner-close" onclick="sessionStorage.setItem('${DUE_DISMISS_KEY}','1');this.parentElement.style.display='none'" title="닫기">×</button>`;
+}
+
+function highlightSheet(id) {
+    selectedCards.clear(); selectedCards.add(id);
+    const s = sheetsData.find(x => x.id === id);
+    if (s) { currentFilter = 'all'; applyFilters(); }
+    setTimeout(() => {
+        const el = document.querySelector(`.sheet-card[data-id="${id}"]`);
+        if (el) { el.scrollIntoView({behavior:'smooth',block:'center'}); el.style.outline='2px solid var(--warning)'; setTimeout(()=>el.style.outline='',2000); }
+    }, 300);
+}
+
+// ── 3. 일괄 편집 ──
+let _bulkTagMode = 'add';
+
+function openBulkEdit() {
+    const modal = document.getElementById('bulk-edit-modal');
+    if (!modal) return;
+    const n = selectedCards.size;
+    if (!n) { showToast('시트를 먼저 선택하세요', '💡'); return; }
+    const sub = document.getElementById('bulk-edit-sub');
+    if (sub) sub.textContent = `선택한 ${n}개 시트에 일괄 적용합니다.`;
+    document.getElementById('bulk-tags-input').value = '';
+    document.getElementById('bulk-owner-input').value = '';
+    document.getElementById('bulk-status-input').value = '';
+    setBulkTagMode('add');
+    modal.classList.add('open');
+}
+function closeBulkEdit() { document.getElementById('bulk-edit-modal')?.classList.remove('open'); }
+
+function setBulkTagMode(mode) {
+    _bulkTagMode = mode;
+    ['add','remove','replace'].forEach(m => {
+        document.getElementById('btm-' + m)?.classList.toggle('active', m === mode);
+    });
+}
+
+function applyBulkEdit() {
+    const tagsRaw  = document.getElementById('bulk-tags-input').value.trim();
+    const newOwner = document.getElementById('bulk-owner-input').value.trim();
+    const newStatus = document.getElementById('bulk-status-input').value;
+    const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
+
+    let changed = 0;
+    selectedCards.forEach(id => {
+        const s = sheetsData.find(x => x.id === id);
+        if (!s) return;
+        if (tags.length) {
+            if (_bulkTagMode === 'add')     s.tags = [...new Set([...s.tags, ...tags])];
+            else if (_bulkTagMode === 'remove') s.tags = s.tags.filter(t => !tags.includes(t));
+            else s.tags = tags;
+        }
+        if (newOwner) s.owner = newOwner;
+        if (newStatus) s.status = newStatus;
+        changed++;
+    });
+    closeBulkEdit();
+    applyFilters();
+    showToast(`${changed}개 시트 일괄 편집 완료`, '✅');
+    appLog('edit', '일괄 편집', `${changed}개 시트`);
+}
+
+// ── 4. 중복 시트 감지 ──
+function openDupModal() {
+    const modal = document.getElementById('dup-modal');
+    if (!modal) return;
+    modal.classList.add('open');
+    _runLocalDupDetect();
+}
+function closeDupModal() { document.getElementById('dup-modal')?.classList.remove('open'); }
+
+function _levenshtein(a, b) {
+    const m = a.length, n = b.length;
+    const dp = Array.from({length:m+1}, (_,i) => Array.from({length:n+1}, (_,j) => i===0?j:j===0?i:0));
+    for (let i=1;i<=m;i++) for (let j=1;j<=n;j++)
+        dp[i][j] = a[i-1]===b[j-1] ? dp[i-1][j-1] : 1+Math.min(dp[i-1][j-1],dp[i-1][j],dp[i][j-1]);
+    return dp[m][n];
+}
+
+function _runLocalDupDetect() {
+    const content = document.getElementById('dup-content');
+    if (!content) return;
+    content.innerHTML = '<div style="color:var(--muted);font-size:13px;padding:8px 0">분석 중...</div>';
+    const pairs = [];
+    const list = sheetsData.filter(s => s.status !== 'archived');
+    for (let i=0;i<list.length;i++) {
+        for (let j=i+1;j<list.length;j++) {
+            const a = list[i].title.toLowerCase(), b = list[j].title.toLowerCase();
+            const maxLen = Math.max(a.length, b.length);
+            if (!maxLen) continue;
+            const dist = _levenshtein(a, b);
+            const sim  = 1 - dist / maxLen;
+            if (sim >= 0.72) pairs.push({ a: list[i], b: list[j], sim });
+        }
+    }
+    pairs.sort((x, y) => y.sim - x.sim);
+    if (!pairs.length) {
+        content.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">중복 의심 시트가 없습니다 👍</div>';
+        return;
+    }
+    content.innerHTML = pairs.slice(0,12).map(p => `
+        <div class="dup-pair">
+            <div class="dup-pair-title">
+                <span style="background:var(--warning-light);color:var(--warning);border-radius:6px;padding:1px 7px;font-size:11px">${Math.round(p.sim*100)}% 유사</span>
+                중복 가능성
+            </div>
+            <div class="dup-sheet-row">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.a.title)}</span>
+                ${p.a.link&&p.a.link!=='#'?`<a href="${esc(p.a.link)}" target="_blank" style="color:var(--primary);font-size:11px;flex-shrink:0">열기</a>`:''}
+            </div>
+            <div class="dup-sheet-row" style="color:var(--muted)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+                <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.b.title)}</span>
+                ${p.b.link&&p.b.link!=='#'?`<a href="${esc(p.b.link)}" target="_blank" style="color:var(--primary);font-size:11px;flex-shrink:0">열기</a>`:''}
+            </div>
+        </div>`).join('');
+}
+
+// ── 5. AI 고급 기능 모달 ──
+function openAiAdvModal() {
+    const modal = document.getElementById('ai-adv-modal');
+    if (!modal) return;
+    modal.classList.add('open');
+    const toggle = document.getElementById('ai-search-reason-toggle');
+    if (toggle) toggle.checked = !!localStorage.getItem('sm-ai-reason');
+}
+function closeAiAdvModal() { document.getElementById('ai-adv-modal')?.classList.remove('open'); }
+
+function toggleAiSearchReason(on) {
+    if (on) localStorage.setItem('sm-ai-reason','1');
+    else    localStorage.removeItem('sm-ai-reason');
+    showToast(on ? '매칭 이유 표시 ON' : '매칭 이유 표시 OFF', on ? '✅' : '🔕');
+}
+
+// ── 6. AI 전체 일괄 태그 정리 ──
+async function runBulkAiTag() {
+    const btn = document.getElementById('btn-bulk-tag');
+    const result = document.getElementById('bulk-tag-result');
+    if (!btn || !result) return;
+    const untagged = sheetsData.filter(s => !s.tags.length && s.status !== 'archived');
+    if (!untagged.length) { result.style.display=''; result.textContent='태그 없는 시트가 없습니다 👍'; return; }
+    btn.disabled = true; btn.textContent = `처리 중... (0/${untagged.length})`;
+    result.style.display = ''; result.textContent = '';
+    let done = 0, failed = 0;
+    // Batch: 10개씩
+    for (let i=0; i<untagged.length; i+=10) {
+        const batch = untagged.slice(i, i+10);
+        try {
+            const list = batch.map(s => `ID:${s.id}|${s.title}|${s.desc||''}`).join('\n');
+            const raw  = await callGroq([
+                { role:'system', content:'각 시트에 적합한 한국어 태그 2~4개를 JSON으로 반환하세요. 형식: [{"id":숫자,"tags":["태그1","태그2"]},...]. 배열만 출력.' },
+                { role:'user', content:'시트 목록:\n' + list }
+            ]);
+            if (!raw) continue;
+            const arr = JSON.parse((raw.match(/\[[\s\S]*\]/) || ['[]'])[0]);
+            arr.forEach(item => {
+                const s = sheetsData.find(x => x.id === Number(item.id));
+                if (s && Array.isArray(item.tags)) { s.tags = item.tags.map(t=>String(t).trim()).filter(Boolean); done++; }
+            });
+        } catch(e) { failed++; }
+        btn.textContent = `처리 중... (${Math.min(i+10, untagged.length)}/${untagged.length})`;
+    }
+    saveStorage();
+    applyFilters();
+    result.innerHTML = `✅ ${done}개 시트 태그 추가 완료${failed?` (실패 ${failed}개)`:''}`;
+    btn.disabled = false; btn.textContent = '태그 없는 시트 일괄 처리';
+    appLog('edit', 'AI 일괄 태그', `${done}개 완료`);
+}
+
+// ── 7. AI 폴더 구조 제안 ──
+async function runAiFolderSuggest() {
+    const btn = document.getElementById('btn-folder-suggest');
+    const result = document.getElementById('folder-suggest-result');
+    if (!btn || !result) return;
+    btn.disabled = true; btn.textContent = '분석 중...';
+    result.style.display = ''; result.textContent = '';
+    try {
+        const list = sheetsData.slice(0,80).map(s=>`- ${s.title}${s.tags.length?` [${s.tags.join(',')}]`:''}`).join('\n');
+        const raw  = await callGroq([
+            { role:'system', content:'시트 목록을 보고 최적의 폴더 분류 체계를 제안하세요. 한국어로, 폴더명과 포함될 시트 목록을 마크다운 형식으로 간결하게 작성하세요. 최대 6개 폴더.' },
+            { role:'user', content:'시트 목록:\n' + list }
+        ], { max_tokens: 800 });
+        result.style.display = '';
+        result.innerHTML = raw ? raw.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/^- /gm,'• ') : '결과 없음';
+    } catch(e) {
+        result.innerHTML = '오류: ' + esc(e.message);
+    } finally {
+        btn.disabled = false; btn.textContent = '폴더 구조 분석';
+    }
+}
+
+// ── 8. AI 중복 감지 ──
+async function runAiDupDetect() {
+    const btn = document.getElementById('dup-ai-btn');
+    const content = document.getElementById('dup-content');
+    if (!btn || !content) return;
+    btn.disabled = true; btn.textContent = 'AI 분석 중...';
+    try {
+        const list = sheetsData.filter(s=>s.status!=='archived').slice(0,60).map(s=>`ID:${s.id}|${s.title}`).join('\n');
+        const raw  = await callGroq([
+            { role:'system', content:'시트 목록에서 이름이 비슷하거나 중복될 가능성이 있는 쌍을 찾으세요. JSON 배열로 반환: [{"a":ID숫자,"b":ID숫자,"reason":"이유"},...]. 배열만 출력. 최대 10쌍.' },
+            { role:'user', content:'시트 목록:\n' + list }
+        ]);
+        const pairs = JSON.parse((raw?.match(/\[[\s\S]*\]/) || ['[]'])[0]);
+        if (!pairs.length) { content.innerHTML += '<div style="color:var(--muted);font-size:12.5px;margin-top:8px;padding:8px;background:var(--success-light);border-radius:8px">AI 분석에서도 중복 의심 시트가 없습니다 ✅</div>'; return; }
+        const extra = pairs.map(p => {
+            const a = sheetsData.find(s=>s.id===Number(p.a)), b = sheetsData.find(s=>s.id===Number(p.b));
+            if (!a || !b) return '';
+            return `<div class="dup-pair" style="border-color:var(--primary);background:var(--primary-light)">
+                <div class="dup-pair-title"><span style="background:var(--primary);color:#fff;border-radius:6px;padding:1px 7px;font-size:11px">AI 감지</span>${esc(p.reason||'')}</div>
+                <div class="dup-sheet-row">${esc(a.title)}</div>
+                <div class="dup-sheet-row" style="color:var(--muted)">${esc(b.title)}</div>
+            </div>`;
+        }).join('');
+        content.innerHTML = extra + content.innerHTML;
+    } catch(e) {
+        showToast('AI 중복 감지 오류: ' + e.message, '❌');
+    } finally {
+        btn.disabled = false; btn.textContent = '🤖 AI로 더 정확하게';
+    }
+}
+
+// ── 9. AI 검색 매칭 이유 표시 ──
+const _origDoAiSearch = doAiSearch;
+doAiSearch = async function(query) {
+    if (!localStorage.getItem('sm-ai-reason')) { await _origDoAiSearch(query); return; }
+    if (!query.trim() || _aiSearchPending) return;
+    _aiSearchPending = true;
+    const btn = document.getElementById('btn-ai-search');
+    const origTxt = btn?.innerHTML || '';
+    if (btn) { btn.innerHTML = '⏳ AI 검색 ON'; btn.disabled = true; }
+    try {
+        const sheetList = sheetsData.map(s => `ID:${s.id}|${s.title}|${s.desc||''}|${s.tags.join(',')}|${getFolderNameForSheet(s.id)||''}`).join('\n');
+        const raw = await callGroq([
+            { role:'system', content:'시트 목록에서 검색어와 관련된 시트를 찾아 JSON 배열로 반환하세요. 형식: [{"id":숫자,"reason":"매칭이유(10자이내)"},...]. 관련도 높은 순서. 배열만 출력.' },
+            { role:'user', content:'검색어: "' + query + '"\n\n시트 목록:\n' + sheetList }
+        ]);
+        const hits = JSON.parse((raw?.match(/\[[\s\S]*?\]/) || ['[]'])[0]);
+        const ordered = hits.map(h => ({ sheet: sheetsData.find(s=>s.id===Number(h.id)), reason: h.reason })).filter(x=>x.sheet);
+        const rest    = sheetsData.filter(s => !hits.map(h=>Number(h.id)).includes(s.id));
+        renderSheets([...ordered.map(x=>x.sheet), ...rest]);
+        // 이유 배지 주입
+        setTimeout(() => {
+            ordered.forEach(({sheet, reason}) => {
+                if (!reason) return;
+                const card = document.querySelector(`.sheet-card[data-id="${sheet.id}"]`);
+                if (!card) return;
+                const badge = document.createElement('span');
+                badge.style.cssText = 'display:inline-block;background:var(--primary-light);color:var(--primary);border-radius:6px;padding:1px 7px;font-size:10.5px;font-weight:700;margin-top:4px';
+                badge.textContent = '🤖 ' + reason;
+                card.querySelector('.card-desc')?.after(badge);
+            });
+        }, 100);
+        const countEl = document.getElementById('result-count');
+        if (countEl) countEl.innerHTML = '🤖 AI 매칭 <strong>' + ordered.length + '</strong>개';
+    } catch(e) { showToast('AI 검색 오류: ' + e.message, '❌'); }
+    finally {
+        _aiSearchPending = false;
+        if (btn) { btn.innerHTML = origTxt; btn.disabled = false; }
+    }
+};
+
+// ── 초기화 ──
+(function initEnhancedFeatures() {
+    _renderQuickAccessBar();
+    _checkDueBanner();
+    // Escape 키로 모달 닫기
+    document.addEventListener('keydown', e => {
+        if (e.key !== 'Escape') return;
+        closeBulkEdit(); closeDupModal(); closeAiAdvModal();
+    });
+})();
+
 // ── AI 설정 모달 제어 ──
 function openAiSettings() {
     const overlay = document.getElementById('ai-settings-overlay');
