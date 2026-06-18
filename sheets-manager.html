@@ -8147,15 +8147,15 @@ function toggleAiSearch() {
     const btn   = document.getElementById('btn-ai-search');
     const input = document.getElementById('searchInput');
     if (_aiSearchMode) {
-        btn.style.background = 'var(--primary-light)';
-        btn.style.color = 'var(--primary)';
-        btn.title = 'AI 검색 ON — 설명 후 Enter';
-        input.placeholder = '🤖 자연어로 설명하세요: 예) "지난달 예산 관련 시트"';
+        btn.classList.add('active');
+        btn.innerHTML = '✨ AI 검색 ON';
+        btn.title = 'AI 검색 ON — 설명 후 Enter (다시 클릭 시 끄기)';
+        input.placeholder = '🤖 자연어로 설명: 예) "지난달 예산 관련 시트"';
         input.focus();
         showToast('AI 검색 모드 — 자유롭게 설명 후 Enter', '✨');
     } else {
-        btn.style.background = 'none';
-        btn.style.color = 'var(--muted)';
+        btn.classList.remove('active');
+        btn.innerHTML = '✨ AI 검색';
         btn.title = 'AI 자연어 검색 켜기';
         input.placeholder = '제목, 담당자, 태그, 폴더 검색...';
         applyFilters();
