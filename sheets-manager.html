@@ -3448,6 +3448,14 @@ function getParentFolderNode(sheetId, nodes=treeData) {
     return null;
 }
 function renderSheets(data) {
+    // 폴더 이름 캐시 — 카드마다 전체 트리 재탐색 방지
+    window._folderNameCache = {};
+    (function buildCache(nodes, path) {
+        for (const n of nodes) {
+            if (n.type === 'sheet' && n.sheetId != null) window._folderNameCache[n.sheetId] = path;
+            if (n.children?.length) buildCache(n.children, n.type === 'folder' ? n.name : path);
+        }
+    })(treeData, '');
     const container = document.getElementById('sheet-container');
     const countEl   = document.getElementById('result-count');
     if (countEl) countEl.innerHTML = data.length > 0 ? `총 <strong>${data.length}</strong>개` : '';
