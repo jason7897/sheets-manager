@@ -5965,13 +5965,6 @@ document.getElementById('searchInput').addEventListener('blur', () => {
     if (q) _saveSearchHistory(q);
     setTimeout(() => { const h = document.getElementById('search-syntax-hint'); if(h) h.classList.remove('show'); }, 200);
 });
-document.getElementById('searchInput').addEventListener('input', () => {
-    const h = document.getElementById('search-syntax-hint');
-    const v = document.getElementById('searchInput').value;
-    _renderSearchHint();
-    if (h) h.classList.toggle('show', v === '' && document.activeElement === document.getElementById('searchInput'));
-});
-
 // ── 상태 변수 ──
 let _hoveredCardId     = null;   // 현재 마우스가 올라간 카드 ID (F키 즐겨찾기용)
 let _lastSelectedCardIdx = -1;   // Shift+클릭 범위선택 기준 인덱스
