@@ -3934,6 +3934,10 @@ const _debouncedSearch = debounce(() => {
 searchInput.addEventListener('input', () => {
     searchClearBtn.style.display = searchInput.value ? 'block' : 'none';
     _debouncedSearch();
+    const h = document.getElementById('search-syntax-hint');
+    const v = searchInput.value;
+    _renderSearchHint();
+    if (h) h.classList.toggle('show', v === '' && document.activeElement === searchInput);
 });
 searchInput.addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); const q = searchInput.value.trim(); if (q) _saveSearchHistory(q); searchInput.blur(); applyFilters(); }
