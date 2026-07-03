@@ -1,5 +1,5 @@
 {
-  "buildCommand": "mkdir -p dist && cp sheets-manager.html dist/index.html && cp dashboard.html dist/dashboard.html",
+  "buildCommand": "mkdir -p dist && cp sheets-manager.html dist/index.html && cp dashboard.html dist/dashboard.html && cp manifest.json dist/manifest.json && cp sw.js dist/sw.js",
   "outputDirectory": "dist",
   "framework": null,
   "headers": [
