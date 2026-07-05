@@ -11343,7 +11343,9 @@ var _t=setInterval(function(){
       try{
         var cur=typeof sheetsData!=='undefined'?sheetsData:[];
         var curIds=new Set(cur.map(function(s){return s.id;}));
-        var lost=_peak.filter(function(s){return s&&s.id!=null&&!curIds.has(s.id);});
+        var preIds=(typeof window!=='undefined'&&window._smPreInitIds)?window._smPreInitIds:null;
+        // 이번 로드 시작 전부터 있던 항목은 제외 — 원격의 정상 삭제를 유실로 오인해 되살리지 않기 위함
+        var lost=_peak.filter(function(s){return s&&s.id!=null&&!curIds.has(s.id)&&(!preIds||!preIds.has(s.id));});
         if(!lost.length)return;
         lost.forEach(function(s){sheetsData.push(s);});
         if(typeof nextId!=='undefined'&&_peakNI&&_peakNI>nextId)nextId=_peakNI;
