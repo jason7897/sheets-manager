@@ -2544,13 +2544,16 @@ let _isInitializing = true; // 초기화 중엔 GAS 저장 차단
 // 실제 데이터(sheetsData/treeData/nextId)가 바뀌었을 때만 새 타임스탬프를 발급.
 // 폴더 접기/펼치기·뷰 전환·정렬 변경 같은 UI 조작만으로 saveStorage()가 호출돼도
 // 동기화 판단에 쓰이는 시각이 앞서가지 않도록 분리한다 (기기 간 동기화 오적용 방지).
-function _computeContentTs(nowTs) {
+function _computeContentTs(nowTs, sd, td, ni) {
+    if (sd === undefined) sd = sheetsData;
+    if (td === undefined) td = treeData;
+    if (ni === undefined) ni = nextId;
     try {
         const prevRaw = localStorage.getItem(STORAGE_KEY);
         if (prevRaw) {
             const prev = JSON.parse(prevRaw);
             const prevSig = JSON.stringify([prev.sheetsData, prev.treeData, prev.nextId]);
-            const curSig  = JSON.stringify([sheetsData, treeData, nextId]);
+            const curSig  = JSON.stringify([sd, td, ni]);
             if (prevSig === curSig) return prev.contentUpdatedAt || prev.updatedAt || nowTs;
         }
     } catch(e) {}
