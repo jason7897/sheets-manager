@@ -4736,7 +4736,8 @@ document.getElementById('btn-restore-backup').addEventListener('click', () => {
     const snap = snapshots[idx];
     if (!confirm(`${fmt(snap.savedAt)} 스냅샷으로 복원하시겠습니까?\n현재 데이터는 덮어쓰여집니다.`)) return;
     try {
-        const restoreData = Object.assign({}, snap.data, { updatedAt: Date.now() });
+        const _rts = Date.now();
+        const restoreData = Object.assign({}, snap.data, { updatedAt: _rts, contentUpdatedAt: _rts });
         localStorage.setItem(STORAGE_KEY, JSON.stringify(restoreData));
         showToast('백업 복원 완료. 새로고침합니다…', '✅');
         setTimeout(() => location.reload(), 1200);
