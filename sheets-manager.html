@@ -6571,7 +6571,7 @@ async function _pollGASForChanges() {
 }
 // 페이지 로드 후 폴링 시작 (initApp 완료 후 실행되도록 setTimeout)
 setTimeout(() => {
-    if (GAS_URL) setInterval(_pollGASForChanges, 15000);
+    if (GAS_URL) setInterval(_pollGASForChanges, 5000);
 }, 5000);
 // ══════════════════════════════════════
 // 템플릿 버튼 — 헤더 "시트 추가" 옆 드롭다운
