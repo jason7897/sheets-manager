@@ -6574,10 +6574,10 @@ async function _pollGASForChanges() {
         if (!res.ok) return;
         const json = await res.json();
         if (!json.ok || !json.data) return;
-        const remoteTs    = json.data.updatedAt || 0;
+        const remoteTs    = json.data.contentUpdatedAt || json.data.updatedAt || 0;
         if (remoteTs <= _lastKnownGasTs) return; // 변경 없음
         const localRaw    = (() => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch(e){ return null; } })();
-        const localTs     = localRaw?.updatedAt || 0;
+        const localTs     = localRaw ? (localRaw.contentUpdatedAt || localRaw.updatedAt || 0) : 0;
         const localCount  = Array.isArray(localRaw?.sheetsData) ? localRaw.sheetsData.length : 0;
         const remoteCount = Array.isArray(json.data.sheetsData) ? json.data.sheetsData.length : 0;
         // 로컬이 이미 최신이거나 GAS 시트 수가 의심스럽게 적으면 무시
