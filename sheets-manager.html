@@ -6558,11 +6558,9 @@ async function _pollGASForChanges() {
         if (remoteTs <= _lastKnownGasTs) return; // 변경 없음
         const localRaw    = (() => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch(e){ return null; } })();
         const localTs     = localRaw ? (localRaw.contentUpdatedAt || localRaw.updatedAt || 0) : 0;
-        const localCount  = Array.isArray(localRaw?.sheetsData) ? localRaw.sheetsData.length : 0;
-        const remoteCount = Array.isArray(json.data.sheetsData) ? json.data.sheetsData.length : 0;
-        // 로컬이 이미 최신이거나 GAS 시트 수가 의심스럽게 적으면 무시
+        // 로컬이 이미 최신이면 무시. GAS 응답은 항상 신뢰 — 개수 기반 의심 로직은
+        // 기기마다 다른 데이터가 보이는 원인이었으므로 제거.
         if (remoteTs <= localTs) return;
-        if (localCount > remoteCount * 3 + 5) { console.warn('[SM] 폴링: GAS 시트 수 이상 무시'); return; }
         // GAS 데이터가 더 최신 → 적용
         _lastKnownGasTs = remoteTs;
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(json.data)); } catch(e) {}
