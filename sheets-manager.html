@@ -11240,8 +11240,11 @@ if(typeof _origSW==='function'){
                     nextId=d.nextId;
                 }
                 // 버그2 수정: updatedAt 갱신 + _lastKnownGasTs 동기화
+                // contentUpdatedAt도 함께 갱신해야 함 — 동기화 비교가 이 필드를 우선 사용하므로,
+                // 여기서 안 바꾸면 옛 contentUpdatedAt이 그대로 남아 폴링 차단 효과가 무력화됨
                 var freshTs=Date.now();
                 d.updatedAt=freshTs;
+                d.contentUpdatedAt=freshTs;
                 if(d.nextId!==undefined)d.nextId=nextId;
                 localStorage.setItem('sm-data-v1',JSON.stringify(d));
                 try{_lastKnownGasTs=freshTs;}catch(e){}
