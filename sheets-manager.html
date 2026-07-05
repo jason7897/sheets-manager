@@ -6553,8 +6553,9 @@ if (_bc) {
             const saved = loadStorage();
             if (!saved) return;
             // 현재 로컬 데이터보다 새로운 경우만 반영
-            const localTs = (() => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY))?.updatedAt || 0; } catch(e){ return 0; } })();
-            if ((saved.updatedAt || 0) <= localTs && e.data.ts !== undefined) return; // 이미 최신
+            const localTs = (() => { try { const p = JSON.parse(localStorage.getItem(STORAGE_KEY)); return p?.contentUpdatedAt || p?.updatedAt || 0; } catch(e){ return 0; } })();
+            const savedTs = saved.contentUpdatedAt || saved.updatedAt || 0;
+            if (savedTs <= localTs && e.data.ts !== undefined) return; // 이미 최신
             _applyRemoteData(saved);
             showToast('다른 탭에서 변경사항이 동기화됐습니다', '🔄');
         }
