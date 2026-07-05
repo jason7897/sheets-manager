@@ -5433,48 +5433,25 @@ function _renderAll() {
         const remote = await _loadFromGAS();
         showSyncIndicator(false);
         if (remote) {
-            const remoteHasData = Array.isArray(remote.sheetsData) && remote.sheetsData.length > 0;
-            const localHasData  = local && Array.isArray(local.sheetsData) && local.sheetsData.length > 0;
-            if (!remoteHasData && localHasData) {
-                // GAS가 빈 데이터를 반환했지만 로컬에 데이터가 있으면 로컬 우선 + GAS에 복구 업로드
-                console.warn('[SM] GAS 데이터가 비어있음 — 로컬 데이터 유지 및 GAS 복구 시작');
+            // GAS 응답이 정상적으로 왔으면(비어 있어도) 항상 단일 진실 공급원으로 신뢰한다.
+            // "혹시 손상됐을 수도" 하는 개수 기반 추측(gasSeemsCorrupted 등)은 오히려
+            // 기기마다 다른 데이터가 보이는 원인이었으므로 제거 — 순수 타임스탬프 비교만 사용.
+            const remoteTs = remote.contentUpdatedAt || remote.updatedAt || 0;
+            const localTs  = local ? (local.contentUpdatedAt || local.updatedAt || 0) : 0;
+            if (remoteTs >= localTs) {
+                // GAS 데이터 적용
+                _applyStoredData(remote); _renderAll();
+                try { localStorage.setItem(STORAGE_KEY, JSON.stringify(remote)); } catch(e) {}
+                _lastKnownGasTs = remoteTs;
+                showOfflineBanner(false);
+                console.log('[SM] GAS 데이터 적용 완료 (' + (remote.sheetsData || []).length + '개, ts=' + remoteTs + ')');
+            } else {
+                // 이 기기의 내용이 더 최신 → 로컬 유지 + GAS 업로드
+                _lastKnownGasTs = remoteTs;
+                showOfflineBanner(false);
                 const pushPayload = Object.assign({}, local, { updatedAt: Date.now() });
                 _saveToGAS(pushPayload);
-                showToast('서버 데이터가 비어있어 로컬 데이터로 복구합니다', '⚠️');
-            } else if (remoteHasData) {
-                const remoteTs    = remote.contentUpdatedAt || remote.updatedAt || 0;
-                const localTs     = local ? (local.contentUpdatedAt || local.updatedAt || 0) : 0;
-                const remoteCount    = remote.sheetsData.length;
-                const localCount     = local ? (local.sheetsData || []).length : 0;
-                const remoteUrlCount = remote.sheetsData.filter(s => s.link && s.link !== '').length;
-                const localUrlCount  = local ? (local.sheetsData || []).filter(s => s.link && s.link !== '').length : 0;
-                // 로컬이 GAS보다 현저히 많은 시트를 보유하거나, URL이 더 많으면 GAS 손상으로 간주하고 로컬 우선
-                const gasSeemsCorrupted = localCount > remoteCount * 3 + 5 || localUrlCount > remoteUrlCount + 3;
-                // 로컬에 Drive 시트가 있는데 GAS에는 없으면 GAS 적용 차단 (Drive import 후 새로고침 시 데이터 보호)
-                const localDriveCount  = (local?.sheetsData  || []).filter(s => s.driveFileId).length;
-                const remoteDriveCount = (remote.sheetsData || []).filter(s => s.driveFileId).length;
-                const localHasUnsyncdDrive = localDriveCount > remoteDriveCount;
-                if (remoteTs >= localTs && !gasSeemsCorrupted && !localHasUnsyncdDrive) {
-                    // GAS 데이터가 최신이고 신뢰 가능 → 적용
-                    _applyStoredData(remote); _renderAll();
-                    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(remote)); } catch(e) {}
-                    _lastKnownGasTs = remoteTs;
-                    showOfflineBanner(false);
-                    console.log('[SM] GAS 데이터 적용 완료 (' + remoteCount + '개, ts=' + remoteTs + ')');
-                } else {
-                    // 로컬이 더 최신이거나 GAS 데이터가 의심스러움 → 로컬 유지 + GAS 업로드
-                    _lastKnownGasTs = remoteTs;
-                    showOfflineBanner(false);
-                    const pushPayload = Object.assign({}, local, { updatedAt: Date.now() });
-                    _saveToGAS(pushPayload);
-                    if (gasSeemsCorrupted) {
-                        console.warn('[SM] GAS 시트 수 이상 (local=' + localCount + ' >> remote=' + remoteCount + ') — 로컬 데이터로 복구 중');
-                    } else if (localHasUnsyncdDrive) {
-                        console.log('[SM] 로컬에 미동기화 Drive 시트 있음 (local=' + localDriveCount + ' > remote=' + remoteDriveCount + ') — 로컬 유지 + GAS 업로드');
-                    } else {
-                        console.log('[SM] 로컬 데이터가 GAS보다 최신 (local=' + localTs + ' > remote=' + remoteTs + ') — GAS 업로드');
-                    }
-                }
+                console.log('[SM] 로컬 데이터가 GAS보다 최신 (local=' + localTs + ' > remote=' + remoteTs + ') — GAS 업로드');
             }
         } else if (local) {
             // GAS 로드 실패 시 로컬 데이터를 GAS에 업로드
