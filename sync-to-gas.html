@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>데이터 복구 — GAS 업로드</title>
+<style>
+  body { font-family: -apple-system, 'Segoe UI', sans-serif; background:#f9fafb; display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; }
+  .card { background:#fff; border-radius:16px; box-shadow:0 4px 24px rgba(0,0,0,.08); padding:36px 44px; max-width:600px; width:100%; }
+  h1 { font-size:20px; font-weight:700; margin:0 0 4px; color:#191f28; }
+  p  { color:#6b7684; font-size:13px; margin:0 0 20px; line-height:1.6; }
+  .section { font-size:11px; font-weight:800; color:#6b7684; text-transform:uppercase; letter-spacing:.8px; margin-bottom:6px; }
+  .info { background:#f2f4f6; border-radius:10px; padding:12px 16px; font-size:13px; margin-bottom:16px; }
+  .info b { color:#3182f6; font-size:15px; }
+  .list { background:#f9fafb; border:1px solid #e5e8eb; border-radius:10px; padding:8px 12px; max-height:260px; overflow-y:auto; font-size:12px; color:#374151; margin-bottom:20px; }
+  .list div { padding:3px 0; border-bottom:1px solid #f0f0f0; }
+  .list div:last-child { border-bottom:none; }
+  .num { color:#9ca3af; display:inline-block; width:24px; }
+  .warn { background:#fff8e1; border:1px solid #f59e0b; border-radius:10px; padding:10px 14px; font-size:12.5px; color:#92400e; margin-bottom:16px; }
+  .btn { width:100%; padding:14px; background:#3182f6; color:#fff; border:none; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; }
+  .btn:hover { background:#1b64da; }
+  .btn:disabled { background:#b0c4de; cursor:not-allowed; }
+  .result { margin-top:14px; padding:12px 16px; border-radius:10px; font-size:14px; font-weight:600; display:none; text-align:center; }
+  .result.ok  { background:#e8f5e9; color:#2e7d32; }
+  .result.err { background:#fff0f2; color:#f04452; }
+  .spinner { display:inline-block; width:16px; height:16px; border:2.5px solid #fff; border-top-color:transparent; border-radius:50%; animation:spin .7s linear infinite; vertical-align:middle; margin-right:6px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>🔄 28개 데이터 복구</h1>
+  <p>이 대화 기록에서 복원한 데이터입니다. 업로드하면 즉시 팀 전체에 반영됩니다.<br>링크가 없는 항목은 앱에서 직접 수정할 수 있습니다.</p>
+
+  <div class="warn">⚠️ 링크를 기억하지 못하는 항목은 '#' 으로 표시됩니다. 업로드 후 앱에서 각 카드를 편집해 링크를 추가해주세요.</div>
+
+  <div class="section">복구될 데이터</div>
+  <div class="info">시트 <b>28개</b> &nbsp;|&nbsp; 폴더 <b>9개</b> &nbsp;|&nbsp; 링크 보유 <b>4개</b></div>
+
+  <div class="section">시트 목록</div>
+  <div class="list" id="preview"></div>
+
+  <button class="btn" id="btn" onclick="upload()">GAS에 복구 데이터 업로드하기</button>
+  <div class="result" id="result"></div>
+</div>
+
+<script>
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyZTbVby_nfOn52pQuAn8Anb418Mx_b5J-r4HRV4tx1CAK7EOpxfV101Ike4mTFNFQ0/exec';
+
+const sheetsData = [
+  { id:1,  title:'립스1 요건검토',                          desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'#' },
+  { id:2,  title:'1팀 일정표',                              desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'#' },
+  { id:3,  title:'2026 소상공인 관리 sheet',                desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'#' },
+  { id:4,  title:'운영사 추천권 총괄',                      desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'#' },
+  { id:5,  title:'립스1 응답 시트',                         desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'#' },
+  { id:6,  title:'회의록 주제',                             desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'#' },
+  { id:7,  title:'개인 메모 및 공부 sheet',                 desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'#' },
+  { id:8,  title:'26 1차 평가표 2분과',                     desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'#' },
+  { id:9,  title:'26 1차 평가표_1분과',                     desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'#' },
+  { id:10, title:'현물 현황',                               desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'#' },
+  { id:11, title:'25년 5차 평가표',                         desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'#' },
+  { id:12, title:'2분과 평가표 및 의견 취합본',             desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'#' },
+  { id:13, title:'1분과 평가표 및 의견 취합본',             desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'#' },
+  { id:14, title:'정산 및 보고서',                          desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'#' },
+  { id:15, title:'최종 사업계획서',                         desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'#' },
+  { id:16, title:'25년 4차 최종점검 양식',                  desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'#' },
+  { id:17, title:'발표평가 SHEET 세팅 공부',                desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'#' },
+  { id:18, title:'26년 립스2 1차 발표평가 총합',            desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'#' },
+  { id:19, title:'(참고) 25년 6차 투검위 결과 안내',        desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'https://docs.google.com/spreadsheets/d/1jA1elNtRyZ-1eUxYppnOJu3UH7JFsyeQSm569HPV5eQ/edit?gid=0#gid=0' },
+  { id:20, title:'(참고) 25년 5차 투검위 결과 안내',        desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'https://docs.google.com/spreadsheets/d/1yc5gYxFC1wboHKJ3kTyETU32NnSq2Y5qIcbNDlYxpDQ/edit?gid=0#gid=0' },
+  { id:21, title:'(참고) 25년 4차 투검위 결과 안내',        desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'https://docs.google.com/spreadsheets/d/1hhXLcyYsCwq2cc-5b4PowfD7tJTndQ4SLNTSxiVCh4Q/edit?gid=0#gid=0' },
+  { id:22, title:'(립스2)26년 1차 소상공인 요건검토',       desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'#' },
+  { id:23, title:'26립스 평가위원 섭외',                    desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'https://docs.google.com/spreadsheets/d/1PeMO2FWI0j1NrII_Bakp2m4iWpIXUlWmHe9aHCu5WVI/edit?gid=0#gid=0' },
+  { id:24, title:'26년 1차 모집공고 Q&A 정리',              desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'#' },
+  { id:25, title:'26년 신규운영사 발표평가 참고자료',        desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'#' },
+  { id:26, title:'26년 신규운영사 발표 SHEET',              desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'#' },
+  { id:27, title:'26년 1차 운영양식',                       desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'#' },
+  { id:28, title:'26년 평가위원',                           desc:'', owner:'나(PM)', updated:'2026-05-08', tags:[], isPinned:false, isFavorite:false, access:'public', status:'active', link:'#' },
+];
+
+const treeData = [
+  { id:'f-sabup',   type:'folder', name:'사업설명회',         expanded:false, children:[] },
+  { id:'f-yoken',   type:'folder', name:'요건검토',           expanded:true,  children:[
+    { id:'t-22', type:'sheet', name:'(립스2)26년 1차 소상공인 요건검토', sheetId:22 },
+    { id:'t-5',  type:'sheet', name:'립스1 응답 시트',                  sheetId:5  },
+    { id:'t-1',  type:'sheet', name:'립스1 요건검토',                   sheetId:1  },
+  ]},
+  { id:'f-tugum',   type:'folder', name:'투검위',             expanded:true,  children:[
+    { id:'f-tugum25', type:'folder', name:'25년투검위', expanded:true, children:[
+      { id:'t-21', type:'sheet', name:'(참고) 25년 4차 투검위 결과 안내', sheetId:21 },
+      { id:'t-20', type:'sheet', name:'(참고) 25년 5차 투검위 결과 안내', sheetId:20 },
+      { id:'t-19', type:'sheet', name:'(참고) 25년 6차 투검위 결과 안내', sheetId:19 },
+      { id:'t-13', type:'sheet', name:'1분과 평가표 및 의견 취합본',      sheetId:13 },
+      { id:'t-12', type:'sheet', name:'2분과 평가표 및 의견 취합본',      sheetId:12 },
+    ]},
+  ]},
+  { id:'f-pyo',     type:'folder', name:'발표평가',           expanded:true,  children:[
+    { id:'f-pyo25', type:'folder', name:'25년', expanded:true, children:[
+      { id:'t-11', type:'sheet', name:'25년 5차 평가표', sheetId:11 },
+    ]},
+    { id:'f-pyo26', type:'folder', name:'26년', expanded:true, children:[
+      { id:'f-pyo26new', type:'folder', name:'신규 운영사', expanded:true, children:[
+        { id:'t-26', type:'sheet', name:'26년 신규운영사 발표 SHEET',       sheetId:26 },
+        { id:'t-25', type:'sheet', name:'26년 신규운영사 발표평가 참고자료', sheetId:25 },
+        { id:'t-24', type:'sheet', name:'26년 1차 모집공고 Q&A 정리',       sheetId:24 },
+      ]},
+      { id:'f-pyo26-1', type:'folder', name:'1차', expanded:true, children:[
+        { id:'t-27', type:'sheet', name:'26년 1차 운영양식',         sheetId:27 },
+        { id:'t-18', type:'sheet', name:'26년 립스2 1차 발표평가 총합', sheetId:18 },
+        { id:'t-9',  type:'sheet', name:'26 1차 평가표_1분과',        sheetId:9  },
+        { id:'t-8',  type:'sheet', name:'26 1차 평가표 2분과',        sheetId:8  },
+      ]},
+    ]},
+  ]},
+  { id:'f-jungsam', type:'folder', name:'최종점검 및 정산',   expanded:true,  children:[
+    { id:'t-16', type:'sheet', name:'25년 4차 최종점검 양식', sheetId:16 },
+    { id:'t-15', type:'sheet', name:'최종 사업계획서',        sheetId:15 },
+    { id:'t-14', type:'sheet', name:'정산 및 보고서',         sheetId:14 },
+    { id:'t-10', type:'sheet', name:'현물 현황',              sheetId:10 },
+  ]},
+  { id:'f-etc',     type:'folder', name:'ETC. (공부, 자료 등)', expanded:true, children:[
+    { id:'t-17', type:'sheet', name:'발표평가 SHEET 세팅 공부', sheetId:17 },
+    { id:'t-7',  type:'sheet', name:'개인 메모 및 공부 sheet', sheetId:7  },
+    { id:'t-6',  type:'sheet', name:'회의록 주제',             sheetId:6  },
+    { id:'t-2',  type:'sheet', name:'1팀 일정표',              sheetId:2  },
+  ]},
+  { id:'f-pyowi',   type:'folder', name:'평가위원',           expanded:true,  children:[
+    { id:'t-23', type:'sheet', name:'26립스 평가위원 섭외', sheetId:23 },
+    { id:'t-28', type:'sheet', name:'26년 평가위원',        sheetId:28 },
+  ]},
+  { id:'f-unysa',   type:'folder', name:'운영사',             expanded:true,  children:[
+    { id:'t-4', type:'sheet', name:'운영사 추천권 총괄', sheetId:4 },
+  ]},
+  { id:'f-sosang',  type:'folder', name:'소상공인',           expanded:true,  children:[
+    { id:'t-3', type:'sheet', name:'2026 소상공인 관리 sheet', sheetId:3 },
+  ]},
+];
+
+// 미리보기 렌더
+document.getElementById('preview').innerHTML =
+  sheetsData.map((s,i) =>
+    `<div><span class="num">${i+1}.</span>${s.title}${s.link!=='#' ? ' 🔗' : ''}</div>`
+  ).join('');
+
+async function upload() {
+  const btn    = document.getElementById('btn');
+  const result = document.getElementById('result');
+  const payload = { sheetsData, treeData, nextId:29, currentFilter:'all', currentView:'grid', currentSort:'pinned', searchQuery:'', recentIds:[], updatedAt:Date.now() };
+
+  btn.disabled  = true;
+  btn.innerHTML = '<span class="spinner"></span>GAS에 업로드 중...';
+  result.style.display = 'none';
+
+  try {
+    const res  = await fetch(GAS_URL, {
+      method:  'POST',
+      headers: { 'Content-Type':'application/x-www-form-urlencoded' },
+      body: 'data=' + encodeURIComponent(JSON.stringify(payload))
+    });
+    const json = await res.json();
+    if (json.ok) {
+      result.className = 'result ok';
+      result.innerHTML = '✅ 복구 완료! 28개 업로드 성공<br><a href="https://spread-sheet-manager.vercel.app" target="_blank">spread-sheet-manager.vercel.app</a> 에서 확인하세요.';
+    } else {
+      throw new Error(json.error || 'GAS 오류');
+    }
+  } catch(e) {
+    result.className = 'result err';
+    result.innerHTML = '❌ 실패: ' + e.message;
+  } finally {
+    btn.disabled  = false;
+    btn.innerHTML = 'GAS에 복구 데이터 업로드하기';
+    result.style.display = 'block';
+  }
+}
+</script>
+</body>
+</html>
