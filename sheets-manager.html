@@ -5409,6 +5409,9 @@ function _renderAll() {
 
     // 1단계: localStorage 캐시로 즉시 렌더 (빠른 초기 표시)
     const local = loadStorage();
+    // 이 페이지 로드 시작 시점에 이미 존재했던 항목 ID 집합.
+    // PVFix2의 "유실 복구" 로직이 이미 알고 있던 항목의 정상 삭제를 되살리지 않도록 구분하는 데 사용.
+    try { window._smPreInitIds = new Set((local?.sheetsData || []).map(s => s && s.id)); } catch(e) { window._smPreInitIds = new Set(); }
     // 새로고침 깜빡임 방지: URL param > 로컬 저장값 순으로 selectedId 조기 설정
     const _earlyUrlFolder = new URLSearchParams(location.search).get('folder');
     if (_earlyUrlFolder) {
