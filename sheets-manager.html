@@ -4693,7 +4693,8 @@ async function restoreFromBackupGAS() {
         showToast('데이터를 불러오는 중…', '⏳');
         const dataRes = await fetch(`${BACKUP_GAS_URL}?action=smBackupGet&idx=${idx}`);
         const snapData = await dataRes.json();
-        const restoreData = Object.assign({}, snapData, { updatedAt: Date.now() });
+        const _rts = Date.now();
+        const restoreData = Object.assign({}, snapData, { updatedAt: _rts, contentUpdatedAt: _rts });
         localStorage.setItem(STORAGE_KEY, JSON.stringify(restoreData));
         showToast('복원 완료. 새로고침합니다…', '✅');
         setTimeout(() => location.reload(), 1200);
