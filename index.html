@@ -5434,8 +5434,8 @@ function _renderAll() {
                 _saveToGAS(pushPayload);
                 showToast('서버 데이터가 비어있어 로컬 데이터로 복구합니다', '⚠️');
             } else if (remoteHasData) {
-                const remoteTs    = remote.updatedAt || 0;
-                const localTs     = local ? (local.updatedAt || 0) : 0;
+                const remoteTs    = remote.contentUpdatedAt || remote.updatedAt || 0;
+                const localTs     = local ? (local.contentUpdatedAt || local.updatedAt || 0) : 0;
                 const remoteCount    = remote.sheetsData.length;
                 const localCount     = local ? (local.sheetsData || []).length : 0;
                 const remoteUrlCount = remote.sheetsData.filter(s => s.link && s.link !== '').length;
