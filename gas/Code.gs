@@ -20,14 +20,32 @@ function doGet(e) {
 
 // ── POST: 데이터 저장 ─────────────────────────────────────────
 function doPost(e) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
   try {
     // application/x-www-form-urlencoded 방식 (CORS preflight 방지)
     const raw     = e.parameter.data || (e.postData && e.postData.contents);
     const payload = JSON.parse(raw);
-    getOrCreateSheet().getRange(DATA_CELL).setValue(JSON.stringify(payload));
+    const sheet   = getOrCreateSheet();
+
+    // 오래된 데이터로 덮어쓰기 방지: 들어온 데이터가 지금 저장된 것보다 과거 타임스탬프면 무시.
+    // (클라이언트가 네트워크 오류 등으로 낡은 로컬 캐시를 잘못 업로드해도 서버가 방어)
+    const existingRaw = sheet.getRange(DATA_CELL).getValue();
+    if (existingRaw) {
+      const existing    = JSON.parse(existingRaw);
+      const incomingTs  = payload.contentUpdatedAt || payload.updatedAt || 0;
+      const existingTs  = existing.contentUpdatedAt || existing.updatedAt || 0;
+      if (incomingTs < existingTs) {
+        return respond({ ok: false, error: 'stale write rejected', existingTs, incomingTs });
+      }
+    }
+
+    sheet.getRange(DATA_CELL).setValue(JSON.stringify(payload));
     return respond({ ok: true });
   } catch (err) {
     return respond({ ok: false, error: err.message });
+  } finally {
+    lock.releaseLock();
   }
 }
 

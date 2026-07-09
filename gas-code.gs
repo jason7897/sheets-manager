@@ -31,11 +31,25 @@ function doGet(e) {
 // doPost — HTML 앱이 데이터를 서버에 저장할 때 호출됨
 // ================================================================
 function doPost(e) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(10000);
   try {
     var rawData = e.parameter.data;
     if (!rawData) throw new Error('data 파라미터가 없습니다');
 
     var payload = JSON.parse(rawData);
+
+    // 오래된 데이터로 덮어쓰기 방지: 들어온 데이터가 지금 저장된 것보다 과거 타임스탬프면 무시.
+    // (클라이언트가 네트워크 오류 등으로 낡은 로컬 캐시를 잘못 업로드해도 서버가 방어)
+    var existingRaw = _loadState();
+    if (existingRaw) {
+      var existing   = JSON.parse(existingRaw);
+      var incomingTs = payload.contentUpdatedAt || payload.updatedAt || 0;
+      var existingTs = existing.contentUpdatedAt || existing.updatedAt || 0;
+      if (incomingTs < existingTs) {
+        return jsonResponse({ ok: false, error: 'stale write rejected', existingTs: existingTs, incomingTs: incomingTs });
+      }
+    }
 
     // 1) PropertiesService에 전체 앱 상태 저장 (사용자 간 동기화 핵심)
     //    용량 제한(500 KB)을 초과하는 경우 스프레드시트 셀로 폴백
@@ -50,6 +64,8 @@ function doPost(e) {
     return jsonResponse({ ok: true });
   } catch (err) {
     return jsonResponse({ ok: false, error: err.message });
+  } finally {
+    lock.releaseLock();
   }
 }
 
