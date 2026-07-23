@@ -8809,6 +8809,27 @@ async function runAiFolderSuggest() {
     }
 }
 
+// 로컬 Levenshtein 유사도가 "확실한 중복"(0.72 이상) 문턱을 못 넘겼지만 완전히
+// 무관하다고 보기도 애매한 구간(0.45~0.72)의 쌍만 추려낸다. 이 애매한 쌍만
+// AI에 넘겨 최종 판단시키면, 매번 전체 시트 제목을 통째로 보내는 것보다
+// 토큰을 훨씬 적게 쓰면서도 60개로 잘렸던 전체 목록 제한 없이 데이터 전체를 훑을 수 있다.
+function _computeAmbiguousPairs(lowerBound = 0.45, upperBound = 0.72) {
+    const list = sheetsData.filter(s => s.status !== 'archived');
+    const pairs = [];
+    for (let i=0;i<list.length;i++) {
+        for (let j=i+1;j<list.length;j++) {
+            const a = list[i].title.toLowerCase(), b = list[j].title.toLowerCase();
+            const maxLen = Math.max(a.length, b.length);
+            if (!maxLen) continue;
+            const dist = _levenshtein(a, b);
+            const sim  = 1 - dist / maxLen;
+            if (sim >= lowerBound && sim < upperBound) pairs.push({ a: list[i], b: list[j], sim });
+        }
+    }
+    pairs.sort((x, y) => y.sim - x.sim);
+    return pairs;
+}
+
 // ── 8. AI 중복 감지 ──
 async function runAiDupDetect() {
     const btn = document.getElementById('dup-ai-btn');
@@ -8816,10 +8837,15 @@ async function runAiDupDetect() {
     if (!btn || !content) return;
     btn.disabled = true; btn.textContent = 'AI 분석 중...';
     try {
-        const list = sheetsData.filter(s=>s.status!=='archived').slice(0,60).map(s=>`ID:${s.id}|${s.title}`).join('\n');
+        const ambiguous = _computeAmbiguousPairs();
+        if (!ambiguous.length) {
+            content.innerHTML += '<div style="color:var(--muted);font-size:12.5px;margin-top:8px;padding:8px;background:var(--success-light);border-radius:8px">AI가 다시 판단할 애매한 쌍이 없습니다 ✅</div>';
+            return;
+        }
+        const list = ambiguous.slice(0,60).map(p => `A:${p.a.id}|${p.a.title}  B:${p.b.id}|${p.b.title}`).join('\n');
         const raw  = await callGroq([
-            { role:'system', content:'시트 목록에서 이름이 비슷하거나 중복될 가능성이 있는 쌍을 찾으세요. JSON 배열로 반환: [{"a":ID숫자,"b":ID숫자,"reason":"이유"},...]. 배열만 출력. 최대 10쌍.' },
-            { role:'user', content:'시트 목록:\n' + list }
+            { role:'system', content:'아래는 제목이 어느 정도 비슷한 시트 쌍 후보입니다. 실제로 같은 문서의 중복/유사본으로 보이는 쌍만 골라 JSON 배열로 반환하세요: [{"a":ID숫자,"b":ID숫자,"reason":"이유"},...]. 관련 없어 보이면 그 쌍은 빼세요. 배열만 출력.' },
+            { role:'user', content:'후보 쌍 목록:\n' + list }
         ]);
         const pairs = JSON.parse((raw?.match(/\[[\s\S]*\]/) || ['[]'])[0]);
         if (!pairs.length) { content.innerHTML += '<div style="color:var(--muted);font-size:12.5px;margin-top:8px;padding:8px;background:var(--success-light);border-radius:8px">AI 분석에서도 중복 의심 시트가 없습니다 ✅</div>'; return; }
