@@ -14,7 +14,7 @@ Two independent static web projects — no build step, no package manager.
 **Local dev server**: `python -m http.server 8787` → `http://localhost:8787/`
 
 **Production**: `https://spread-sheet-manager.vercel.app/` (GitHub 연동 자동배포)
-- `git push` → Vercel이 `my-sheet-manager/build.mjs` 실행 → `sheets-manager.html`을 `dist/index.html`로 복사 → 배포
+- `git push` → Vercel이 `vercel.json`의 `buildCommand`(파일 복사만, 진짜 빌드 아님)로 `sheets-manager.html`→`dist/index.html`, `dashboard.html`→`dist/dashboard.html`, `manifest.json`, `sw.js`를 `dist/`에 복사 → 배포
 - 자동배포가 느리거나 안 될 때: `vercel --prod --yes`
 
 ---
@@ -42,7 +42,7 @@ handleDeleteData()         // DELETE → remove row by id
 ## Project B — Sheets File Manager (`sheets-manager.html`)
 
 **Stack**: Vanilla JS + Tailwind Play CDN + Pretendard font CDN. No frameworks.  
-**Size**: ~3970 lines (single file). All logic, styles, and HTML in one file.
+**Size**: ~11,398+ lines (single file, growing — see `update-docs.mjs`). All logic, styles, and HTML in one file. 10 inline `<script>` blocks; the later ones (`PersonalizeV2/V3/V4`, `PVFix`, `PVFix2`) are independently-added personalization layers that monkey-patch earlier globals rather than being cleanly merged.
 
 **Design system**: Toss-style — primary `#3182f6`, bg `#f9fafb`, card radius `20px`, modal radius `24px`, backdrop-filter blur. Dark mode via `[data-theme="dark"]` attribute on `<html>`.
 
@@ -409,11 +409,21 @@ Tree node IDs: `f-` prefix for folders, `t-` for sheet nodes. `sheetsData` IDs a
 
 ### Deployment
 
+Single `vercel.json` at repo root — no separate build tool, no `my-sheet-manager/` directory:
+
 ```
-my-sheet-manager/
-  build.mjs       ← Node script: copies ../sheets-manager.html → dist/index.html
-  vercel.json     ← { buildCommand: "node build.mjs", outputDirectory: "dist" }
-vercel.json       ← { buildCommand: "node my-sheet-manager/build.mjs", outputDirectory: "my-sheet-manager/dist" }
+vercel.json  ← {
+  buildCommand: "mkdir -p dist && cp sheets-manager.html dist/index.html && cp dashboard.html dist/dashboard.html && cp manifest.json dist/manifest.json && cp sw.js dist/sw.js",
+  outputDirectory: "dist"
+}
 ```
 
 Deploy command: `vercel --prod --yes` (or `git push` if GitHub auto-deploy is active).
+
+### Tests
+
+`tests/smoke.spec.js` (Playwright) covers load-without-real-network, add/edit/delete, search filter, list-view pagination, and drag-and-drop. Dev-only — `package.json`/`node_modules` are never touched by the Vercel deploy (`vercel.json`'s `installCommand` explicitly skips `npm install`). Run: `npx playwright test` (first time: `npx playwright install chromium`).
+
+### Docs freshness
+
+`node update-docs.mjs` re-syncs the `**Size**: ~N lines` figure above against the real line count of `sheets-manager.html`. Run it before committing after a large edit — this doc has drifted out of sync with the actual file size before (3,970 → 11,343 lines went unnoticed for a long time).

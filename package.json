@@ -1,0 +1,11 @@
+{
+  "name": "sheets-manager-tests",
+  "private": true,
+  "description": "sheets-manager.html용 Playwright 스모크 테스트 (개발용 전용 — 배포에는 사용되지 않음, vercel.json installCommand가 npm install을 건너뜀)",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0"
+  }
+}
