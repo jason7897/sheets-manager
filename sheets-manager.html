@@ -4658,7 +4658,7 @@ function _sendToBackupGAS(payload) {
     fetch(BACKUP_GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: 'data=' + encodeURIComponent(JSON.stringify(payload))
+        body: 'data=' + encodeURIComponent(JSON.stringify(payload)) + '&token=' + encodeURIComponent(GAS_TOKEN)
     }).then(r => r.json()).then(r => {
         if (r.ok) console.log('[BackupGAS] 저장 완료:', r.savedAt);
         else console.warn('[BackupGAS] 오류:', r.error);
