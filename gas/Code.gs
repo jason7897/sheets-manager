@@ -6,8 +6,17 @@
 const SHEET_NAME = 'AppData';
 const DATA_CELL  = 'A1';
 
+// 이 웹앱은 "모든 사용자 접근 허용"으로 배포되므로, 배포 URL만 알아도
+// 인증 없이 팀 데이터를 읽거나 덮어쓸 수 있었다. 요청마다 이 토큰이
+// 일치해야만 처리하도록 방어한다. (클라이언트 sheets-manager.html의
+// GAS_TOKEN 상수와 반드시 동일한 값이어야 함)
+const SM_TOKEN = '397514458024d1ccbfecfc80a53315731cd978b6299ad8ec';
+
 // ── GET: 데이터 로드 ──────────────────────────────────────────
 function doGet(e) {
+  if ((e.parameter || {}).token !== SM_TOKEN) {
+    return respond({ ok: false, error: 'unauthorized' });
+  }
   try {
     const sheet = getOrCreateSheet();
     const raw   = sheet.getRange(DATA_CELL).getValue();
@@ -20,6 +29,9 @@ function doGet(e) {
 
 // ── POST: 데이터 저장 ─────────────────────────────────────────
 function doPost(e) {
+  if ((e.parameter || {}).token !== SM_TOKEN) {
+    return respond({ ok: false, error: 'unauthorized' });
+  }
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
   try {

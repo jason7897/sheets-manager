@@ -4,3 +4,5 @@ node_modules/
 .claude/
 sheets-manager_backup_*.html
 verify_result*.png
+playwright-report/
+test-results/
