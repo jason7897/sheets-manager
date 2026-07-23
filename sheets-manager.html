@@ -6547,14 +6547,14 @@ if (_bc) {
     };
 }
 
-// ── GAS 폴링: 다른 브라우저/기기에서의 변경 감지 (15초 간격) ──
+// ── GAS 폴링: 다른 브라우저/기기에서의 변경 감지 (3초 간격) ──
 let _lastKnownGasTs = 0;
 async function _pollGASForChanges() {
     if (!GAS_URL || _isSyncingFromRemote || document.hidden) return;
     const ctrl = new AbortController();
     const tId = setTimeout(() => ctrl.abort(), 10000);
     try {
-        const res  = await fetch(GAS_URL + '?t=' + Date.now(), { signal: ctrl.signal });
+        const res  = await fetch(GAS_URL + '?t=' + Date.now() + '&token=' + encodeURIComponent(GAS_TOKEN), { signal: ctrl.signal });
         clearTimeout(tId);
         if (!res.ok) return;
         const json = await res.json();
