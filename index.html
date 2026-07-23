@@ -3530,7 +3530,9 @@ function renderSheets(data) {
             return (map[col]||[]).includes(currentSort) ? ' sort-active' : '';
         };
         const allChecked = sorted.length > 0 && sorted.every(s => selectedCards.has(s.id));
-        const rows = sorted.map(sheet => {
+        const pageData = sorted.slice(0, cardPage * cardPageSize);
+        const hasMore = sorted.length > pageData.length;
+        const rows = pageData.map(sheet => {
             const st = STATUS_CONFIG[sheet.status] || STATUS_CONFIG.active;
             const hasLink = sheet.link && sheet.link !== '#';
             const href = hasLink ? esc(sheet.link) : 'javascript:void(0)';
