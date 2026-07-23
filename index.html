@@ -2643,7 +2643,7 @@ async function _loadFromGAS() {
     const ctrl = new AbortController();
     const tId = setTimeout(() => ctrl.abort(), 15000);
     try {
-        const res  = await fetch(GAS_URL + '?t=' + Date.now(), { signal: ctrl.signal });
+        const res  = await fetch(GAS_URL + '?t=' + Date.now() + '&token=' + encodeURIComponent(GAS_TOKEN), { signal: ctrl.signal });
         clearTimeout(tId);
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const json = await res.json();
