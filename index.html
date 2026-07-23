@@ -4698,7 +4698,7 @@ async function restoreFromBackupGAS() {
         if (isNaN(idx) || idx < 0 || idx >= json.items.length) { showToast('잘못된 번호', '⚠️'); return; }
         if (!confirm(`${fmt(json.items[idx].savedAt)} 스냅샷으로 복원하시겠습니까?`)) return;
         showToast('데이터를 불러오는 중…', '⏳');
-        const dataRes = await fetch(`${BACKUP_GAS_URL}?action=smBackupGet&idx=${idx}`);
+        const dataRes = await fetch(`${BACKUP_GAS_URL}?action=smBackupGet&idx=${idx}&token=${encodeURIComponent(GAS_TOKEN)}`);
         const snapData = await dataRes.json();
         const _rts = Date.now();
         const restoreData = Object.assign({}, snapData, { updatedAt: _rts, contentUpdatedAt: _rts });
