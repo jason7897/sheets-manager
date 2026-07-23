@@ -3553,6 +3553,9 @@ function renderSheets(data) {
                 <td><button class="card-menu-btn" data-card-edit-id="${sheet.id}" aria-label="${esc(sheet.title)} 편집" style="opacity:1">···</button></td>
             </tr>`;
         }).join('');
+        const moreRow = hasMore ? `<tr class="lt-load-more-row"><td colspan="8" style="text-align:center;padding:16px 0">
+            <button onclick="loadMoreCards()" style="padding:11px 28px;border:1.5px solid var(--border);border-radius:12px;background:var(--card-bg);font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;font-family:inherit;transition:all .2s" onmouseover="this.style.borderColor='var(--primary)';this.style.color='var(--primary)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">더 보기 <strong style="color:var(--primary)">${sorted.length - pageData.length}개</strong> 남음</button>
+        </td></tr>` : '';
         container.innerHTML = `<table class="list-table">
             <thead><tr>
                 <th><input type="checkbox" id="lt-check-all" ${allChecked?'checked':''} style="width:16px;height:16px;accent-color:var(--primary);cursor:pointer" title="전체 선택"></th>
@@ -3564,7 +3567,7 @@ function renderSheets(data) {
                 <th>즐겨찾기</th>
                 <th></th>
             </tr></thead>
-            <tbody>${rows}</tbody>
+            <tbody>${rows}${moreRow}</tbody>
         </table>`;
         document.getElementById('lt-check-all')?.addEventListener('change', e => {
             if (e.target.checked) sorted.forEach(s => selectedCards.add(s.id));
