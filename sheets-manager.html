@@ -2609,6 +2609,7 @@ function saveStorage(force = false) {
 }
 
 let _lastGasPayload = null; // 재시도용
+let _pendingGasWrite = false; // 오프라인/실패로 못 보낸 저장이 있는지
 async function _saveToGAS(payload) {
     if (!payload || !Array.isArray(payload.sheetsData) || payload.sheetsData.length === 0) {
         console.warn('[SM] GAS 저장 스킵: 시트가 0개인 데이터는 저장하지 않음');
@@ -2629,14 +2630,26 @@ async function _saveToGAS(payload) {
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const json = await res.json().catch(() => ({}));
         if (json.ok === false) throw new Error('GAS 응답 오류');
+        _pendingGasWrite = false;
     } catch(e) {
         console.warn('GAS 저장 실패:', e.message);
         showGasError(true);
+        _pendingGasWrite = true; // 온라인 복귀 시 재전송 대상으로 남겨둠
     } finally {
         clearTimeout(tId);
         showSyncIndicator(false);
     }
 }
+
+// 오프라인 상태에서 편집하다가 인터넷이 돌아오면, 마지막으로 실패한 저장을 자동 재전송한다.
+// (이전엔 다음 편집이 있어야만 다시 저장이 시도됐고, 그 사이엔 이 기기의 최신 변경이
+//  서버에 반영되지 않은 채로 남아있었다)
+window.addEventListener('online', () => {
+    if (_pendingGasWrite && _lastGasPayload) {
+        console.log('[SM] 온라인 복귀 — 밀린 저장 재전송');
+        _saveToGAS(_lastGasPayload);
+    }
+});
 
 async function _loadFromGAS() {
     if (!GAS_URL) return null;
