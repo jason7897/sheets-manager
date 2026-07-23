@@ -2527,6 +2527,10 @@ const STATUS_CONFIG = {
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbyZTbVby_nfOn52pQuAn8Anb418Mx_b5J-r4HRV4tx1CAK7EOpxfV101Ike4mTFNFQ0/exec'; // 데이터 저장 전용 (원본)
 // ▼ 백업 GAS URL — SM_Host 배포 URL (백업 읽기/쓰기 전용)
 let BACKUP_GAS_URL = localStorage.getItem('sm-backup-gas-url') || 'https://script.google.com/macros/s/AKfycbx5qMDtBF1zUZXqftQQOYk3ARNWsOekvoHzIFAxCa48Aj37-4H-hFRlt-ACJjBpWndc/exec';
+// GAS 웹앱이 "모든 사용자 접근 허용"으로 배포돼 있어, URL만 유출돼도 인증 없이
+// 데이터를 읽거나 덮어쓸 수 있었다. gas/Code.gs, gas-code.gs의 SM_TOKEN과
+// 반드시 동일한 값이어야 한다.
+const GAS_TOKEN = '397514458024d1ccbfecfc80a53315731cd978b6299ad8ec';
 
 // ══════════════════════════════════════
 // 영속성 (localStorage + GAS)
