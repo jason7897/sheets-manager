@@ -2541,7 +2541,7 @@ const LAST_FILE_BACKUP_KEY = 'sm-last-file-backup'; // 마지막 파일 자동 �
 const SAVE_COUNTER_KEY     = 'sm-save-counter';     // 마지막 파일 백업 이후 저장 횟수
 const FILE_BACKUP_INTERVAL = 7 * 24 * 60 * 60 * 1000; // 7일
 const FILE_BACKUP_SAVE_TH  = 50; // 50회 저장마다 자동 다운로드
-const GAS_BACKUP_SAVE_TH   = 10; // 10회 저장마다 GAS 백업 시트에 전송
+const GAS_BACKUP_SAVE_TH   = 5; // 5회 저장마다 GAS 백업 시트에 전송 (기존 10회 → 더 촘촘한 복원 지점)
 let _gasSaveTimer = null;
 let _isInitializing = true; // 초기화 중엔 GAS 저장 차단
 
