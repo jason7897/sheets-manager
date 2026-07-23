@@ -4686,7 +4686,7 @@ async function restoreFromBackupGAS() {
     }
     showToast('백업 목록을 불러오는 중…', '⏳');
     try {
-        const res = await fetch(BACKUP_GAS_URL + '?action=smBackupList');
+        const res = await fetch(BACKUP_GAS_URL + '?action=smBackupList&token=' + encodeURIComponent(GAS_TOKEN));
         const json = await res.json();
         if (!json.ok || !json.items.length) { showToast('백업 목록이 비어 있습니다. GAS에 backup-gas.gs 코드가 추가됐는지 확인하세요.', '⚠️'); return; }
         const fmt = iso => new Date(iso).toLocaleString('ko-KR', {month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'});
