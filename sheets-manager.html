@@ -4005,7 +4005,7 @@ function setView(type) {
     if (countEl) countEl.style.display = type === 'kanban' ? 'none' : '';
     updateSelectAllBtn();
     const btnSelect = document.getElementById('btn-select-all');
-    if (btnSelect) btnSelect.style.display = type === 'grid' ? '' : 'none';
+    if (btnSelect) btnSelect.style.display = type === 'grid' ? 'inline-block' : 'none';
     applyFilters();
 }
 function updateSelectAllBtn() {
