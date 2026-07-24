@@ -4227,9 +4227,9 @@ document.getElementById('tree-root').addEventListener('dragover', e => {
     const { top, height } = row.getBoundingClientRect();
     const relY = e.clientY - top;
     let mode;
-    if (relY < height * 0.35) {
+    if (relY < height * 0.4) {
         mode = 'before';
-    } else if (isFolder && relY < height * 0.65) {
+    } else if (isFolder && relY < height * 0.6) {
         mode = 'into';
     } else {
         mode = 'after';
