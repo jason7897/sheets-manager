@@ -5048,7 +5048,7 @@ function renderSidebarRecentFolders() {
     else section.classList.remove('collapsed');
     list.innerHTML = items.map(node => {
         const icon = folderIcon(node.color || 'yellow', node.icon);
-        return `<a class="sidebar-recent-item" href="javascript:void(0)" onclick="selectFolderInView('${node.id}')">
+        return `<a class="sidebar-recent-item" draggable="true" data-drag-node-id="${node.id}" href="javascript:void(0)" onclick="selectFolderInView('${node.id}')">
             <span style="flex-shrink:0;display:flex;align-items:center">${icon}</span>
             <span class="sidebar-recent-item-name">${esc(node.name)}</span>
         </a>`;
