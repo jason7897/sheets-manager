@@ -2610,7 +2610,7 @@ function saveStorage(force = false) {
 
 let _lastGasPayload = null; // 재시도용
 let _pendingGasWrite = false; // 오프라인/실패로 못 보낸 저장이 있는지
-async function _saveToGAS(payload) {
+async function _saveToGAS(payload, force = false) {
     if (!payload || !Array.isArray(payload.sheetsData) || payload.sheetsData.length === 0) {
         console.warn('[SM] GAS 저장 스킵: 시트가 0개인 데이터는 저장하지 않음');
         return;
@@ -2621,15 +2621,28 @@ async function _saveToGAS(payload) {
     try {
         showSyncIndicator(true);
         showGasError(false);
+        const body = 'data=' + encodeURIComponent(JSON.stringify(payload)) + '&token=' + encodeURIComponent(GAS_TOKEN) + (force ? '&force=1' : '');
         const res = await fetch(GAS_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'data=' + encodeURIComponent(JSON.stringify(payload)) + '&token=' + encodeURIComponent(GAS_TOKEN),
+            body,
             signal: ctrl.signal
         });
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const json = await res.json().catch(() => ({}));
-        if (json.ok === false) throw new Error('GAS 응답 오류');
+        if (json.ok === false) {
+            // 서버 시트 수가 급격히 줄어드는 저장은 GAS가 거부한다(2026-07-23 사고 재발 방지).
+            // 정말 의도한 삭제라면 사용자 확인 후에만 강제로 다시 보낸다.
+            if (json.error === 'big-drop-rejected') {
+                showToast(
+                    `⚠️ 서버(${json.existingCount}개)보다 훨씬 적은(${json.incomingCount}개) 저장이라 자동 저장을 건너뛰었습니다. 정말 맞다면 클릭하세요`,
+                    '⚠️',
+                    () => _saveToGAS(payload, true)
+                );
+                return; // 실패로 취급하지 않음 — 재시도 루프에 넣지 않고 사용자 확인 대기
+            }
+            throw new Error('GAS 응답 오류: ' + json.error);
+        }
         _pendingGasWrite = false;
     } catch(e) {
         console.warn('GAS 저장 실패:', e.message);
