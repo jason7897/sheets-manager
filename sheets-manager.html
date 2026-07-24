@@ -4999,7 +4999,8 @@ function renderPinnedSection() {
             const s = sheetsData.find(s => s.id === node.sheetId);
             if (s && s.link && s.link !== '#') { href = esc(s.link); extra = 'target="_blank" rel="noopener"'; }
         }
-        return `<a class="sidebar-pin-item" href="${href}" ${extra} onclick="if(event.target.closest('.sidebar-pin-unpin'))return;selectNode('${id}');${node.type==='sheet'?`addRecentId(${node.sheetId});`:''}" >
+        const dragAttr = node.type === 'sheet' ? `data-drag-sheet-id="${node.sheetId}"` : `data-drag-node-id="${node.id}"`;
+        return `<a class="sidebar-pin-item" draggable="true" ${dragAttr} href="${href}" ${extra} onclick="if(event.target.closest('.sidebar-pin-unpin'))return;selectNode('${id}');${node.type==='sheet'?`addRecentId(${node.sheetId});`:''}" >
             <span style="flex-shrink:0;display:flex;align-items:center">${icon}</span>
             <span class="sidebar-pin-name">${esc(node.name)}</span>
             <button class="sidebar-pin-unpin" onclick="event.preventDefault();event.stopPropagation();togglePinNode('${id}')" title="고정 해제">
