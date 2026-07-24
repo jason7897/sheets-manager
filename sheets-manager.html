@@ -4011,7 +4011,7 @@ function setView(type) {
 function updateSelectAllBtn() {
     const btn = document.getElementById('btn-select-all');
     if (!btn) return;
-    btn.style.display = currentView === 'grid' ? '' : 'none';
+    btn.style.display = currentView === 'grid' ? 'inline-block' : 'none';
     const allSelected = sheetsData.length > 0 && sheetsData.every(s => selectedCards.has(s.id));
     btn.textContent = allSelected ? '선택 해제' : '전체 선택';
     btn.classList.toggle('active', allSelected);
