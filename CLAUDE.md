@@ -42,7 +42,7 @@ handleDeleteData()         // DELETE → remove row by id
 ## Project B — Sheets File Manager (`sheets-manager.html`)
 
 **Stack**: Vanilla JS + Tailwind Play CDN + Pretendard font CDN. No frameworks.  
-**Size**: ~11,398+ lines (single file, growing — see `update-docs.mjs`). All logic, styles, and HTML in one file. 10 inline `<script>` blocks; the later ones (`PersonalizeV2/V3/V4`, `PVFix`, `PVFix2`) are independently-added personalization layers that monkey-patch earlier globals rather than being cleanly merged.
+**Size**: ~11,412+ lines (single file, growing — see `update-docs.mjs`). All logic, styles, and HTML in one file. 10 inline `<script>` blocks; the later ones (`PersonalizeV2/V3/V4`, `PVFix`, `PVFix2`) are independently-added personalization layers that monkey-patch earlier globals rather than being cleanly merged.
 
 **Design system**: Toss-style — primary `#3182f6`, bg `#f9fafb`, card radius `20px`, modal radius `24px`, backdrop-filter blur. Dark mode via `[data-theme="dark"]` attribute on `<html>`.
 

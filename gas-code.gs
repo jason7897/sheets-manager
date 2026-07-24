@@ -71,6 +71,17 @@ function doPost(e) {
       if (incomingTs < existingTs) {
         return jsonResponse({ ok: false, error: 'stale write rejected', existingTs: existingTs, incomingTs: incomingTs });
       }
+
+      // 대폭 감소 방어: 여러 기기/탭이 각자 다른 캐시로 "내가 더 최신"이라고 우기며
+      // 저장을 시도할 때, 시간만 보고 그대로 받아들이면 오래되고 텅 빈 캐시가
+      // 진짜 데이터를 지워버릴 수 있다(2026-07-23 실제 사고). 기존보다 시트 수가
+      // 크게 줄어드는 저장은 일단 거부하고, force=1이 명시된 경우에만 통과시킨다.
+      var existingCount = (existing.sheetsData || []).length;
+      var incomingCount = (payload.sheetsData || []).length;
+      var isForced = (e.parameter || {}).force === '1';
+      if (!isForced && existingCount >= 10 && incomingCount < existingCount * 0.7 && (existingCount - incomingCount) > 10) {
+        return jsonResponse({ ok: false, error: 'big-drop-rejected', existingCount: existingCount, incomingCount: incomingCount });
+      }
     }
 
     // 1) PropertiesService에 전체 앱 상태 저장 (사용자 간 동기화 핵심)
