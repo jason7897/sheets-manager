@@ -6324,6 +6324,7 @@ document.getElementById('bulk-move-modal').addEventListener('click', e=>{
     if(e.target===document.getElementById('bulk-move-modal')) {
         document.getElementById('bulk-move-modal').classList.remove('open');
         _singleMoveSheetId = null;
+        _treeMoveNodeId = null;
         // 타이틀 원복
         document.getElementById('bulk-move-modal').querySelector('.modal-title').textContent = '폴더 선택';
         document.getElementById('bulk-move-modal').querySelector('p').textContent = '선택한 시트를 이동할 폴더를 선택하세요.';
@@ -6333,6 +6334,7 @@ document.getElementById('bulk-move-modal').addEventListener('keydown', e=>{
     if(e.key==='Escape') {
         document.getElementById('bulk-move-modal').classList.remove('open');
         _singleMoveSheetId = null;
+        _treeMoveNodeId = null;
         document.getElementById('bulk-move-modal').querySelector('.modal-title').textContent = '폴더 선택';
         document.getElementById('bulk-move-modal').querySelector('p').textContent = '선택한 시트를 이동할 폴더를 선택하세요.';
     }
