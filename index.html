@@ -3757,6 +3757,57 @@ function executeSingleMove(folderId) {
     _singleMoveSheetId = null;
 }
 
+// ══════════════════════════════════════
+// 트리 노드(폴더·시트) 다른 위치로 이동 — 드래그 없이 목록에서 목적지 선택
+// ══════════════════════════════════════
+let _treeMoveNodeId = null;
+function openTreeMoveModal(nodeId) {
+    const node = findNode(nodeId);
+    if (!node) return;
+    _treeMoveNodeId = nodeId;
+    const folders = [];
+    function collectFolders(nodes, depth) {
+        for (const n of nodes) {
+            if (n.type === 'folder') {
+                // 자기 자신과 자손 폴더는 목적지에서 제외 (순환 참조 방지)
+                if (n.id !== nodeId && !isDescendantTree(nodeId, n.id)) {
+                    folders.push({ id: n.id, name: '  '.repeat(depth) + n.name });
+                }
+                if (n.children) collectFolders(n.children, depth + 1);
+            }
+        }
+    }
+    collectFolders(treeData, 0);
+    const modal = document.getElementById('bulk-move-modal');
+    modal.querySelector('.modal-title').textContent = `"${node.name}" 이동`;
+    modal.querySelector('p').textContent = '이동할 위치를 선택하세요.';
+    const btnStyle = "display:block;width:100%;text-align:left;padding:10px 14px;border:none;background:none;cursor:pointer;font-size:13.5px;font-family:inherit;border-radius:8px;color:var(--text)";
+    let html = `<button onclick="executeTreeMove('root')" style="${btnStyle};font-weight:700" onmouseover="this.style.background='var(--hover-bg)'" onmouseout="this.style.background='none'">📂 최상위(루트)로 이동</button>`;
+    if (folders.length) {
+        html += `<div style="height:1px;background:var(--border);margin:6px 0"></div>`;
+        html += folders.map(f => `<button onclick="executeTreeMove('${f.id}')" style="${btnStyle}" onmouseover="this.style.background='var(--hover-bg)'" onmouseout="this.style.background='none'">${esc(f.name)}</button>`).join('');
+    }
+    document.getElementById('bulk-move-folder-list').innerHTML = html;
+    modal.classList.add('open');
+}
+function executeTreeMove(targetId) {
+    if (!_treeMoveNodeId) return;
+    if (targetId === 'root') moveNodeToRoot(_treeMoveNodeId);
+    else moveTreeNode(_treeMoveNodeId, targetId, 'into');
+    document.getElementById('bulk-move-modal').classList.remove('open');
+    _treeMoveNodeId = null;
+}
+function moveNodeToRoot(nodeId) {
+    const srcNode = JSON.parse(JSON.stringify(findNode(nodeId)));
+    if (!srcNode) return;
+    const undoFn = saveUndoSnapshot();
+    treeData = deleteFromTree(nodeId, treeData);
+    treeData = [...treeData, srcNode];
+    appLog('move', '최상위로 이동', `"${srcNode.name}"`);
+    showToast(`"${srcNode.name}" 이(가) 최상위로 이동되었습니다`, '📁', undoFn);
+    renderTree(); saveStorage();
+}
+
 // 일괄 폴더 이동
 // ══════════════════════════════════════
 function bulkMoveToFolder() {
