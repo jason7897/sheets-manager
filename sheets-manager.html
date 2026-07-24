@@ -2635,9 +2635,10 @@ async function _saveToGAS(payload, force = false) {
             // 정말 의도한 삭제라면 사용자 확인 후에만 강제로 다시 보낸다.
             if (json.error === 'big-drop-rejected') {
                 showToast(
-                    `⚠️ 서버(${json.existingCount}개)보다 훨씬 적은(${json.incomingCount}개) 저장이라 자동 저장을 건너뛰었습니다. 정말 맞다면 클릭하세요`,
+                    `서버(${json.existingCount}개)보다 훨씬 적은(${json.incomingCount}개) 저장이라 자동 저장을 건너뛰었습니다`,
                     '⚠️',
-                    () => _saveToGAS(payload, true)
+                    () => _saveToGAS(payload, true),
+                    '그래도 저장'
                 );
                 return; // 실패로 취급하지 않음 — 재시도 루프에 넣지 않고 사용자 확인 대기
             }
