@@ -4263,6 +4263,36 @@ document.getElementById('tree-root').addEventListener('dragend', e => {
     _treeDragNodeId = null; _treeDragOverMode = null;
     _clearTreeDragHighlight();
 });
+
+// ══════════════════════════════════════
+// 드래그 앤 드롭 — 사이드바 고정/최근 열람/최근 방문 폴더 항목 → 사이드바 폴더
+// (기존 카드 드래그 · 트리 노드 드래그와 동일한 전역 상태·drop 핸들러를 그대로 재사용)
+// ══════════════════════════════════════
+function _bindSidebarShortcutDrag(containerId) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    el.addEventListener('dragstart', e => {
+        const item = e.target.closest('[data-drag-sheet-id],[data-drag-node-id]');
+        if (!item) return;
+        if (item.dataset.dragSheetId) {
+            _dragSheetId = Number(item.dataset.dragSheetId);
+            e.dataTransfer.setData('text/plain', String(_dragSheetId));
+        } else {
+            _treeDragNodeId = item.dataset.dragNodeId;
+            e.dataTransfer.setData('application/tree-node', _treeDragNodeId);
+        }
+        e.dataTransfer.effectAllowed = 'move';
+        setTimeout(() => { item.style.opacity = '.4'; }, 0);
+    });
+    el.addEventListener('dragend', e => {
+        const item = e.target.closest('[data-drag-sheet-id],[data-drag-node-id]');
+        if (item) item.style.opacity = '';
+        _dragSheetId = null; _treeDragNodeId = null; _treeDragOverMode = null;
+        _clearTreeDragHighlight(); _clearCardDropIndicators();
+    });
+}
+['sidebar-pin-list', 'sidebar-recent-list', 'sidebar-recent-folders-list'].forEach(_bindSidebarShortcutDrag);
+
 // ── 노드 위/아래 이동 (▲▼ 버튼) ──
 function moveTreeNodeUpDown(nodeId, dir) {
     function findInArr(id, arr) {
