@@ -4403,9 +4403,9 @@ document.getElementById('edit-modal').addEventListener('click', e => { if (e.tar
 // 토스트
 // ══════════════════════════════════════
 let toastTimer;
-function showToast(msg, icon='✅', undoFn=null) {
+function showToast(msg, icon='✅', undoFn=null, actionLabel='실행 취소') {
     const el = document.getElementById('toast');
-    const undoHtml = undoFn ? `<button class="toast-undo-btn" id="toast-undo-btn">실행 취소</button>` : '';
+    const undoHtml = undoFn ? `<button class="toast-undo-btn" id="toast-undo-btn">${esc(actionLabel)}</button>` : '';
     el.innerHTML = `<span style="white-space:nowrap">${icon} ${esc(msg)}</span>${undoHtml}`;
     if (undoFn) {
         document.getElementById('toast-undo-btn').addEventListener('click', () => {
