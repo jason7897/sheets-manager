@@ -5772,6 +5772,7 @@ document.getElementById('ctx-menu').addEventListener('click', e => {
         if (action==='color')     { openColorPicker(id, document.querySelector(`.tree-row[data-drag-id="${id}"]`) || document.body); return; }
         if (action==='moveup')    { moveNodeUp(id); return; }
         if (action==='movedown')  { moveNodeDown(id); return; }
+        if (action==='moveto')    { openTreeMoveModal(id); return; }
         if (action==='pin')       { togglePinNode(id); return; }
     }
 });
