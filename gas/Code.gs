@@ -50,6 +50,17 @@ function doPost(e) {
       if (incomingTs < existingTs) {
         return respond({ ok: false, error: 'stale write rejected', existingTs, incomingTs });
       }
+
+      // 대폭 감소 방어: 여러 기기/탭이 각자 다른 캐시로 "내가 더 최신"이라고 우기며
+      // 저장을 시도할 때, 시간만 보고 그대로 받아들이면 오래되고 텅 빈 캐시가
+      // 진짜 데이터를 지워버릴 수 있다(2026-07-23 실제 사고). 기존보다 시트 수가
+      // 크게 줄어드는 저장은 일단 거부하고, force=1이 명시된 경우에만 통과시킨다.
+      const existingCount = (existing.sheetsData || []).length;
+      const incomingCount = (payload.sheetsData || []).length;
+      const isForced = (e.parameter || {}).force === '1';
+      if (!isForced && existingCount >= 10 && incomingCount < existingCount * 0.7 && (existingCount - incomingCount) > 10) {
+        return respond({ ok: false, error: 'big-drop-rejected', existingCount, incomingCount });
+      }
     }
 
     sheet.getRange(DATA_CELL).setValue(JSON.stringify(payload));
