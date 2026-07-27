@@ -4564,10 +4564,11 @@ const handleUrlInput = debounce(()=>{
         parsedSheetId=null;
         try {
             const u=new URL(raw);
-            if (u.protocol!=='https:' && u.protocol!=='http:') throw new Error();
+            if (BLOCKED_URL_PROTOCOLS.includes(u.protocol)) throw new Error();
             parsedIsGenericUrl=true; parsedSheetUrl=raw;
             setUrlFeedback('generic');
-            const t=document.getElementById('title-input'); if (!t.value) t.value=u.hostname;
+            const t=document.getElementById('title-input');
+            if (!t.value) t.value = u.hostname || decodeURIComponent(u.pathname.split(/[\\/]/).filter(Boolean).pop() || '로컬 파일');
         } catch { parsedIsGenericUrl=false; setUrlFeedback('error'); }
     }
 },400);
