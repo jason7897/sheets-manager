@@ -4505,6 +4505,7 @@ function showToast(msg, icon='✅', undoFn=null, actionLabel='실행 취소') {
 // 시트 추가 모달
 // ══════════════════════════════════════
 const SHEETS_ID_RE = /\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/;
+const BLOCKED_URL_PROTOCOLS = ['javascript:','vbscript:','data:']; // XSS 위험 프로토콜만 차단, file:/ftp: 등은 허용
 let parsedSheetId      = null;
 let parsedSheetUrl     = '';
 let parsedIsGenericUrl = false;
