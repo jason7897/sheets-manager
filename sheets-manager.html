@@ -4549,7 +4549,7 @@ function setUrlFeedback(state, id) {
     const warnSvg=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
     if (state==='success') { input.classList.add('valid'); feedback.className='url-feedback success'; feedback.innerHTML=`${checkSvg}<span>✅ 올바른 구글 시트입니다<br><span class="sheet-id-chip">시트 ID: ${esc(id)}</span></span>`; addBtn.disabled=false; }
     else if (state==='generic') { input.classList.add('valid'); feedback.className='url-feedback success'; feedback.innerHTML=`${checkSvg}<span>✅ URL이 유효합니다</span>`; addBtn.disabled=false; }
-    else if (state==='error') { input.classList.add('invalid'); feedback.className='url-feedback error'; feedback.innerHTML=`${warnSvg}올바른 URL 형식이 아닙니다 (https:// 로 시작해야 합니다)`; addBtn.disabled=true; }
+    else if (state==='error') { input.classList.add('invalid'); feedback.className='url-feedback error'; feedback.innerHTML=`${warnSvg}올바른 URL 형식이 아닙니다 (예: https://..., file:///...)`; addBtn.disabled=true; }
     else { feedback.className='url-feedback'; feedback.innerHTML=''; addBtn.disabled=true; }
 }
 const handleUrlInput = debounce(()=>{
