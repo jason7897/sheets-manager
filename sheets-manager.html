@@ -4445,9 +4445,14 @@ function saveEditModal() {
     const newDue    = document.getElementById('edit-due-date')?.value || null;
     const newOwner  = document.getElementById('edit-owner')?.value.trim() || sheet.owner;
 
-    // URL 유효성 검사 (값이 있을 때만)
-    if (newLink && !newLink.match(SHEETS_ID_RE) && !newLink.startsWith('http')) {
-        showToast('올바른 URL 형식이 아닙니다', '⚠️'); return;
+    // URL 유효성 검사 (값이 있을 때만) — http/https 뿐 아니라 file:// 등 다른 형식의 링크도 허용
+    if (newLink && !newLink.match(SHEETS_ID_RE)) {
+        try {
+            const u = new URL(newLink);
+            if (BLOCKED_URL_PROTOCOLS.includes(u.protocol)) throw new Error();
+        } catch {
+            showToast('올바른 URL 형식이 아닙니다 (예: https://..., file:///...)', '⚠️'); return;
+        }
     }
 
     // 실제 변경 여부 확인 (updated 오염 방지)
